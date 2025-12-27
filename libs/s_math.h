@@ -1,0 +1,123 @@
+#ifndef S_MATH_H
+#define S_MATH_H 
+
+#include <stdlib.h>
+#include <stdbool.h>
+#include <inttypes.h>
+
+#define PI 3.14159265358979323846
+
+#define E  2.77182818284590452353
+
+#ifdef _WIN32
+    #undef RAND_MAX
+    #define RAND_MAX 0x7FFFFFFF
+#endif
+
+uint64_t fact(int32_t num)__attribute__((nonnull));
+double s_ln(char *operation)__attribute__((nonnull));
+char *s_oct(char *operation)__attribute__((nonnull));
+char *s_hex(char *operation)__attribute__((nonnull));
+char *s_bin(char *operation)__attribute__((nonnull));
+double s_km(char *operation)__attribute__((nonnull));
+double s_kg(char *operation)__attribute__((nonnull));
+double s_fah(char *operation)__attribute__((nonnull));
+double s_cel(char *operation)__attribute__((nonnull));
+double s_log(char *operation)__attribute__((nonnull));
+double s_tan(char *operation)__attribute__((nonnull));
+double s_cos(char *operation)__attribute__((nonnull));
+double s_sin(char *operation)__attribute__((nonnull));
+double s_sum(char *operation)__attribute__((nonnull));
+double s_rad(char *operation)__attribute__((nonnull));
+double s_deg(char *operation)__attribute__((nonnull));
+double s_root(char *operation)__attribute__((nonnull));
+double h_atof(const char *str)__attribute__((nonnull));
+double s_ceil(char *operation)__attribute__((nonnull));
+double s_sign(char *operation)__attribute__((nonnull));
+double s_log2(char *operation)__attribute__((nonnull));
+double s_sqrt(char *operation)__attribute__((nonnull));
+double s_miles(char *operation)__attribute__((nonnull));
+double s_trunc(char *operation)__attribute__((nonnull));
+double s_floor(char *operation)__attribute__((nonnull));
+double s_round(char *operation)__attribute__((nonnull));
+double s_log10(char *operation)__attribute__((nonnull));
+double s_scale(char *operation)__attribute__((nonnull));
+double s_pounds(char *operation)__attribute__((nonnull));
+uint64_t s_fact(char *operation)__attribute__((nonnull));
+double s_randInt(char *operation)__attribute__((nonnull));
+char *find_top_level_comma(char *s)__attribute__((nonnull));
+double s_randFloat(char *operation)__attribute__((nonnull));
+bool parentheses_balanced(const char *s)__attribute__((nonnull));
+uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
+
+#define DEG_TO_RAD(x) ((x) * (PI) / 180.0) 
+#define RAD_TO_DEG(x) ((x) * 180.0 / (PI))
+
+#define KM_TO_MI(x) ((x) * 0.62137)
+#define MI_TO_KM(x) ((x) * 1.609344)
+
+#define LB_TO_KG(x) ((x) * 0.45359237)
+#define KG_TO_LB(x) ((x) * 2.20462262185)
+
+#define C_TO_F(x) ((x) * 1.8 + (32.0))
+#define F_TO_C(x) (((x) - 32.0) * 1.8)
+
+
+__attribute__((always_inline))
+static inline uint32_t better_rand32(void) {
+    return ((uint32_t)rand() << 16) ^ (uint32_t)rand();
+}
+
+__attribute__((pure))
+__attribute__((nonnull))
+static inline double gauss_range_double(double a, double b, double d) {
+    if (d == 0.0)
+        return NAN;
+
+    if ((d > 0.0 && a > b) || (d < 0.0 && a < b))
+        return NAN;
+
+    double raw_n = (b - a) / d;
+
+    double steps = floor(raw_n);
+
+    if (steps < 0.0)
+        return NAN;
+
+    double n = steps + 1.0;
+
+    double last = a + steps * d;
+
+    double sum = n * (a + last) / 2.0;
+
+    if (isnan(sum) || isinf(sum))
+        return NAN;
+
+    return sum;
+}
+
+__attribute__((nonnull))
+__attribute__((warn_unused_result))
+char *functionHandler(char *operation, const char *function);
+
+__attribute__((always_inline))
+static inline double random_range_float(double min, double max) {
+    uint32_t r = better_rand32();
+    double normalized = (double)r / (double)UINT32_MAX;
+    return min + normalized * (max - min);
+}
+
+__attribute__((always_inline))
+static inline int32_t random_range_int(int32_t min, int32_t max) {
+    uint32_t range = (uint32_t)(max - min + 1);
+    uint32_t limit = UINT32_MAX - (UINT32_MAX % range);
+
+    uint32_t r;
+    do {
+        r = better_rand32();
+    } while (r >= limit);
+
+    return min + (int32_t)(r % range);
+}
+
+#endif

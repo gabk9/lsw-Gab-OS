@@ -1,0 +1,51 @@
+exit
+cls
+neofetch
+cls
+cmds
+cls
+bc -l
+cls
+cmds
+cls
+uname -a
+uname -s
+uname -n
+uname -v
+uname -r
+uname -m
+uname -o
+cls
+neofetch
+cls
+print "Hello, World" * 100
+cls
+rand
+rand
+rand
+rand
+rand
+cls
+print string * rand(1,100)
+cls[
+cls
+exit
+neofetch
+neofetch
+lcs
+cls
+bc
+exit
+neofetch
+neofetch
+man
+man
+man
+man
+history
+cls
+neofetch
+cls
+exit
+exit
+-v

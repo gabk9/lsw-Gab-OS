@@ -1,0 +1,1107 @@
+#include "utils.h"
+#include "s_math.h"
+
+#define BC_ERROR "__LSW__CALC__ERROR__"
+
+#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
+    #error "Operational system not recognized, terminating program!!"
+#endif
+
+static uint8_t isnull(int16_t count, ...) {
+
+    if (count < 1) {
+        fprintf(stderr, "invalid count for <count>\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    va_list args;
+    va_start(args, count);
+
+    uint8_t nullCount = 0;
+    for (int8_t i = 0; i < count; i++) {
+        void *ptr = va_arg(args, void *);
+
+        if (!ptr)
+            nullCount++;
+    }
+    
+    va_end(args);
+    return nullCount;
+}
+
+bool parentheses_balanced(const char *s) {
+    int level = 0;
+    for (; *s; s++) {
+        if (*s == '(') level++;
+        else if (*s == ')') {
+            level--;
+            if (level < 0) return false;
+        }
+    }
+    return level == 0;
+}
+
+char *find_top_level_comma(char *s) {
+    int16_t level = 0;
+
+    for (char *p = s; *p; p++) {
+        if (*p == '(') level++;
+        else if (*p == ')') level--;
+        else if (*p == ',' && level == 0)
+            return p;
+    }
+    return NULL;
+}
+
+uint16_t count_top_level_commas(const char *s) {
+    int level = 0, count = 0;
+
+    for (; *s; s++) {
+        if (*s == '(') level++;
+        else if (*s == ')') level--;
+        else if (*s == ',' && level == 0)
+            count++;
+    }
+    return count;
+}
+
+char *functionHandler(char *operation, const char *function) {
+    operation = strrm(operation, function);    
+    trim(operation);
+    
+    if (operation[0] != '(' || operation[strlen(operation)-1] != ')') {
+        printf("Error: invalid syntax\n\n");
+        return BC_ERROR;
+    }
+
+    char *copy = strdup(operation);
+    if (!copy) {
+        return BC_ERROR;
+    }
+
+    copy[0] = ' ';
+    copy[strlen(copy) - 1] = '\0';
+    trim(copy);
+
+    return copy;
+}
+
+double h_atof(const char *str) {
+    char buf[0x80];
+    strncpy(buf, str, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = '\0';
+
+    trim(buf);
+    trimEnd(buf);
+    tolowerstr(buf);
+
+    int16_t ok = 0;
+    double hex_pi_e = parse_hex_pi_e_bin(buf, &ok);
+    if (ok)
+        return hex_pi_e;
+
+    uint16_t len = strlen(buf);
+
+    bool is_hex = false;
+    if (len > 2 && buf[0] == '0' && buf[1] == 'x')
+        is_hex = true;
+
+    bool has_exp = (strchr(buf, 'e') != NULL);
+
+    bool is_octal = isOct(buf);
+
+    bool is_bin = isBin(buf);
+
+    bool allow_suffix = (!is_hex && !has_exp);
+
+    const struct {
+        char suffix;
+        double mult;
+    } suffix[] = {
+        {'k', 1e3},
+        {'m', 1e6},
+        {'b', 1e9},
+        {'t', 1e12},
+    };
+
+    if (allow_suffix) {
+        for (size_t mi = 0; mi < sizeof(suffix) / sizeof(suffix[0]); mi++) {
+            if (len > 1 && buf[len - 1] == suffix[mi].suffix) {
+                buf[len - 1] = '\0';
+                return h_atof(buf) * suffix[mi].mult;
+            }
+        }
+    }
+
+    if (strcmp(buf, "pi") == 0) return PI;
+    if (strcmp(buf, "-pi") == 0) return -PI;
+    if (strcmp(buf, "e") == 0)  return E;
+    if (strcmp(buf, "-e") == 0) return -E;
+
+    uint16_t i = 0;
+    while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))
+        i++;
+
+    if (i > 0 && strcmp(buf + i, "pi") == 0) {
+        char temp[0x40];
+        strncpy(temp, buf, i);
+        temp[i] = '\0';
+        return h_atof(temp) * PI;
+    }
+
+    if (i > 0 && strcmp(buf + i, "e") == 0) {
+        char temp[0x40];
+        strncpy(temp, buf, i);
+        temp[i] = '\0';
+        return h_atof(temp) * E;
+    }
+
+    if (is_hex) {
+        char *end;
+        int64_t v = strtol(buf, &end, 16);
+        if (*end == '\0') return (double)v;
+    }
+
+    if (is_octal) {
+        return (double)strtol(buf, NULL, 8);
+    }
+
+    if (is_bin) {
+        int64_t n = 0;
+        for (uint16_t i = 0; buf[i]; i++) {
+            n <<= 1;
+            if (buf[i] == '1') n |= 1;
+        }
+        return (double)n;
+    }
+
+    return atof(buf);
+}
+
+double s_miles(char *operation) {
+    char *test = functionHandler(operation, "mi");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double km = eval(test, true);
+
+    if (km == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    double result = KM_TO_MI(km);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_km(char *operation) {
+    char *test = functionHandler(operation, "km");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double miles = eval(test, true);
+
+    if (miles == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result = MI_TO_KM(miles);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_pounds(char *operation) {
+    char *test = functionHandler(operation, "lb");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double kg = eval(test, true);
+    
+    if (kg == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result = KG_TO_LB(kg);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_kg(char *operation) {
+    char *test = functionHandler(operation, "kg");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double lbs = eval(test, true);
+    
+    if (lbs == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result = LB_TO_KG(lbs);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_fah(char *operation) {
+    char *test = functionHandler(operation, "fah");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double cel = eval(test, true);
+    
+    if (cel == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result = C_TO_F(cel);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_cel(char *operation) {
+    char *test = functionHandler(operation, "cel");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double fah = eval(test, true);
+    
+    if (fah == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result = F_TO_C(fah);
+    SAFE_FREE(test);
+    return result;
+}
+
+char *s_oct(char *operation) {
+    char *test = functionHandler(operation, "oct");
+    if (strcmp(test, BC_ERROR) == 0) return NULL;
+
+    double num = eval(test, true);
+    
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NULL;
+    }
+
+    if (ceil(num) != num) {
+        printf("Error: must be integer\n\n");
+        SAFE_FREE(test);
+        return NULL;
+    }
+
+    char temp[0x80];
+    snprintf(temp, sizeof(temp), "%.0lf", num);
+
+    int64_t value = strtol(temp, NULL, 0);
+
+    char *buffer = malloc(64);
+    if (!buffer) {
+        SAFE_FREE(test);
+        return NULL;
+    }
+
+    snprintf(buffer, 64, "0%" PRIo64, value);
+
+    SAFE_FREE(test);
+    return buffer;
+}
+
+char *s_hex(char *operation) {
+    char *test = functionHandler(operation, "hex");
+    if (strcmp(test, BC_ERROR) == 0) return NULL;
+
+    double val = eval(test, true);
+
+    if (val == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NULL;
+    }
+
+    if (ceil(val) != val) {
+        printf("Error: must be integer!\n\n");
+        SAFE_FREE(test);
+        return NULL;
+    }
+
+    char temp[0x80];
+    snprintf(temp, sizeof(temp), "%.0lf", val);
+    
+    int64_t value = strtoll(temp, NULL, 10);
+
+    char *buffer = malloc(64);
+    if (!buffer) {
+        SAFE_FREE(test);
+        return NULL;
+    }
+
+    snprintf(buffer, 64, "0x%" PRIx64, value);
+
+    for (uint16_t i = 2; buffer[i]; i++)
+        buffer[i] = toupper((unsigned char)buffer[i]);
+
+    SAFE_FREE(test);
+    return buffer;
+}
+
+char *s_bin(char *operation) {
+    char *test = functionHandler(operation, "bin");
+    if (strcmp(test, BC_ERROR) == 0)
+        return NULL; 
+
+    double val = eval(test, true);
+
+    SAFE_FREE(test);
+    
+    if (val == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NULL;
+    }
+
+    if (ceil(val) != val) {
+        printf("Error: must be integer!\n\n");
+        return NULL;
+    }
+
+    int64_t n = (int64_t)val;
+
+    bool negative = (n < 0);
+    if (negative) n = -n;
+
+    if (n == 0) {
+        char *out = malloc(4);
+        strcpy(out, "0b0");
+        return out;
+    }
+
+    char buf[0x41];
+    uint16_t i = 64;
+    buf[i] = '\0';
+
+    while (n > 0) {
+        buf[--i] = (n & 1) ? '1' : '0';
+        n >>= 1;
+    }
+
+    uint16_t len = strlen(buf + i);
+    char *result = malloc(len + 3 + (negative ? 1 : 0));
+
+    char *p = result;
+
+    if (negative)
+        *p++ = '-';
+
+    *p++ = '0';
+    *p++ = 'b';
+
+    strcpy(p, buf + i);
+
+    return result;
+}
+
+double s_trunc(char *operation) {
+    char *test = functionHandler(operation, "trunc");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    double result = trunc(num);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_rad(char *operation) {
+    char *test = functionHandler(operation, "rad");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double deg = eval(test, true);
+
+    if (deg == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    double result = DEG_TO_RAD(deg);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_deg(char *operation) {
+    char *test = functionHandler(operation, "deg");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double rad = eval(test, true);
+
+    if (rad == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result = RAD_TO_DEG(rad);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_sqrt(char *operation) {
+    char *test = functionHandler(operation, "sqrt");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    if (num < 0) {
+        puts("Error: can't be negative!\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result = sqrt(num);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_scale(char *operation) {
+    char *test = functionHandler(operation, "scale");
+    if (strcmp(test, BC_ERROR) == 0)
+        return NAN;
+
+    double value = eval(test, true);
+
+    if (value == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    if (isnan(value) || isinf(value)) {
+        SAFE_FREE(test);
+        return 0;
+    }
+
+    char buf[0x20];
+    snprintf(buf, sizeof(buf), "%g", value);
+
+    char *exp = strchr(buf, 'e');
+    if (exp) *exp = '\0';
+
+    char *dot = strchr(buf, '.');
+    if (!dot) {
+        SAFE_FREE(test);
+        return 0;
+    }
+
+    char *end = buf + strlen(buf) - 1;
+    while (end > dot && *end == '0')
+        *end-- = '\0';
+
+    double scale = strlen(dot + 1);
+
+    SAFE_FREE(test);
+    return scale;
+}
+
+double s_sin(char *operation) {
+    char *test = functionHandler(operation, "sin");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    trim(test);
+    trimEnd(test);
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    double result = sin(num);
+
+    if (fabs(result) < 1e-6)
+        result = 0.0;
+
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_cos(char *operation) {
+    char *test = functionHandler(operation, "cos");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    trim(test);
+    trimEnd(test);
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    double result = cos(num);
+
+    if (fabs(result) < 1e-6)
+        result = 0.0;
+
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_tan(char *operation) {
+    char *test = functionHandler(operation, "tan");
+    if (strcmp(test, BC_ERROR) == 0)
+        return NAN;
+
+    trim(test);
+    trimEnd(test);
+
+    double angle = eval(test, true);
+
+    if (angle == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    double modPi = fmod(fabs(angle), PI);
+    if (fabs(modPi - PI / 2.0) < 1e-8) {
+        printf("Error: tan() undefined for %.10g rad\n\n", angle);
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result = tan(angle);
+
+    if (fabs(result) < 1e-6)
+        result = 0.0;
+
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_ln(char *operation) {
+    char *test = functionHandler(operation, "ln");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    double result = log(num);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_log10(char *operation) {
+    char *test = functionHandler(operation, "log10");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    double result = log10(num);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_log2(char *operation) {
+    char *test = functionHandler(operation, "log2");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }    
+
+    double result = log2(num);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_root(char *operation) {
+    char *test = functionHandler(operation, "root");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    char *comma = find_top_level_comma(test);
+
+    if (!comma) {
+        printf("Error: root() requires exactly 2 arguments\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    *comma = '\0';
+    char *indexStr = test;
+    char *rootingStr = comma + 1;
+
+    uint8_t nullCount = isnull(2, indexStr, rootingStr);
+    if (nullCount) {
+        printf("Error: root() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    trim(indexStr);
+    trim(rootingStr);
+
+    double index = eval(indexStr, true);
+
+    if (index == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }  
+    
+    double rooting = eval(rootingStr, true);
+
+    if (rooting == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }  
+    
+    bool invert = false;
+
+    if (index == 0) {
+        printf("Error: the index can't be 0\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    if (floor(index) != index) {
+        printf("Error: the index must be an integer\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    if (index < 0) {
+        invert = true;
+        index = -index;
+    }
+
+    if (rooting < 0 && ((int)index % 2 == 0)) {
+        printf("Error: even index root of a negative number\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result;
+
+    if (rooting < 0) {
+        result = -pow(-rooting, 1.0 / index);
+    } else {
+        result = pow(rooting, 1.0 / index);
+    }
+
+    if (invert)
+        result = 1.0 / result;
+
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_log(char *operation) {
+    char *test = functionHandler(operation, "log");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    char *comma = find_top_level_comma(test);
+
+    if (!comma) {
+        printf("Error: log() requires exactly 2 arguments\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    *comma = '\0';
+    char *baseStr = test;
+    char *numStr = comma + 1;
+
+    uint8_t nullCount = isnull(2, baseStr, numStr);
+    if (nullCount) {
+        printf("Error: log() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    trim(baseStr);
+    trim(numStr);
+
+    double base = eval(baseStr, true);
+
+    if (base == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }  
+
+    double num = eval(numStr, true);
+    
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }  
+
+    if (base <= 1 || num <= 0) {
+        printf("Error: invalid values for log()\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double result = log(num) / log(base);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_randFloat(char *operation) {
+    char *test = functionHandler(operation, "randf");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    char *comma = find_top_level_comma(test);
+
+    if (!comma) {
+        printf("Error: randf() requires exactly 2 arguments\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    *comma = '\0';
+    char *str_min = test;
+    char *str_max = comma + 1;
+
+    uint8_t nullCount = isnull(2, str_min, str_max);
+    if (nullCount) {
+        printf("Error: randf() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    trim(str_max);
+    trimEnd(str_max);
+    trim(str_min);
+    trimEnd(str_min);
+
+    double maxLf = 0.0;
+    double minLf = 0.0;
+
+    if (strcasecmp(str_max, "rand_max") == 0)
+        maxLf = (double)RAND_MAX;
+    else 
+        maxLf = eval(str_max, true);
+
+    if (maxLf == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }  
+    
+    if (strcasecmp(str_min, "rand_max") == 0)
+        minLf = (double)RAND_MAX;
+    else 
+        minLf = eval(str_min, true);
+    
+    if (minLf == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }  
+
+    SAFE_FREE(test);
+    return random_range_float(minLf, maxLf);
+}
+
+double s_randInt(char *operation) {
+    char *test = functionHandler(operation, "rand");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    char *comma = find_top_level_comma(test);
+
+    if (!comma) {
+        printf("Error: rand() requires exactly 2 arguments\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    *comma = '\0';
+    char *str_min = test;
+    char *str_max = comma + 1;
+
+    uint8_t nullCount = isnull(2, str_min, str_max);
+    if (nullCount) {
+        printf("Error: rand() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    trim(str_max);
+    trimEnd(str_max);
+    trim(str_min);
+    trimEnd(str_min);
+
+    double maxInt = 0.0;
+    double minInt = 0.0;
+
+    if (strcasecmp(str_max, "rand_max") == 0)
+        maxInt = (double)RAND_MAX;
+    else 
+        maxInt = eval(str_max, true);
+
+    if (maxInt == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }  
+    
+    if (strcasecmp(str_min, "rand_max") == 0)
+        minInt = (double)RAND_MAX;
+    else 
+        minInt = eval(str_min, true);
+    
+    if (minInt == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }  
+    
+    if (ceil(minInt) != minInt || ceil(maxInt) != maxInt) {
+        printf("Error: it must be integer!\n\n");
+        return NAN;
+    }
+
+    SAFE_FREE(test);
+    return random_range_int((int)minInt, (int)maxInt);
+}
+
+double s_floor(char *operation) {
+    char *test = functionHandler(operation, "floor");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }   
+
+    double result = floor(num);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_ceil(char *operation) {
+    char *test = functionHandler(operation, "ceil");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }   
+
+    double result = ceil(num);
+    SAFE_FREE(test);
+    return result;
+}
+
+double s_round(char *operation) {
+    char *test = functionHandler(operation, "round");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }   
+
+    double result = round(num);
+    SAFE_FREE(test);
+    return result;
+}
+
+uint64_t fact(int32_t num) {
+    if (num < 0) {
+        printf("Error: cant factorial negative numbers with fact function\n\n");
+        return U_NAN;
+    } else if (num == 0)
+        return 1;
+
+    for (uint16_t i = num - 1; i >= 1; i--)
+        num *= i;
+
+    return num;
+}
+
+uint64_t s_fact(char *operation) {
+    char *test = functionHandler(operation, "fact");
+    if (strcmp(test, BC_ERROR) == 0) return U_NAN;
+
+    double num = eval(test, true);
+    SAFE_FREE(test);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        return U_NAN;
+    }   
+
+    if (ceil(num) != num) {
+        printf("Error: must be integer\n\n");
+        return U_NAN;
+    }
+
+    return fact((int32_t)num);
+}
+
+double s_sign(char *operation) {
+    char *test = functionHandler(operation, "sign");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+    SAFE_FREE(test);
+
+    if (num == U_NAN) {
+        putchar('\n');
+        return NAN;
+    }   
+
+    if (num > 0) return 1.0;
+    if (num == 0) return 0.0;
+    return -1.0;
+}
+
+double s_sum(char *operation) {
+    char *raw = functionHandler(operation, "sum");
+    if (strcmp(raw, BC_ERROR) == 0)
+        return NAN;
+
+    char *test = strdup(raw);
+    if (!test)
+        return NAN;
+
+    if (!parentheses_balanced(test)) {
+        printf("Error: unbalanced parentheses\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    uint16_t commaCount = count_top_level_commas(test);
+
+    if (commaCount < 1 || commaCount > 2) {
+        printf(
+            "Error: sum() function requires at least 2 arguments and at most 3 arguments\n\n"
+        );
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    char *comma1 = find_top_level_comma(test);
+    if (!comma1) {
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    char *comma2 = find_top_level_comma(comma1 + 1);
+
+    char *initStr = test;
+    char *endStr;
+    char *diffStr = NULL;
+
+    *comma1 = '\0';
+    endStr = comma1 + 1;
+
+    if (comma2) {
+        *comma2 = '\0';
+        diffStr = comma2 + 1;
+    }
+
+    uint8_t nullCount;
+    if (diffStr)
+        nullCount = isnull(3, initStr, endStr, diffStr);
+    else
+        nullCount = isnull(2, initStr, endStr);
+
+    if (nullCount) {
+        printf("Error: sum() missing %"PRIu8" argument(s)\n\n", nullCount);
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    trim(initStr);
+    trim(endStr);
+    if (diffStr)
+        trim(diffStr);
+
+    double init = eval(initStr, true);
+
+    if (init == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }   
+
+    double end  = eval(endStr, true);
+
+    if (end == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }   
+
+    char defaultDiff[] = "1";
+    double diff = eval(diffStr ? diffStr : defaultDiff, true);
+
+    if (diff == U_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }   
+
+    double result = gauss_range_double(init, end, diff);
+
+    if (isnan(result)) {
+        printf("Warning: that's an issue that I don't know the origin yet, soon it'll be fixed\n\n");
+    }
+
+    SAFE_FREE(test);
+    return result;
+}
