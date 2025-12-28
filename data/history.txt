@@ -30,3 +30,5 @@ uname -o
 uname -o
 cls
 uname -a
+cmds
+cmds

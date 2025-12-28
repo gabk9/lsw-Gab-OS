@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(meu_projeto C)
 
 set(SOURCES
-    main.c
+    main.c 
     libs/utils.c
     libs/s_math.c
     libs/CheckCmd.c
@@ -11,14 +11,21 @@ set(SOURCES
 
 include_directories(libs)
 
-add_executable(meu_programa ${SOURCES})
-
-if(UNIX AND NOT APPLE)
-    target_link_libraries(meu_programa m)
-endif()
+add_executable(main ${SOURCES})
 
 if(WIN32)
-    set_target_properties(meu_programa PROPERTIES OUTPUT_NAME "main.exe")
+    set_target_properties(main PROPERTIES SUFFIX ".exe")
+    
+    if(MINGW)
+    endif()
+    
+    if(MSVC)
+        target_compile_definitions(main PRIVATE _CRT_SECURE_NO_WARNINGS)
+    endif()
 else()
-    set_target_properties(meu_programa PROPERTIES OUTPUT_NAME "main")
+    target_link_libraries(main m)
+endif()
+
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(main PRIVATE -Wall -Wextra -Wpedantic)
 endif()
