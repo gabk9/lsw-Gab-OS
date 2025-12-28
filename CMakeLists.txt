@@ -27,5 +27,5 @@ else()
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(main PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(main PRIVATE)
 endif()
