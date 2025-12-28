@@ -199,7 +199,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'bc' a simple calculator on the terminal, so far it only works with 2 numbers.\n\nbc [OPTION]...\n\nOptions:\n");
         printf("\t'-q', '--quiet'     will not print the initial text\n");
         printf("\t'-l', '--mathlib'   includes the mathlib header\n");
-        printf("\nOperations:\n"
+        printf("\nOperators:\n"
                "\t'+'    : Addition\n"
                "\t'-'    : Subtraction\n"
                "\t'*'    : Multiplication\n"
@@ -222,6 +222,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
                "\nFunctions: (only works if mathlib is turned on)\n"
                "\tclear, cls     : Clears the calculator scrollback\n"
+               "\tmathlib        : Turns mathlib on/off\n"
                "\tscale(X)       : Sets the precision (number of digits after decimal)\n"
                "\tsqrt(X)        : Calculates the square root of X\n"
                "\troot(X, Y)     : Calculates the Y-th root of X\n"
