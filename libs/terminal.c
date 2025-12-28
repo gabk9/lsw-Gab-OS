@@ -4,7 +4,7 @@
 #include "CheckCmd.h"
 #include "terminal.h"
 
-#define VERSION "b1.0.54"
+#define VERSION "b1.0.6"
 
 #define BC_QUIET 0x1
 #define BC_MATHLIB 0x2
@@ -698,15 +698,24 @@ void historyCmd(const char *path) {
         return;
     }
 
-    uint32_t i = 1;
-    char line[0x400];
+    uint32_t lineCount;
 
-    while (fgets(line, sizeof(line), f)) {
-        removeComments(line);
-        line[strcspn(line, "\n")] = '\0';
-        printf("%05"PRIu32"  %s\n", i, line);
-        i++;
+    char **lines = readHistory(path, &lineCount);
+
+    if (!lines) {
+        puts("Error: failed to read history file");
+        return;
     }
+
+    for (uint32_t i = 0; i < lineCount; i++) {
+        charReplace(lines[i], '\n', '\0');
+        printf("%05u  %s\n", i + 1, lines[i]);
+    }
+
+    for (uint32_t i = 0; i < lineCount; i++)
+        SAFE_FREE(lines[i]);
+
+    SAFE_FREE(lines);
 }
 
 void rmCmd(char *instruction) {
@@ -1297,7 +1306,8 @@ void updatehistory(void) {
         "b0.9.95 - small changes\n\tFixed: now echo and touch works a lot better when multiplying strings\n",
         "b1.0.4 - big changes\n\tEdited: edited the calculator initial message\n",
         "b1.0.5 - big changes\n\tEdited: file headers organization\n",
-        "b1.0.54 - minor changes\n\tEdited: now the source code is safer\n"
+        "b1.0.54 - minor changes\n\tEdited: now the source code is safer\n",
+        "b1.0.6 - big changes\n\tEdited: made some preparations for the future update\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

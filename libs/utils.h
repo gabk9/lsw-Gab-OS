@@ -125,6 +125,7 @@ uint8_t myStrcasestr(const char *str, const char *sub);
 uint16_t CountSubStr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
 double parse_hex_pi_e_bin(const char *str, int16_t *ok);
+char **readHistory(const char *address, uint32_t *lineCount);
 char **copyMat(char **dest, const char **src, uint16_t size);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
 void split_instruction_args(char *line, char **out_cmd, char **out_args);

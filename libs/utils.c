@@ -4,8 +4,8 @@
 #include "CheckCmd.h"
 #include "terminal.h"
 
-#define PROJ_SIZE_APPROX 161000
-#define PROJ_LINES_APPROX 5700
+#define PROJ_SIZE_APPROX 162500
+#define PROJ_LINES_APPROX 5800
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -27,6 +27,48 @@
 #endif
 
 static char *last_directory = NULL;
+
+char **readHistory(const char *address, uint32_t *lineCount) {
+    *lineCount = 0;
+
+    FILE *f = fopen(address, "r");
+    if (!f) return NULL;
+
+    char buffer[0x400];
+
+    while (fgets(buffer, sizeof(buffer), f))
+        (*lineCount)++;
+
+    if (*lineCount == 0) {
+        SAFE_FCLOSE(f);
+        return NULL;
+    }
+
+    char **mat = calloc(*lineCount, sizeof(char *));
+    if (!mat) {
+        SAFE_FCLOSE(f);
+        return NULL;
+    }
+
+    for (uint32_t i = 0; i < *lineCount; i++) {
+        mat[i] = calloc(MAX_CHAR, sizeof(char));
+        if (!mat[i]) {
+            for (uint32_t j = 0; j < i; j++)
+                SAFE_FREE(mat[j]);
+            SAFE_FREE(mat);
+            SAFE_FCLOSE(f);
+            return NULL;
+        }
+    }
+
+    fseek(f, 0, SEEK_SET);
+
+    for (uint32_t i = 0; i < *lineCount; i++)
+        fgets(mat[i], MAX_CHAR, f);
+
+    SAFE_FCLOSE(f);
+    return mat;
+}
 
 void initRandom(void) {
 #ifdef _WIN32
@@ -724,24 +766,23 @@ char *unameCmdLinux(uint8_t flags) {
     if (flags & U_OPERATING_SYSTEM) {
         #ifdef __linux__
             FILE *fp = fopen("/proc/version", "r");
-            if (fp) {
-                char version[0x100];
-                if (fgets(version, sizeof(version), fp)) {
-                    if (strstr(version, "GNU")) {
-                        strcat(result, "GNU/Linux ");
-                    } else {
-                        sprintf(buffer, "%s ", pc.sysname);
-                        strcat(result, buffer);
-                    }
-                } else {
-                    sprintf(buffer, "%s ", pc.sysname);
-                    strcat(result, buffer);
-                }
-                SAFE_FCLOSE(fp);
-            } else {
+            if (!fp) {
                 sprintf(buffer, "%s ", pc.sysname);
                 strcat(result, buffer);
             }
+
+            char version[0x100];
+            
+            if (!fgets(version, sizeof(version), fp)) {
+                sprintf(buffer, "%s ", pc.sysname);
+                strcat(result, buffer);
+            }
+
+            if (strstr(version, "GNU")) {
+                strcat(result, "GNU/Linux ");
+            }
+            
+            SAFE_FCLOSE(fp);
         #else
             sprintf(buffer, "%s ", pc.sysname);
             strcat(result, buffer);
