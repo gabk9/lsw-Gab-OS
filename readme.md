@@ -108,6 +108,4 @@ git checkout pc-linux
 cmake .
 cmake --build .
 .\main.exe
-yaml
-Copiar código
 ```
