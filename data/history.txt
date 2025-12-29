@@ -32,3 +32,34 @@ cls
 uname -a
 cmds
 cmds
+rev
+bc
+cls
+neofetch
+cls
+bc -l
+cls
+man bc
+cls
+cmds
+cls
+randstr
+randstr -l=10
+randstr -l = 10
+cls
+history
+exit
+history
+history
+-v
+--version
+bc asd
+cls
+exit
+echo á
+cls
+rev
+cls
+ls
+exot
+exit

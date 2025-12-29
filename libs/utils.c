@@ -1812,5 +1812,6 @@ uint64_t get_total_ram_mb(void) {
 void setup_console(void) {
 #ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
 #endif
 }

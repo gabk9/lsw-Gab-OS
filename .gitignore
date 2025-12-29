@@ -1,15 +1,5 @@
-# Runtime data
 data/history.txt
-
-# Build artifacts
 *.o
 *.a
 *.exe
 main
-
-# CMake
-/build
-CMakeFiles
-CMakeCache.txt
-cmake_install.cmake
-Makefile

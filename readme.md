@@ -78,7 +78,7 @@ sudo apt install build-essential cmake git
 ```bash
 winget install --id Git.Git -e
 winget install --id Kitware.CMake -e
-winget install --id GNU.Win32.MinGW -e
+winget install --id MSYS2.MSYS2 -e
 
 ```
 
