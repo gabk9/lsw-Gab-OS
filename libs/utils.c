@@ -1764,6 +1764,7 @@ char* get_cpu_model(void) {
     }
 
     RegCloseKey(hKey);
+    cpu[strcspn(cpu, "\n")] = '\0';
     return cpu;
 #elif __linux__
     static char cpu[0x80];
@@ -1772,6 +1773,7 @@ char* get_cpu_model(void) {
     while (fgets(cpu, sizeof(cpu), fp)) {
         if (strncmp(cpu, "model name", 10) == 0) {
             SAFE_FCLOSE(fp);
+            cpu[strcspn(cpu, "\n")] = '\0';
             char *colon = strchr(cpu, ':');
             return colon ? colon + 2 : "Unknown";
         }
@@ -1781,8 +1783,10 @@ char* get_cpu_model(void) {
 #elif __APPLE__
     static char cpu[0x80];
     uint16_t size = sizeof(cpu);
-    if (sysctlbyname("machdep.cpu.brand_string", cpu, &size, NULL, 0) == 0)
+    if (sysctlbyname("machdep.cpu.brand_string", cpu, &size, NULL, 0) == 0) {
+        cpu[strcspn(cpu, "\n")] = '\0';
         return cpu;
+    }
     return "Unknown";
 #endif
 }

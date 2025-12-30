@@ -1723,7 +1723,6 @@ void neofetchCmd(void) {
     printc("CPU: ", label_color, WHITE);
     static char *cpuName;
     cpuName = get_cpu_model();
-    cpuName[strcspn(cpuName, "\n")] = '\0';
 
     puts(cpuName);
 
