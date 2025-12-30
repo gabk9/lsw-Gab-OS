@@ -4,7 +4,7 @@
 #include "CheckCmd.h"
 #include "terminal.h"
 
-#define PROJ_SIZE_APPROX 162500
+#define PROJ_SIZE_APPROX 163000
 #define PROJ_LINES_APPROX 5800
 
 #define ALIAS_FILE "shortcut.txt"

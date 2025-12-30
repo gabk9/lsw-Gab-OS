@@ -4,7 +4,7 @@
 #include "CheckCmd.h"
 #include "terminal.h"
 
-#define VERSION "b1.0.6"
+#define VERSION "r1.0.69"
 
 #define BC_QUIET 0x1
 #define BC_MATHLIB 0x2
@@ -849,7 +849,8 @@ void touchCmd(char *instruction) {
 
         char *str = strtok_r(inFile, "*", &save);
         char *num = strchr(instruction, '*');
-        num[0] = ' ';
+
+        num = strtok(num, "<");
 
         char *cpy = strdup(filename);
 
@@ -863,29 +864,36 @@ void touchCmd(char *instruction) {
             return;
         }
 
-        double count = eval(num, true);
+        bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
+                               reps < strrchar(instruction, '\''));
 
-        if (count == U_NAN)
-            return;
+        double count;
+
+        if (!QuoteAfterStar) {
+            count = eval(num+1, true);
+    
+            if (count == U_NAN)
+                return;
+    
+            if (count <= 0) {
+                errno = EINVAL;
+                perror("Error");
+                SAFE_FREE(copy);
+                return;
+            }
+    
             
-        if (count <= 0) {
-            errno = EINVAL;
-            perror("Error");
-            SAFE_FREE(test);
-            return;
-        }
-
-        if (ceil(count) != count) {
-            printf("Error: must be integer\n");
-            SAFE_FREE(test);
-            return;
+            if (ceil(count) != count) {
+                printf("Error: must be integer\n");
+                return;
+            }
         }
 
         echoHandler(str);
 
         FILE *f = fopen(filename, "w");
 
-        if (reps < strrchar(instruction, '\"')) {
+        if (QuoteAfterStar) {
             echoHandler(test);
             fputs(test, f);
         } else
@@ -1304,10 +1312,12 @@ void updatehistory(void) {
         "b0.9.85 - big changes\n\tFixed: now commands that randomizes values works properly outside the terminal\n",
         "b0.9.89 - minor changes\n\tEdited: now the source code is a little more safe\n",
         "b0.9.95 - small changes\n\tFixed: now echo and touch works a lot better when multiplying strings\n",
-        "b1.0.4 - big changes\n\tEdited: edited the calculator initial message\n",
-        "b1.0.5 - big changes\n\tEdited: file headers organization\n",
-        "b1.0.54 - minor changes\n\tEdited: now the source code is safer\n",
-        "b1.0.6 - big changes\n\tEdited: made some preparations for the future update\n"
+        "r1.0.4 - big changes\n\tEdited: edited the calculator initial message\n",
+        "r1.0.5 - big changes\n\tEdited: file headers organization\n",
+        "r1.0.54 - minor changes\n\tEdited: now the source code is safer\n",
+        "r1.0.6 - big changes\n\tEdited: made some preparations for the future update\n",
+        "r1.0.64 - minor changes\n\tFixed: echo and touch behavior when multiplying strings with quotes\n",
+        "r1.0.69 - small changes\n\tAdded: help message when initializing the program\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1411,38 +1421,44 @@ void echoCmd(char *instruction) {
 
         char *str = strtok_r(copy, "*", &save);
         char *num = strchr(instruction, '*');
-        num[0] = ' ';
         
-        if (!str || !num) {
+        if (!str || !num || (num[0] == '*' && num[1] == '\0')){
             puts("Error: invalid syntax");
             SAFE_FREE(copy);
             return;
         }
-
+        
         trim(str);
         trimEnd(str);
 
-        double count = eval(num, true);
+        bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
+                               reps < strrchar(instruction, '\''));
 
-        if (count == U_NAN)
-            return;
+        double count;
 
-        if (count <= 0) {
-            errno = EINVAL;
-            perror("Error");
-            SAFE_FREE(copy);
-            return;
-        }
-
-        
-        if (ceil(count) != count) {
-            printf("Error: must be integer\n");
-            return;
+        if (!QuoteAfterStar) {
+            count = eval(num+1, true);
+    
+            if (count == U_NAN)
+                return;
+    
+            if (count <= 0) {
+                errno = EINVAL;
+                perror("Error");
+                SAFE_FREE(copy);
+                return;
+            }
+    
+            
+            if (ceil(count) != count) {
+                printf("Error: must be integer\n");
+                return;
+            }
         }
         
         echoHandler(str);
         
-        if (reps < strrchar(instruction, '\"')) {
+        if (QuoteAfterStar) {
             echoHandler(instruction);
             puts(instruction);
         } else 
@@ -1506,9 +1522,14 @@ void echoCmd(char *instruction) {
 
         char *str = strtok_r(inFile, "*", &save);
         char *num = strchr(instruction, '*');
-        num[0] = ' ';
 
-        if (!str || !num) { puts("Error: invalid syntax"); SAFE_FREE(copy); return; }
+        num = strtok(num, ">");
+
+        if (!str || !num) {
+            puts("Error: invalid syntax");
+            SAFE_FREE(copy);
+            return;
+        }
 
         trim(str); trimEnd(str);
         trim(filename); trimEnd(filename);
@@ -1528,21 +1549,29 @@ void echoCmd(char *instruction) {
             return;
         }
 
-        double count = eval(num, true);
+        bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
+                               reps < strrchar(instruction, '\''));
 
-        if (count == U_NAN)
-            return;
+        double count;
 
-        if (count <= 0) {
-            errno = EINVAL;
-            perror("Error");
-            SAFE_FREE(copy);
-            return;
-        }
-
-        if (ceil(count) != count) {
-            printf("Error: must be integer\n");
-            return;
+        if (!QuoteAfterStar) {
+            count = eval(num+1, true);
+    
+            if (count == U_NAN)
+                return;
+    
+            if (count <= 0) {
+                errno = EINVAL;
+                perror("Error");
+                SAFE_FREE(copy);
+                return;
+            }
+    
+            
+            if (ceil(count) != count) {
+                printf("Error: must be integer\n");
+                return;
+            }
         }
 
         echoHandler(str);
@@ -1556,7 +1585,7 @@ void echoCmd(char *instruction) {
         }
         
 
-        if (reps < strrchar(test, '\"')) {
+        if (QuoteAfterStar) {
             echoHandler(test);
             fputs(test, f);
         } else 
@@ -1678,7 +1707,7 @@ void neofetchCmd(void) {
 
     printc("DATE: ", label_color, WHITE);
     static char *today;
-    today = get_time("%a %b %d %H:%M:%S %z %Y");
+    today = get_time(TIME_FMT);
     
     puts(today);
 

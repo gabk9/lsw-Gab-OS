@@ -105,33 +105,33 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("man: missing operand\nUse \"man man\" to check the manual\n");
         return;
     }
-    
+
     trim(instruction);
     trimEnd(instruction);
 
-    
+
     if (strcmp(instruction, cmds[0]) == 0) //! clear
         printf("'clear' clears your terminal's screen and its scrollback buffer\n");
-        
+
     else if (strcmp(instruction, cmds[1]) == 0) //! exit
         printf("'exit' exit the terminal\n");
-        
+
     else if (strcmp(instruction, cmds[2]) == 0) { //! echo
         printf("'echo' displays a line of text in the terminal or in a file\n\necho [STRING] <-- print [STRING]\n");
         printf("\necho [STRING] > [FILE NAME] <-- print [STRING] inside [FILE NAME]\n"
                "\necho [STRING] * [int: COUNT] <-- print [STRING] [COUNT] times\n"
                "\necho [STRING] * [int: COUNT] > [FILE NAME] <-- print [STRING] [COUNT] times inside [FILE NAME]\n");
     }
-    
+
     else if (strcmp(instruction, cmds[3]) == 0) //! neofetch
         printf("'neofetch', a fast system info script\n");
-        
+
     else if (strcmp(instruction, cmds[4]) == 0) //! updatehistory
         printf("'updatehistory' displays the update history of the terminal\n");
-        
+
     else if (strcmp(instruction, cmds[5]) == 0) //! cmds
         printf("'cmds' displays the list of commands available\n");
-        
+
     else if (strcmp(instruction, cmds[6]) == 0) //! cd
         printf("'cd' changes the working directory of the terminal\n");
         
@@ -139,45 +139,45 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'ls' list directory contents\n\nls [OPTION]\n\nOptions:\n");
         printf("\t'-a', '--all'   show hidden files or folders\n");
     }
-    
+
     else if (strcmp(instruction, cmds[8]) == 0) //! man
-        printf("'man' a interface to the system reference manuals\n\nman [COMMAND NAME]...\n");
-        
+        printf("'man' a interface to the system reference manuals\n\nman [COMMAND NAME...]\n");
+
     else if (strcmp(instruction, cmds[9]) == 0) //! whoami
         printf("'whoami' displays the user that you are currently logged-in\n");
-        
+
     else if (strcmp(instruction, cmds[10]) ==  0) //! date
         printf("'date' displays the current date and time\n");
-        
+
     else if (strcmp(instruction, cmds[11]) ==  0) //! pwd
         printf("'pwd' displays the current working directory\n");                
-        
+
     else if (strcmp(instruction, cmds[12]) ==  0) //! mkdir
-        printf("'mkdir' makes directories\n\nmkdir [FOLDER NAME]...\n");                
-        
+        printf("'mkdir' makes directories\n\nmkdir [FOLDER NAME...]\n");
+
     else if (strcmp(instruction, cmds[13]) ==  0) //! rmdir
-        printf("'rmdir' removes empty directories\n\nrmdir [FOLDER NAME]...\n");                
-        
+        printf("'rmdir' removes empty directories\n\nrmdir [FOLDER NAME...]\n");
+
     else if (strcmp(instruction, cmds[14]) ==  0) //! cat
-        printf("'cat' displays the file content\n\ncat [FILE NAME]\n");                
-        
+        printf("'cat' displays the file content\n\ncat [FILE NAME]\n");
+
     else if (strcmp(instruction, cmds[15]) ==  0) { //! touch
         printf("'touch' displays a line of text in the terminal or in a file\n\ntouch [FILE NAME] <-- creates [FILE NAME]\n");
         printf("\ntouch [FILE NAME] < [STRING] <-- print the string into [FILE]\n"
                "\ntouch [FILE NAME] < [STRING] * [int: COUNT] <-- print the string in file [COUNT] times\n");
     }
-    
+
     else if (strcmp(instruction, cmds[16]) ==  0) { //! rm
-        printf("'rm' removes files or empty folders\n\nrm [OPTION] [FILE/FOLDER NAME]...\n\nOptions:\n");
+        printf("'rm' removes files or empty folders\n\nrm [OPTION] [FILE/FOLDER NAME...]\n\nOptions:\n");
         printf("\t'-f', '--force'         removes without prompt\n");
-        printf("\t'-i', '--interactive'   prompt before deletion (default)\n");   
+        printf("\t'-i', '--interactive'   prompt before deletion (default)\n");
     }
-    
+
     else if (strcmp(instruction, cmds[17]) ==  0) //! history
-        printf("'history' displays the history of commands you used\n");              
-        
+        printf("'history' displays the history of commands you used\n");
+
     else if (strcmp(instruction, cmds[18]) ==  0) { //! uname
-        printf("'uname' displays system information\n\nuname [OPTION]...\n\nOptions:\n");              
+        printf("'uname' displays system information\n\nuname [OPTION...]\n\nOptions:\n");
         printf("\t'-a', '--all'                print all the information, in the following order\n");
         printf("\t'-s', '--kernel-name'        print the kernel name (default)\n");
         printf("\t'-n', '--nodename'           print the network node hostname\n");
@@ -186,7 +186,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("\t'-m', '--machine'            print the machine hardware name\n");
         printf("\t'-o', '--operating-system'   print the operating system\n'");
     } 
-    
+
    else if (strcmp(instruction, cmds[19]) == 0) //! grep
         printf(
             "'grep' search for patterns in files\n\n"
@@ -194,9 +194,9 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "Options:\n"
             "\t'-i', '--ignore-case'   ignore case distinctions when matching\n"
         );              
-        
+
     else if (strcmp(instruction, cmds[20]) == 0) { //! bc
-        printf("'bc' a simple calculator on the terminal, so far it only works with 2 numbers.\n\nbc [OPTION]...\n\nOptions:\n");
+        printf("'bc' a simple calculator on the terminal, so far it only works with 2 numbers.\n\nbc [OPTION...]\n\nOptions:\n");
         printf("\t'-q', '--quiet'     will not print the initial text\n");
         printf("\t'-l', '--mathlib'   includes the mathlib header\n");
         printf("\nOperators:\n"
@@ -265,37 +265,37 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         );
 
     }
-    
+
     else if (strcmp(instruction, cmds[21]) ==  0) //! drives
-        printf("'drives' lists available drives\n");              
-                
+        printf("'drives' lists available drives\n");
+
     else if (strcmp(instruction, cmds[22]) ==  0) //! clearhistory
         printf("'clearhistory' clears history.txt\n");
-        
+
     else if (strcmp(instruction, cmds[23]) ==  0) //! rand
         printf("'rand' generates an integer between 0 and RAND_MAX (inclusive)\n");
-        
+
     else if (strcmp(instruction, cmds[24]) ==  0) { //! alias
         printf("'alias' creates shortcuts for the terminal\n\n");
         printf("alias [SHORTCUT NAME]='[COMMAND]'\n");
     }
-    
+
     else if (strcmp(instruction, cmds[25]) ==  0) //! rename
         printf("'rename' renames folders or files\n\nrename [OLD NAME] [NEW NAME]\n");
-        
+
     else if (strcmp(instruction, cmds[26]) ==  0 && isInsideBash) { //! bash
         printf("'bash' shows bash version information\n\nbash [OPTION]\n\nOptions:\n");
         printf("\t'-v', '--version'   show version information\n");
     }
-    
+
     else if (strcmp(instruction, cmds[27]) ==  0) //! head
         printf("'head' print the first 10 lines of a file\n\nhead [FILE NAME]\n");
-        
+
     else if (strcmp(instruction, cmds[28]) ==  0) //! tail
-        printf("'tail' print the first 10 lines of a file starting from the bottom\n\ntail [FILE NAME]\n");              
-        
+        printf("'tail' print the first 10 lines of a file starting from the bottom\n\ntail [FILE NAME]\n");
+
     else if (strcmp(instruction, cmds[29]) ==  0) //! lc
-        printf("'lc' print the line count of a file\n\nlc [FILE NAME]...\n");              
+        printf("'lc' print the line count of a file\n\nlc [FILE NAME]...\n");
         
     else if (strcmp(instruction, cmds[30]) == 0) //! yes
         printf("'yes' output a string repeatedly until killed\n\nyes <-- print 'y' until killed\n\nyes [STRING] <-- print string until killed\n");
@@ -339,7 +339,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     if (Count > 0) {
         char *start = temp;
 
-        while (1) {
+        while (true) {
             char *pos = find_andand_outside_quotes(start);
 
             char *segment;
@@ -441,7 +441,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         puts(get_user());
 
     else if (strcmp(instruction, cmds[10]) == 0) //! date
-        puts(get_time("%a %b %d %H:%M:%S %z %Y"));
+        puts(get_time(TIME_FMT));
 
     else if (strcmp(instruction, cmds[11]) == 0) //! pwd
         puts(*address);

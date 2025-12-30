@@ -96,6 +96,8 @@ int main(int argc, char **argv) {
     char *hostName;
     hostName = get_hostname();
 
+    puts("Type 'cmds' to see the command list");
+
     while (true) {
         char *wd = defaultAddressReplace(address);
     #ifdef _WIN32
