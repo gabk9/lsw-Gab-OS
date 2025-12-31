@@ -1,7 +1,4 @@
 #include "utils.h"
-#include "s_math.h"
-#include "terminal.h"
-#include "CheckCmd.h"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
     #error "Operational system not recognized, terminating program!!"

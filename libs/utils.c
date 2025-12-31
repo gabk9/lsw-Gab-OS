@@ -1,11 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
-#include "s_math.h"
-#include "CheckCmd.h"
-#include "terminal.h"
 
-#define PROJ_SIZE_APPROX 163000
-#define PROJ_LINES_APPROX 5800
+#define PROJ_SIZE_APPROX 165000
+#define PROJ_LINES_APPROX 5900
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -27,6 +24,20 @@
 #endif
 
 static char *last_directory = NULL;
+
+void printInFileNTimes(FILE *stream, char *str, int32_t count) {
+    if (count <= 0) {
+        puts("Error: invalid value");
+        return;
+    }
+
+    for (int32_t i = 0; i < count; i++) {
+        if (i != count - 1)
+            fprintf(stream, "%s\n", str);
+        else
+            fprintf(stream, "%s", str);
+    }
+}
 
 char **readHistory(const char *address, uint32_t *lineCount) {
     *lineCount = 0;

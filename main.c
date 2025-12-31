@@ -1,6 +1,4 @@
 #include "libs/utils.h"
-#include "libs/CheckCmd.h"
-#include "libs/terminal.h" 
 
 #ifdef _WIN32
     #define rmdir _rmdir

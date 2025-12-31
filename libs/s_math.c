@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "s_math.h"
 
 #define BC_ERROR "__LSW__CALC__ERROR__"
 

@@ -1,10 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
-#include "s_math.h"
-#include "CheckCmd.h"
-#include "terminal.h"
 
-#define VERSION "r1.0.69"
+#define VERSION "r1.0.8"
 
 #define BC_QUIET 0x1
 #define BC_MATHLIB 0x2
@@ -276,6 +273,7 @@ void sleepCmd(char *instruction) {
                 break;
             default:
                 puts("sleep: invalid suffix\nUse \"man sleep\" to check the manual");
+                return;
         }
     }
 
@@ -829,6 +827,7 @@ void touchCmd(char *instruction) {
 
         if (!isValidFile(filename)) {
             printf("Error: invalid file name\n");
+            SAFE_FREE(copy);
             return;
         }
 
@@ -839,7 +838,6 @@ void touchCmd(char *instruction) {
         fprintf(f, "%s", inFile);
 
         SAFE_FCLOSE(f);
-
     } else {
         char *filename = strtok_r(copy, "<", &save);
         char *inFile = strtok_r(NULL, "<", &save);
@@ -861,8 +859,12 @@ void touchCmd(char *instruction) {
 
         if (!isValidFile(filename)) {
             printf("Error: invalid file name\n");
+            SAFE_FREE(copy);
+            SAFE_FREE(test);
             return;
         }
+
+        printf("Instruction: '%s'\n", instruction);
 
         bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
                                reps < strrchar(instruction, '\''));
@@ -872,19 +874,25 @@ void touchCmd(char *instruction) {
         if (!QuoteAfterStar) {
             count = eval(num+1, true);
     
-            if (count == U_NAN)
+            if (count == U_NAN) {
+                SAFE_FREE(copy);
+                SAFE_FREE(test);
                 return;
+            }
     
             if (count <= 0) {
                 errno = EINVAL;
                 perror("Error");
                 SAFE_FREE(copy);
+                SAFE_FREE(test);
                 return;
             }
     
             
             if (ceil(count) != count) {
                 printf("Error: must be integer\n");
+                SAFE_FREE(copy);
+                SAFE_FREE(test);
                 return;
             }
         }
@@ -897,12 +905,7 @@ void touchCmd(char *instruction) {
             echoHandler(test);
             fputs(test, f);
         } else
-            for (int32_t i = 0; i < count; i++) {
-                if (i != count - 1)
-                    fprintf(f, "%s\n", str);
-                else 
-                    fprintf(f, "%s", str);
-            }
+            printInFileNTimes(f, str, count);
 
         SAFE_FCLOSE(f);
 
@@ -1317,7 +1320,8 @@ void updatehistory(void) {
         "r1.0.54 - minor changes\n\tEdited: now the source code is safer\n",
         "r1.0.6 - big changes\n\tEdited: made some preparations for the future update\n",
         "r1.0.64 - minor changes\n\tFixed: echo and touch behavior when multiplying strings with quotes\n",
-        "r1.0.69 - small changes\n\tAdded: help message when initializing the program\n"
+        "r1.0.69 - small changes\n\tAdded: help message when initializing the program\n",
+        "r1.0.8 - big changes\n\tEdited: improved echo behavior once again\n\tFixed: freed some pointers that I had forgotten to and sleep suffix identifier\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1439,8 +1443,10 @@ void echoCmd(char *instruction) {
         if (!QuoteAfterStar) {
             count = eval(num+1, true);
     
-            if (count == U_NAN)
+            if (count == U_NAN) {
+                SAFE_FREE(copy);
                 return;
+            }
     
             if (count <= 0) {
                 errno = EINVAL;
@@ -1452,6 +1458,7 @@ void echoCmd(char *instruction) {
             
             if (ceil(count) != count) {
                 printf("Error: must be integer\n");
+                SAFE_FREE(copy);
                 return;
             }
         }
@@ -1488,6 +1495,16 @@ void echoCmd(char *instruction) {
         trim(inFile); trimEnd(inFile);
         trim(filename); trimEnd(filename);
 
+                                       
+        bool QuoteAfterAbracket = (file < strrchar(instruction, '\"') ||
+                                   file < strrchar(instruction, '\''));
+
+        if (QuoteAfterAbracket) {
+            echoHandler(instruction);
+            puts(instruction);
+            return;
+        }
+
         echoHandler(inFile);
 
         if (!isValidFile(filename)) {
@@ -1507,6 +1524,8 @@ void echoCmd(char *instruction) {
 
     
     if (reps != -1 && file != -1){
+
+        char *instructionCopy = strdup(instruction);
         
         char *inFile = strtok_r(copy, ">", &save);
         char *filename = strtok_r(NULL, ">", &save);
@@ -1514,6 +1533,7 @@ void echoCmd(char *instruction) {
         if (!inFile || !filename) {
             puts("Error: invalid syntax");
             SAFE_FREE(copy);
+            SAFE_FREE(instructionCopy);
             return;
         }
         
@@ -1528,6 +1548,8 @@ void echoCmd(char *instruction) {
         if (!str || !num) {
             puts("Error: invalid syntax");
             SAFE_FREE(copy);
+            SAFE_FREE(test);
+            SAFE_FREE(instructionCopy);
             return;
         }
 
@@ -1540,8 +1562,22 @@ void echoCmd(char *instruction) {
             if (strchr(afterDot, '*')) {
                 puts("Error: invalid arguments, use \"man echo\" to check the manual");
                 SAFE_FREE(copy);
+                SAFE_FREE(test);
+                SAFE_FREE(instructionCopy);
                 return;
             }
+        }
+
+        bool QuoteAfterAbracket = (file < strrchar(instructionCopy, '\"') ||
+                                   file < strrchar(instructionCopy, '\''));
+
+        if (QuoteAfterAbracket) {
+            echoHandler(instructionCopy);
+            puts(instructionCopy);
+            SAFE_FREE(copy);
+            SAFE_FREE(test);
+            SAFE_FREE(instructionCopy);
+            return;
         }
 
         if (!isValidFile(filename)) {
@@ -1557,19 +1593,28 @@ void echoCmd(char *instruction) {
         if (!QuoteAfterStar) {
             count = eval(num+1, true);
     
-            if (count == U_NAN)
+            if (count == U_NAN) {
+                SAFE_FREE(copy);
+                SAFE_FREE(test);
+                SAFE_FREE(instructionCopy);
                 return;
+            }
     
             if (count <= 0) {
                 errno = EINVAL;
                 perror("Error");
                 SAFE_FREE(copy);
+                SAFE_FREE(test);
+                SAFE_FREE(instructionCopy);
                 return;
             }
     
             
             if (ceil(count) != count) {
                 printf("Error: must be integer\n");
+                SAFE_FREE(copy);
+                SAFE_FREE(test);
+                SAFE_FREE(instructionCopy);
                 return;
             }
         }
@@ -1581,6 +1626,7 @@ void echoCmd(char *instruction) {
             perror("Error");
             SAFE_FREE(test);
             SAFE_FREE(copy);
+            SAFE_FREE(instructionCopy);
             return;
         }
         
@@ -1589,16 +1635,12 @@ void echoCmd(char *instruction) {
             echoHandler(test);
             fputs(test, f);
         } else 
-            for (int32_t i = 0; i < count; i++) {
-                if (i != count - 1)
-                    fprintf(f, "%s\n", str);
-                else
-                    fprintf(f, "%s", str);
-            }
+            printInFileNTimes(f, str, count);
 
         SAFE_FCLOSE(f);
         SAFE_FREE(copy);
         SAFE_FREE(test);
+        SAFE_FREE(instructionCopy);
     }
 }
 

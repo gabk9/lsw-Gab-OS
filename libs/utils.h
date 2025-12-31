@@ -10,8 +10,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include "s_math.h"
 #include <stdbool.h>
 #include <inttypes.h>
+#include "terminal.h"
+#include "CheckCmd.h"
 
 #ifdef _WIN32
     #include <direct.h>
@@ -128,6 +131,7 @@ char *handle_normal_cd(const char *path, char *address);
 double parse_hex_pi_e_bin(const char *str, int16_t *ok);
 char **readHistory(const char *address, uint32_t *lineCount);
 char **copyMat(char **dest, const char **src, uint16_t size);
+void printInFileNTimes(FILE *stream, char *str, int32_t count);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
 void split_instruction_args(char *line, char **out_cmd, char **out_args);
 void printc(const char *str, color4_t initColor, color4_t resetColor, ...);
