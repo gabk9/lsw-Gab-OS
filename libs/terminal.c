@@ -213,7 +213,7 @@ char *randstrCmd(char *instruction) {
         }
     }
 
-    if (len == U_NAN) {
+    if (len == U64_NAN) {
         errno = EINVAL;
         perror("Error");
         return NULL;
@@ -279,7 +279,7 @@ void sleepCmd(char *instruction) {
 
     double time = eval(instruction, true);
 
-    if (isnan(time) || time == U_NAN)
+    if (isnan(time) || time == U64_NAN)
         return;
 
     time *= unit;
@@ -305,7 +305,7 @@ int32_t lcCmd(char *instruction) {
 
     if (!rest || strlen(rest) == 0) {
         puts("lc: missing operand\nUse \"man lc\" to check the manual");
-        return I_NAN;
+        return U32_NAN;
     }
 
     uint32_t lines = 0;
@@ -580,10 +580,10 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
         result = eval(operation, mathlib);
 
-        if (!isnan(result) && result != U_NAN) {
+        if (!isnan(result) && result != U64_NAN) {
             printf("%g\n\n", result);
             fflush(stdout);
-        } else if (result == U_NAN)
+        } else if (result == U64_NAN)
             puts("");
     }
 }
@@ -874,7 +874,7 @@ void touchCmd(char *instruction) {
         if (!QuoteAfterStar) {
             count = eval(num+1, true);
     
-            if (count == U_NAN) {
+            if (count == U64_NAN) {
                 SAFE_FREE(copy);
                 SAFE_FREE(test);
                 return;
@@ -1443,7 +1443,7 @@ void echoCmd(char *instruction) {
         if (!QuoteAfterStar) {
             count = eval(num+1, true);
     
-            if (count == U_NAN) {
+            if (count == U64_NAN) {
                 SAFE_FREE(copy);
                 return;
             }
@@ -1593,7 +1593,7 @@ void echoCmd(char *instruction) {
         if (!QuoteAfterStar) {
             count = eval(num+1, true);
     
-            if (count == U_NAN) {
+            if (count == U64_NAN) {
                 SAFE_FREE(copy);
                 SAFE_FREE(test);
                 SAFE_FREE(instructionCopy);

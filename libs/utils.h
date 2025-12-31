@@ -37,8 +37,8 @@
 #endif
 
 #define MAX_ARGS 0x20
-#define I_NAN (uint32_t)-1
-#define U_NAN (uint64_t)-1
+#define U32_NAN (uint32_t)-1
+#define U64_NAN (uint64_t)-1
 #define MAX_CHAR (1ULL << 10)
 #define TIME_FMT "%a %b %d %H:%M:%S %z %Y"
 

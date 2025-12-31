@@ -520,7 +520,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
 
     else if (strcmp(instruction, cmds[29]) == 0) { //! lc
         uint32_t lineCount = lcCmd(args ? args : "");
-        if (lineCount != I_NAN)
+        if (lineCount != U32_NAN)
             printf("%"PRId32"\n", lineCount);
     }
 
@@ -605,7 +605,7 @@ double CheckFunc(char *operation, char **functions, const char *uniOps, const ch
         return s_round(operation);
     else if (strncmp(operation, functions[12], 4) == 0 && mathlib) { //! fact()
         uint64_t num = s_fact(operation);
-        return (num != U_NAN) ? (long double)num : NAN;
+        return (num != U64_NAN) ? (long double)num : NAN;
     }
     else if (strncmp(operation, functions[13], 4) == 0 && mathlib) //! sign()
         return s_sign(operation);
@@ -657,7 +657,7 @@ double CheckFunc(char *operation, char **functions, const char *uniOps, const ch
     }
 
     printf("Error: Invalid expression\n");
-    return U_NAN;
+    return U64_NAN;
 
 op_found:
     {
