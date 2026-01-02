@@ -1101,7 +1101,7 @@ char *findFirstEqualOutsideQuotes(char *s) {
     bool insideQuotes = false;
 
     for (; *s; s++) {
-        if (*s == '\'')
+        if (*s == '\'' || *s == '\"')
             insideQuotes = !insideQuotes;
         else if (*s == '=' && !insideQuotes)
             return s;
@@ -1143,7 +1143,10 @@ void createShortcut(char *instruction, char *path) {
     trim(shortcutName);
     trim(action);
 
-    if (action[0] != '\'' || action[strlen(action)-1] != '\'') {
+    size_t len = strlen(action);
+    
+    if (!((action[0] == '\'' && action[len-1] == '\'') ||
+        (action[0] == '\"' && action[len-1] == '\"'))) {
         puts("Error: syntax error for 'alias', use \"man alias\" to check the manual");
         SAFE_FREE(alias);
         return;
@@ -1156,8 +1159,10 @@ void createShortcut(char *instruction, char *path) {
                "occurrence of this shortcut will work!");
     }
     
+    char quote = action[0];
+
     action[0] = ' ';
-    action[strlen(action)-1] = ' ';
+    action[len-1] = ' ';
 
     trim(action);
     trimEnd(action);
@@ -1165,7 +1170,7 @@ void createShortcut(char *instruction, char *path) {
 
     FILE *f = fopen(buffer, "a");
 
-    fprintf(f, "alias %s='%s'\n", shortcutName, action);
+    fprintf(f, "alias %s=%c%s%c\n", shortcutName, quote, action, quote);
     SAFE_FCLOSE(f);
 
     SAFE_FREE(buffer);
