@@ -1,4 +1,4 @@
-data/history.txt
+*.txt
 *.o
 *.a
 *.exe
