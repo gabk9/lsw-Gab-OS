@@ -25,7 +25,7 @@
 
 static char *last_directory = NULL;
 
-void printInFileNTimes(FILE *stream, char *str, int32_t count) {
+void printInFileNTimes(FILE *stream, char *str, int64_t count) {
     if (count <= 0) {
         puts("Error: invalid value");
         return;
