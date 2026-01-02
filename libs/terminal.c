@@ -1321,7 +1321,7 @@ void updatehistory(void) {
         "r1.0.6 - big changes\n\tEdited: made some preparations for the future update\n",
         "r1.0.64 - minor changes\n\tFixed: echo and touch behavior when multiplying strings with quotes\n",
         "r1.0.69 - small changes\n\tAdded: help message when initializing the program\n",
-        "r1.0.8 - big changes\n\tEdited: improved echo behavior once again\n\tFixed: freed some pointers that I had forgotten to and sleep suffix identifier\n",
+        "r1.0.8 - big changes\n\tEdited: improved echo behavior once again\n\tFixed: freed some pointers that I had forgotten to and also the sleep suffix identifier\n",
         "r1.0.85 - small changes\n\tRemoved: Kernel version from neofetch\n"
     };
 
