@@ -184,6 +184,11 @@ char *defaultAddressReplace(const char *address) {
     char *Default = get_default_address();
     size_t len = strlen(Default);
 
+#ifdef _WIN32
+    charReplace(copy, '\\', '/');
+    charReplace(Default, '\\', '/');
+#endif
+
     if (
         strcmp(copy, Default) == 0 ||
         (strncmp(copy, Default, len) == 0 && copy[len] == '/')

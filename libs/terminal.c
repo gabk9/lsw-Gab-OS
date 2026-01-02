@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.0.8"
+#define VERSION "r1.0.85"
 
 #define BC_QUIET 0x1
 #define BC_MATHLIB 0x2
@@ -1321,7 +1321,8 @@ void updatehistory(void) {
         "r1.0.6 - big changes\n\tEdited: made some preparations for the future update\n",
         "r1.0.64 - minor changes\n\tFixed: echo and touch behavior when multiplying strings with quotes\n",
         "r1.0.69 - small changes\n\tAdded: help message when initializing the program\n",
-        "r1.0.8 - big changes\n\tEdited: improved echo behavior once again\n\tFixed: freed some pointers that I had forgotten to and sleep suffix identifier\n"
+        "r1.0.8 - big changes\n\tEdited: improved echo behavior once again\n\tFixed: freed some pointers that I had forgotten to and sleep suffix identifier\n",
+        "r1.0.85 - small changes\n\tRemoved: Kernel version from neofetch\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1718,14 +1719,6 @@ void neofetchCmd(void) {
 #else
     puts(unameCmdLinux(0b10));
 #endif
-
-
-    printc("KERNEL-VERSION: ", label_color, WHITE);
-#ifdef _WIN32
-    puts(unameCmdWin(0b1000));
-#else
-    puts(strtok(unameCmdLinux(0b1000), " "));
-#endif
     
 
     printc("───────────────────────────────────────────────────\n", title_color, WHITE);
@@ -1796,6 +1789,7 @@ void neofetchCmd(void) {
     cpuName = get_cpu_model();
 
     puts(cpuName);
+
 
     printc("Memory: ", label_color, WHITE);
     static uint64_t memTotal;

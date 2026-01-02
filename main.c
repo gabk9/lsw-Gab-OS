@@ -98,6 +98,10 @@ int main(int argc, char **argv) {
 
     while (true) {
         char *wd = defaultAddressReplace(address);
+
+    #ifdef _WIN32
+        charReplace(wd, '/', '\\');
+    #endif
         
         printc("❯ lsw ❮ ", CYAN, WHITE);
         printc("%s@%s", LIGHT_GREEN, WHITE, userName, hostName);
