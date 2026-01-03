@@ -168,6 +168,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'rm' removes files or empty folders\n\nrm [OPTION] [FILE/FOLDER NAME...]\n\nOptions:\n");
         printf("\t'-f', '--force'         removes without prompt\n");
         printf("\t'-i', '--interactive'   prompt before deletion (default)\n");
+        printf("\t'-b', '--recycle-bin'   moves to the recycle bin\n");
     }
 
     else if (strcmp(instruction, cmds[17]) ==  0) //! history
@@ -455,8 +456,24 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     else if (strcmp(instruction, cmds[15]) == 0) //! touch
         touchCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[16]) == 0) //! rm
-        rmCmd(args ? args : "");
+    else if (strcmp(instruction, cmds[16]) == 0) { //! rm
+        char *argv_rm[MAX_ARGS];
+        uint16_t argc_rm = 1;
+
+        argv_rm[0] = "rm";
+
+        uint16_t count = 0;
+        char **list = parseData(args, &count);
+
+        for (uint16_t i = 0; i < count && argc_rm < MAX_ARGS; i++) {
+            argv_rm[argc_rm++] = list[i];
+        }
+        rmCmd(argc_rm, argv_rm);
+
+        for (uint16_t i = 0; i < count; i++)
+            SAFE_FREE(list[i]);
+        SAFE_FREE(list);
+    }
 
     else if (strcmp(instruction, cmds[17]) == 0) //! history
         historyCmd(history_path);

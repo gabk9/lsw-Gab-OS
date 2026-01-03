@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 165000
+#define PROJ_SIZE_APPROX 166500
 #define PROJ_LINES_APPROX 5900
 
 #define ALIAS_FILE "shortcut.txt"
@@ -24,6 +24,35 @@
 #endif
 
 static char *last_directory = NULL;
+
+int16_t rm_delete(char *path, uint8_t flags) {
+    if (flags & RM_BIN) {
+        return move_to_trash(path) ? 0 : -1;
+    }
+    return remove(path);
+}
+
+int16_t move_to_trash(char *path) {
+#ifdef _WIN32
+    SHFILEOPSTRUCTA fileOp = {0};
+
+    char from[MAX_PATH];
+    snprintf(from, MAX_PATH, "%s%c%c", path, '\0', '\0');  
+
+    fileOp.wFunc = FO_DELETE;
+    fileOp.pFrom = from;
+    fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT;
+
+    return SHFileOperationA(&fileOp) == 0;
+#else
+    char dest[0x400];
+    snprintf(dest, sizeof(dest),
+             "%s/.local/share/Trash/files/%s",
+             getenv("HOME"), path);
+
+    return rename(path, dest) == 0;
+#endif
+}
 
 void printInFileNTimes(FILE *stream, char *str, int64_t count) {
     if (count <= 0) {

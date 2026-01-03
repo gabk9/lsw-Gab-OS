@@ -40,14 +40,20 @@
 #define U32_NAN (uint32_t)-1
 #define U64_NAN (uint64_t)-1
 #define MAX_CHAR (1ULL << 10)
-#define TIME_FMT "%a %b %d %H:%M:%S %z %Y"
+#define TIME_FMT "%a %d %b %Y %H:%M:%S %z"
 
-#define U_MACHINE 0x4
-#define U_KERN_NAME 0x1
-#define U_HOST_NAME 0x10
-#define U_KERN_RELEASE 0x2
-#define U_KERN_VERSION 0x8
-#define U_OPERATING_SYSTEM 0x20
+#define RM_FORCE 0b00000001
+#define RM_BIN   0b00000010
+
+#define BC_QUIET   0b00000001
+#define BC_MATHLIB 0b00000010
+
+#define U_KERN_NAME        0b00000001
+#define U_KERN_RELEASE     0b00000010
+#define U_MACHINE          0b00000100
+#define U_KERN_VERSION     0b00001000
+#define U_HOST_NAME        0b00010000
+#define U_OPERATING_SYSTEM 0b00100000
 #define U_ALL (U_KERN_NAME | U_KERN_RELEASE | U_MACHINE | U_KERN_VERSION | U_HOST_NAME | U_OPERATING_SYSTEM)
 
 #define SAFE_FREE(ptr) do { \
@@ -105,6 +111,7 @@ void safe_lower_inplace(char *s);
 char *unameCmdWin(uint8_t flags);
 char *buildAliasPath(char *path);
 char *tolowerstr(const char *str);
+int16_t move_to_trash(char *path);
 char *unameCmdLinux(uint8_t flags);
 void charRm(char *str, int8_t targ);
 char *handle_cd_dash(char *address);
@@ -115,6 +122,7 @@ char *strrm(char *str, const char *substr);
 char *findFirstEqualOutsideQuotes(char *s);
 double eval(char *operation, bool mathlib);
 uint8_t is_pi_or_e_expression(const char *s);
+int16_t rm_delete(char *path, uint8_t flags);
 int16_t strchar(const char *str, int8_t chr);
 int16_t strrchar(const char *str, int8_t chr);
 bool isValidBcCommand(char *str, char *command);

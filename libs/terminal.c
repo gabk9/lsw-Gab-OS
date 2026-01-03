@@ -1,10 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.0.85"
-
-#define BC_QUIET 0x1
-#define BC_MATHLIB 0x2
+#define VERSION "r1.1.1"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -716,40 +713,36 @@ void historyCmd(const char *path) {
     SAFE_FREE(lines);
 }
 
-void rmCmd(char *instruction) {
+void rmCmd(uint16_t argc, char **argv) {
 
-    char buffer[0x400];
-    strncpy(buffer, instruction, sizeof(buffer));
-    buffer[sizeof(buffer)-1] = '\0';
+    uint8_t flags = 0;
+    uint16_t fileCount = 0;
 
-    char *option = NULL;
-    char *rest = buffer;
-
-    if (buffer[0] == '-') {
-        option = strtok(buffer, " ");
-        rest = strtok(NULL, "");
-    }
-
-    if (!rest || strlen(rest) == 0) {
+    if (argc < 2) {
         puts("rm: missing operand\nUse \"man rm\" to check the manual");
         return;
     }
 
-    uint16_t fileCount = 0;
-    char **files = parseData(rest, &fileCount);
+    for (uint16_t i = 1; i < argc; i++) {
+        char *arg = argv[i];
 
-    bool force = false;
-
-    if (option) {
-        if (strcmp(option, "-f") == 0 || strcmp(option, "--force") == 0) {
-            force = true;
-        } 
-        else if (strcmp(option, "-i") == 0 || strcmp(option, "--interactive") == 0) {
-            force = false;
-        } 
+        if (arg[0] == '-') {
+            if (!strcmp(arg, "-f") || !strcmp(arg, "--force")) {
+                flags |= RM_FORCE;
+            }
+            else if (!strcmp(arg, "-i") || !strcmp(arg, "--interactive")) {
+                flags &= ~RM_FORCE;
+            }
+            else if (!strcmp(arg, "-b") || !strcmp(arg, "--recycle-bin")) {
+                flags |= RM_BIN;
+            }
+            else {
+                printf("rm: invalid option '%s'\n", arg);
+                return;
+            }
+        }
         else {
-            printf("invalid option: '%s'\n", option);
-            return;
+            argv[fileCount++] = arg;
         }
     }
 
@@ -758,7 +751,7 @@ void rmCmd(char *instruction) {
         return;
     }
 
-    if (!force) {
+    if (!(flags & RM_FORCE)) {
         char answer[0x20];
         printf("Are you sure you want to delete %d file(s)? (y/n): ", fileCount);
 
@@ -769,24 +762,24 @@ void rmCmd(char *instruction) {
 
         answer[strcspn(answer, "\n")] = '\0';
         safe_lower_inplace(answer);
-        removeComments(answer);
 
-        if (!(answer[0] == 'y' && (answer[1] == '\0' || answer[1] == ' '))) {
+        if (answer[0] != 'y') {
             puts("Deletion cancelled");
             return;
         }
     }
 
-    for (int i = 0; i < fileCount; i++) {
-        if (remove(files[i]) != 0) {
-            perror(files[i]);
-        } else {
-            printf("'%s' deleted successfully\n", files[i]);
+    for (uint16_t i = 0; i < fileCount; i++) {
+        if (rm_delete(argv[i], flags) != 0) {
+            perror(argv[i]);
         }
-        SAFE_FREE(files[i]);
+        else {
+            if (flags & RM_BIN)
+                printf("'%s' moved to recycle bin\n", argv[i]);
+            else
+                printf("'%s' deleted successfully\n", argv[i]);
+        }
     }
-
-    SAFE_FREE(files);
 }
 
 void touchCmd(char *instruction) {
@@ -1322,7 +1315,9 @@ void updatehistory(void) {
         "r1.0.64 - minor changes\n\tFixed: echo and touch behavior when multiplying strings with quotes\n",
         "r1.0.69 - small changes\n\tAdded: help message when initializing the program\n",
         "r1.0.8 - big changes\n\tEdited: improved echo behavior once again\n\tFixed: freed some pointers that I had forgotten to and also the sleep suffix identifier\n",
-        "r1.0.85 - small changes\n\tRemoved: Kernel version from neofetch\n"
+        "r1.0.85 - small changes\n\tRemoved: Kernel version from neofetch\n",
+        "r1.1.0 - big changes\n\tAdded: now rm can move to the recycle bin\n",
+        "r1.1.1 - minor changes\n\tEdited: time format\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
