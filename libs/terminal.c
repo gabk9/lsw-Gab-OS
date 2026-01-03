@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.1"
+#define VERSION "r1.1.13"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -54,18 +54,19 @@ void revCmd(char *instruction) {
 
             uint8_t clean = (isValidBcCommand(string, "clear") ||
                              isValidBcCommand(string, "cls"));
+            
+            char lastChr = (clean || stop) ? '\0' : '\n';
+
+            printf("%s\n%c", copy, lastChr);
 
             if (stop) {
-                printf("%s\n", copy);
                 SAFE_FREE(copy);
                 SAFE_FREE(string);
                 break;
             }
 
-            if (!clean)
-                printf("%s\n\n", copy);
-
             if (clean) {
+                sleepF(1);
                 cls();
                 appear = 1;
             }
@@ -1317,7 +1318,8 @@ void updatehistory(void) {
         "r1.0.8 - big changes\n\tEdited: improved echo behavior once again\n\tFixed: freed some pointers that I had forgotten to and also the sleep suffix identifier\n",
         "r1.0.85 - small changes\n\tRemoved: Kernel version from neofetch\n",
         "r1.1.0 - big changes\n\tAdded: now rm can move to the recycle bin\n",
-        "r1.1.1 - minor changes\n\tEdited: time format\n"
+        "r1.1.1 - minor changes\n\tEdited: time format\n",
+        "r1.1.13 - minor changes\n\tEdited: stop and clean in rev\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
