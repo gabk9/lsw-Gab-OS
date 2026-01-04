@@ -152,9 +152,11 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
     else if (strcmp(instruction, cmds[12]) ==  0) //! mkdir
         printf("'mkdir' makes directories\n\nmkdir [FOLDER NAME...]\n");
 
-    else if (strcmp(instruction, cmds[13]) ==  0) //! rmdir
-        printf("'rmdir' removes empty directories\n\nrmdir [FOLDER NAME...]\n");
-
+    else if (strcmp(instruction, cmds[13]) ==  0) {//! rmdir
+        printf("'rmdir' removes empty directories\n\nrmdir [OPTION] [FOLDER NAME...]\n\n");
+        printf("Options:\n\t'-b', '--recycle-bin'   moves to recycle bin\n");
+    }
+    
     else if (strcmp(instruction, cmds[14]) ==  0) //! cat
         printf("'cat' displays the file content\n\ncat [FILE NAME]\n");
 
@@ -165,10 +167,10 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
     }
 
     else if (strcmp(instruction, cmds[16]) ==  0) { //! rm
-        printf("'rm' removes files or empty folders\n\nrm [OPTION] [FILE/FOLDER NAME...]\n\nOptions:\n");
+        printf("'rm' removes files or empty folders\n\nrm [OPTION...] [FILE/FOLDER NAME...]\n\nOptions:\n");
         printf("\t'-f', '--force'         removes without prompt\n");
         printf("\t'-i', '--interactive'   prompt before deletion (default)\n");
-        printf("\t'-b', '--recycle-bin'   moves to the recycle bin\n");
+        printf("\t'-b', '--recycle-bin'   moves to recycle bin\n");
     }
 
     else if (strcmp(instruction, cmds[17]) ==  0) //! history

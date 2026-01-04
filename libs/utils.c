@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 166000
-#define PROJ_LINES_APPROX 5900
+#define PROJ_SIZE_APPROX 168000
+#define PROJ_LINES_APPROX 6000
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -157,7 +157,7 @@ void sleepF(double seconds) {
             (now.tv_sec - start.tv_sec) +
             (now.tv_nsec - start.tv_nsec) / 1e9;
         if (elapsed >= target) break;
-    } while (1);
+    } while (true);
 #endif
 }
 

@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.23"
+#define VERSION "r1.1.3"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1011,13 +1011,51 @@ void tailCmd(char *instruction, uint32_t max_lines) {
 
 void rmdirCmd(char *instruction) {
 
+    char *option;
+    uint8_t recycle_bin = 0;
+
+   char *args = instruction;
+
+    if (args[0] == '-') {
+        char *end = args;
+
+        while (*end && *end != ' ')
+            end++;
+
+        size_t len = end - args;
+
+        char option[0x40];
+        if (len >= sizeof(option)) len = sizeof(option) - 1;
+        memcpy(option, args, len);
+        option[len] = '\0';
+
+        if (option[1] == '-') {
+            if (strcmp(option, "--recycle-bin") == 0)
+                recycle_bin = true;
+            else {
+                printf("rmdir: invalid option: '%s'\n", option);
+                return;
+            }
+        } else {
+            if (strcmp(option, "-b") == 0)
+                recycle_bin = true;
+            else {
+                printf("rmdir: invalid option: '%s'\n", option);
+                return;
+            }
+        }
+
+        args = end;
+        while (*args == ' ') args++;
+    }
+
     char buffer[0x400];
-    strncpy(buffer, instruction, sizeof(buffer));
+    strncpy(buffer, args, sizeof(buffer));
     buffer[sizeof(buffer)-1] = '\0';
 
     char *rest = buffer;
 
-    if (rest[0] == '\0') {
+    if (*rest == '\0') {
         puts("rmdir: missing operand\nUse \"man rmdir\" to check the manual");
         return;
     }
@@ -1030,14 +1068,24 @@ void rmdirCmd(char *instruction) {
         return;
     }
 
-    for (uint16_t i = 0; i < fileCount; i++) {
-        if (rmdir(files[i]) != 0) {
-            perror(files[i]);
-        } else {
-            printf("'%s' deleted successfully\n", files[i]);
+    if (recycle_bin)
+        for (uint16_t i = 0; i < fileCount; i++) {
+            if (!move_to_trash(files[i])) {
+                printf("Error: cannot move '%s' to the recycle bin: operation failed\n", files[i]);
+            } else {
+                printf("'%s' moved to recycle bin\n", files[i]);
+            }
+            SAFE_FREE(files[i]);
         }
-        SAFE_FREE(files[i]);
-    }
+    else
+        for (uint16_t i = 0; i < fileCount; i++) {
+            if (rmdir(files[i]) != 0) {
+                perror(files[i]);
+            } else {
+                printf("'%s' deleted successfully\n", files[i]);
+            }
+            SAFE_FREE(files[i]);
+        }
 
     SAFE_FREE(files);
 }
@@ -1323,7 +1371,8 @@ void updatehistory(void) {
         "r1.1.1 - minor changes\n\tEdited: time format\n",
         "r1.1.13 - minor changes\n\tEdited: stop and clean in rev\n",
         "r1.1.18 - small changes\n\tFixed: now you can use hex(), oct() or bin() as parameters\n",
-        "r1.1.23 - minor changes\n\tEdited: factored the math code\n"
+        "r1.1.23 - minor changes\n\tEdited: factored the math code\n",
+        "r1.1.3 - big changes\n\tAdded: rmdir can now also move to the recycle bin\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

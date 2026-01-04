@@ -75,6 +75,9 @@ sudo apt install build-essential cmake git
 ```
 
 **Windows**
+
+**Note:** these commands may not work on your computer (it works on mine), if it doesn't work you'll need to download these programs manually. (Git, Cmake and MSYS2 or MinGw)
+
 ```bash
 winget install --id Git.Git -e
 winget install --id Kitware.CMake -e

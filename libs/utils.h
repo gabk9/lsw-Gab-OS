@@ -61,14 +61,14 @@
         free(ptr); \
         ptr = NULL; \
     } \
-} while (0)
+} while (false)
 
 #define SAFE_FCLOSE(file) do { \
     if (file) { \
         fclose(file); \
         file = NULL; \
     } \
-} while (0)
+} while (false)
 
 typedef enum color4_t {
     BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, YELLOW,
