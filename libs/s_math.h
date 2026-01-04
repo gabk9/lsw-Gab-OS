@@ -6,8 +6,9 @@
 #include <inttypes.h>
 
 #define PI 3.14159265358979323846
-
 #define E  2.77182818284590452353
+
+#define BC_ERROR "__LSW__CALC__ERROR__"
 
 #ifdef _WIN32
     #undef RAND_MAX
@@ -49,6 +50,7 @@ char *find_top_level_comma(char *s)__attribute__((nonnull));
 double s_randFloat(char *operation)__attribute__((nonnull));
 bool parentheses_balanced(const char *s)__attribute__((nonnull));
 uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
+double parse_double(char *str, char *funcName);
 
 #define DEG_TO_RAD(x) ((x) * (PI) / 180.0) 
 #define RAD_TO_DEG(x) ((x) * 180.0 / (PI))
@@ -69,20 +71,19 @@ static inline uint32_t better_rand32(void) {
 }
 
 __attribute__((pure))
-__attribute__((nonnull))
 static inline double gauss_range_double(double a, double b, double d) {
     if (d == 0.0)
-        return NAN;
+        return PI+1;
 
     if ((d > 0.0 && a > b) || (d < 0.0 && a < b))
-        return NAN;
+        return PI+2;
 
     double raw_n = (b - a) / d;
 
     double steps = floor(raw_n);
 
     if (steps < 0.0)
-        return NAN;
+        return PI+3;
 
     double n = steps + 1.0;
 
@@ -91,12 +92,11 @@ static inline double gauss_range_double(double a, double b, double d) {
     double sum = n * (a + last) / 2.0;
 
     if (isnan(sum) || isinf(sum))
-        return NAN;
+        return PI+4;
 
     return sum;
 }
 
-__attribute__((nonnull))
 __attribute__((warn_unused_result))
 char *functionHandler(char *operation, const char *function);
 

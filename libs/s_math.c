@@ -1,10 +1,23 @@
 #include "utils.h"
 
-#define BC_ERROR "__LSW__CALC__ERROR__"
-
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
     #error "Operational system not recognized, terminating program!!"
 #endif
+
+double parse_double(char *str, char *funcName) {
+    char *test;
+    if (funcName) {
+        test = functionHandler(str, funcName);
+        if (strcmp(test, BC_ERROR) == 0) return U64_NAN;
+    } else 
+        test = str;
+
+    double num = eval(test, true);
+
+    SAFE_FREE(test);
+
+    return num;
+}
 
 static uint8_t isnull(int16_t count, ...) {
 
@@ -183,15 +196,13 @@ double s_miles(char *operation) {
 
     double km = eval(test, true);
 
+    SAFE_FREE(test);
     if (km == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
-    double result = KM_TO_MI(km);
-    SAFE_FREE(test);
-    return result;
+    return KM_TO_MI(km);
 }
 
 double s_km(char *operation) {
@@ -200,15 +211,13 @@ double s_km(char *operation) {
 
     double miles = eval(test, true);
 
+    SAFE_FREE(test);
     if (miles == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
 
-    double result = MI_TO_KM(miles);
-    SAFE_FREE(test);
-    return result;
+    return MI_TO_KM(miles);
 }
 
 double s_pounds(char *operation) {
@@ -217,15 +226,13 @@ double s_pounds(char *operation) {
 
     double kg = eval(test, true);
     
+    SAFE_FREE(test);
     if (kg == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
 
-    double result = KG_TO_LB(kg);
-    SAFE_FREE(test);
-    return result;
+    return KG_TO_LB(kg);
 }
 
 double s_kg(char *operation) {
@@ -234,15 +241,13 @@ double s_kg(char *operation) {
 
     double lbs = eval(test, true);
     
+    SAFE_FREE(test);
     if (lbs == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
 
-    double result = LB_TO_KG(lbs);
-    SAFE_FREE(test);
-    return result;
+    return LB_TO_KG(lbs);
 }
 
 double s_fah(char *operation) {
@@ -251,15 +256,13 @@ double s_fah(char *operation) {
 
     double cel = eval(test, true);
     
+    SAFE_FREE(test);
     if (cel == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
 
-    double result = C_TO_F(cel);
-    SAFE_FREE(test);
-    return result;
+    return C_TO_F(cel);
 }
 
 double s_cel(char *operation) {
@@ -268,15 +271,13 @@ double s_cel(char *operation) {
 
     double fah = eval(test, true);
     
+    SAFE_FREE(test);
     if (fah == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
 
-    double result = F_TO_C(fah);
-    SAFE_FREE(test);
-    return result;
+    return F_TO_C(fah);
 }
 
 char *s_oct(char *operation) {
@@ -284,16 +285,16 @@ char *s_oct(char *operation) {
     if (strcmp(test, BC_ERROR) == 0) return NULL;
 
     double num = eval(test, true);
+
+    SAFE_FREE(test);
     
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NULL;
     }
 
     if (ceil(num) != num) {
         printf("Error: must be integer\n\n");
-        SAFE_FREE(test);
         return NULL;
     }
 
@@ -303,14 +304,12 @@ char *s_oct(char *operation) {
     int64_t value = strtol(temp, NULL, 0);
 
     char *buffer = malloc(64);
-    if (!buffer) {
-        SAFE_FREE(test);
+    if (!buffer)
         return NULL;
-    }
+
 
     snprintf(buffer, 64, "0%" PRIo64, value);
 
-    SAFE_FREE(test);
     return buffer;
 }
 
@@ -320,15 +319,14 @@ char *s_hex(char *operation) {
 
     double val = eval(test, true);
 
+    SAFE_FREE(test);
     if (val == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NULL;
     }
 
     if (ceil(val) != val) {
         printf("Error: must be integer!\n\n");
-        SAFE_FREE(test);
         return NULL;
     }
 
@@ -339,7 +337,6 @@ char *s_hex(char *operation) {
 
     char *buffer = malloc(64);
     if (!buffer) {
-        SAFE_FREE(test);
         return NULL;
     }
 
@@ -348,7 +345,6 @@ char *s_hex(char *operation) {
     for (uint16_t i = 2; buffer[i]; i++)
         buffer[i] = toupper((unsigned char)buffer[i]);
 
-    SAFE_FREE(test);
     return buffer;
 }
 
@@ -363,7 +359,6 @@ char *s_bin(char *operation) {
     
     if (val == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NULL;
     }
 
@@ -414,15 +409,13 @@ double s_trunc(char *operation) {
 
     double num = eval(test, true);
 
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
-    double result = trunc(num);
-    SAFE_FREE(test);
-    return result;
+    return trunc(num);
 }
 
 double s_rad(char *operation) {
@@ -431,15 +424,13 @@ double s_rad(char *operation) {
 
     double deg = eval(test, true);
 
+    SAFE_FREE(test);
     if (deg == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
-    double result = DEG_TO_RAD(deg);
-    SAFE_FREE(test);
-    return result;
+    return DEG_TO_RAD(deg);
 }
 
 double s_deg(char *operation) {
@@ -448,15 +439,13 @@ double s_deg(char *operation) {
 
     double rad = eval(test, true);
 
+    SAFE_FREE(test);
     if (rad == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
 
-    double result = RAD_TO_DEG(rad);
-    SAFE_FREE(test);
-    return result;
+    return RAD_TO_DEG(rad);
 }
 
 double s_sqrt(char *operation) {
@@ -465,21 +454,18 @@ double s_sqrt(char *operation) {
 
     double num = eval(test, true);
 
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
 
     if (num < 0) {
         puts("Error: can't be negative!\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
-    double result = sqrt(num);
-    SAFE_FREE(test);
-    return result;
+    return sqrt(num);
 }
 
 double s_scale(char *operation) {
@@ -489,14 +475,13 @@ double s_scale(char *operation) {
 
     double value = eval(test, true);
 
+    SAFE_FREE(test);
     if (value == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
     if (isnan(value) || isinf(value)) {
-        SAFE_FREE(test);
         return 0;
     }
 
@@ -516,10 +501,7 @@ double s_scale(char *operation) {
     while (end > dot && *end == '0')
         *end-- = '\0';
 
-    double scale = strlen(dot + 1);
-
-    SAFE_FREE(test);
-    return scale;
+    return (double)strlen(dot + 1);
 }
 
 double s_sin(char *operation) {
@@ -531,9 +513,9 @@ double s_sin(char *operation) {
 
     double num = eval(test, true);
 
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
@@ -542,7 +524,6 @@ double s_sin(char *operation) {
     if (fabs(result) < 1e-6)
         result = 0.0;
 
-    SAFE_FREE(test);
     return result;
 }
 
@@ -555,9 +536,9 @@ double s_cos(char *operation) {
 
     double num = eval(test, true);
 
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
@@ -566,7 +547,6 @@ double s_cos(char *operation) {
     if (fabs(result) < 1e-6)
         result = 0.0;
 
-    SAFE_FREE(test);
     return result;
 }
 
@@ -580,16 +560,15 @@ double s_tan(char *operation) {
 
     double angle = eval(test, true);
 
+    SAFE_FREE(test);
     if (angle == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
     double modPi = fmod(fabs(angle), PI);
     if (fabs(modPi - PI / 2.0) < 1e-8) {
         printf("Error: tan() undefined for %.10g rad\n\n", angle);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -598,7 +577,6 @@ double s_tan(char *operation) {
     if (fabs(result) < 1e-6)
         result = 0.0;
 
-    SAFE_FREE(test);
     return result;
 }
 
@@ -608,15 +586,13 @@ double s_ln(char *operation) {
 
     double num = eval(test, true);
 
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
-    double result = log(num);
-    SAFE_FREE(test);
-    return result;
+    return log(num);
 }
 
 double s_log10(char *operation) {
@@ -625,15 +601,13 @@ double s_log10(char *operation) {
 
     double num = eval(test, true);
 
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
-    double result = log10(num);
-    SAFE_FREE(test);
-    return result;
+    return log10(num);
 }
 
 double s_log2(char *operation) {
@@ -642,15 +616,13 @@ double s_log2(char *operation) {
 
     double num = eval(test, true);
 
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }    
 
-    double result = log2(num);
-    SAFE_FREE(test);
-    return result;
+    return log2(num);
 }
 
 double s_root(char *operation) {
@@ -658,10 +630,10 @@ double s_root(char *operation) {
     if (strcmp(test, BC_ERROR) == 0) return NAN;
 
     char *comma = find_top_level_comma(test);
-
+    
+    SAFE_FREE(test);
     if (!comma) {
         printf("Error: root() requires exactly 2 arguments\n\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -672,7 +644,6 @@ double s_root(char *operation) {
     uint8_t nullCount = isnull(2, indexStr, rootingStr);
     if (nullCount) {
         printf("Error: root() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -683,7 +654,6 @@ double s_root(char *operation) {
 
     if (index == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
     
@@ -691,7 +661,6 @@ double s_root(char *operation) {
 
     if (rooting == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
     
@@ -699,13 +668,11 @@ double s_root(char *operation) {
 
     if (index == 0) {
         printf("Error: the index can't be 0\n\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
     if (floor(index) != index) {
         printf("Error: the index must be an integer\n\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -716,7 +683,6 @@ double s_root(char *operation) {
 
     if (rooting < 0 && ((int)index % 2 == 0)) {
         printf("Error: even index root of a negative number\n\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -731,7 +697,6 @@ double s_root(char *operation) {
     if (invert)
         result = 1.0 / result;
 
-    SAFE_FREE(test);
     return result;
 }
 
@@ -741,9 +706,9 @@ double s_log(char *operation) {
 
     char *comma = find_top_level_comma(test);
 
+    SAFE_FREE(test);
     if (!comma) {
         printf("Error: log() requires exactly 2 arguments\n\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -754,7 +719,6 @@ double s_log(char *operation) {
     uint8_t nullCount = isnull(2, baseStr, numStr);
     if (nullCount) {
         printf("Error: log() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -765,7 +729,6 @@ double s_log(char *operation) {
 
     if (base == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
 
@@ -773,19 +736,15 @@ double s_log(char *operation) {
     
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
 
     if (base <= 1 || num <= 0) {
         printf("Error: invalid values for log()\n\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
-    double result = log(num) / log(base);
-    SAFE_FREE(test);
-    return result;
+    return log(num) / log(base);
 }
 
 double s_randFloat(char *operation) {
@@ -794,9 +753,9 @@ double s_randFloat(char *operation) {
 
     char *comma = find_top_level_comma(test);
 
+    SAFE_FREE(test);
     if (!comma) {
         printf("Error: randf() requires exactly 2 arguments\n\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -807,7 +766,6 @@ double s_randFloat(char *operation) {
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
         printf("Error: randf() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -826,7 +784,6 @@ double s_randFloat(char *operation) {
 
     if (maxLf == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
     
@@ -837,11 +794,9 @@ double s_randFloat(char *operation) {
     
     if (minLf == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
 
-    SAFE_FREE(test);
     return random_range_float(minLf, maxLf);
 }
 
@@ -851,9 +806,9 @@ double s_randInt(char *operation) {
 
     char *comma = find_top_level_comma(test);
 
+    SAFE_FREE(test);
     if (!comma) {
         printf("Error: rand() requires exactly 2 arguments\n\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -864,7 +819,6 @@ double s_randInt(char *operation) {
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
         printf("Error: rand() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -883,7 +837,6 @@ double s_randInt(char *operation) {
 
     if (maxInt == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
     
@@ -894,17 +847,16 @@ double s_randInt(char *operation) {
     
     if (minInt == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
+
     
     if (ceil(minInt) != minInt || ceil(maxInt) != maxInt) {
         printf("Error: it must be integer!\n\n");
         return NAN;
     }
 
-    SAFE_FREE(test);
-    return random_range_int((int)minInt, (int)maxInt);
+    return random_range_int((int32_t)minInt, (int32_t)maxInt);
 }
 
 double s_floor(char *operation) {
@@ -912,15 +864,14 @@ double s_floor(char *operation) {
     if (strcmp(test, BC_ERROR) == 0) return NAN;
 
     double num = eval(test, true);
-
+    
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }   
 
     double result = floor(num);
-    SAFE_FREE(test);
     return result;
 }
 
@@ -930,15 +881,13 @@ double s_ceil(char *operation) {
 
     double num = eval(test, true);
 
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }   
 
-    double result = ceil(num);
-    SAFE_FREE(test);
-    return result;
+    return ceil(num);
 }
 
 double s_round(char *operation) {
@@ -947,15 +896,13 @@ double s_round(char *operation) {
 
     double num = eval(test, true);
 
+    SAFE_FREE(test);
     if (num == U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }   
 
-    double result = round(num);
-    SAFE_FREE(test);
-    return result;
+    return round(num);
 }
 
 uint64_t fact(int32_t num) {
@@ -1014,6 +961,7 @@ double s_sum(char *operation) {
         return NAN;
 
     char *test = strdup(raw);
+    SAFE_FREE(raw);
     if (!test)
         return NAN;
 
@@ -1093,12 +1041,26 @@ double s_sum(char *operation) {
         putchar('\n');
         SAFE_FREE(test);
         return NAN;
-    }   
+    }
 
     double result = gauss_range_double(init, end, diff);
 
-    if (isnan(result)) {
-        printf("Warning: that's an issue that I don't know the origin yet, soon it'll be fixed\n\n");
+    if (result == PI+1) {
+        puts("Error: step value cannot be zero");
+        SAFE_FREE(test);
+        return NAN;
+    } else if (result == PI+2) {
+        puts("Error: step direction does not progress from X to Y");
+        SAFE_FREE(test);
+        return NAN;
+    } else if (result == PI+3) {
+        puts("Error: calculated number of steps is negative");
+        SAFE_FREE(test);
+        return NAN;
+    } else if (result == PI+4) {
+        puts("Error: Numeric overflow or invalid result during summation");
+        SAFE_FREE(test);
+        return NAN;
     }
 
     SAFE_FREE(test);

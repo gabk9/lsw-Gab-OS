@@ -652,6 +652,12 @@ double CheckFunc(char *operation, char **functions, const char *uniOps, const ch
         return s_pounds(operation);
     else if (strncmp(operation, functions[26], 2) == 0 && mathlib) //! kg()
         return s_kg(operation);
+    else if (strncmp(operation, "oct", 3) == 0 && mathlib) //! oct()
+        return parse_double(operation, "oct");
+    else if (strncmp(operation, "hex", 3) == 0 && mathlib) //! hex()
+        return parse_double(operation, "hex");
+    else if (strncmp(operation, "bin", 3) == 0 && mathlib) //! hex()
+        return parse_double(operation, "bin");
 
     uint16_t op_pos = 0;
 

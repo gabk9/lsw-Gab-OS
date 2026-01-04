@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.13"
+#define VERSION "r1.1.23"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -442,14 +442,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
     double result;
     uint8_t appear = 0;
 
-    char *operation = calloc(MAX_CHAR, sizeof(char));
-    
-    if (!operation) {
-        puts("Error: Allocation error!!");
-        return;
-    }
-
-   uint8_t flags = 0;
+    uint8_t flags = 0;
 
     for (uint16_t i = 1; i < argc; i++) {
         char *opt = argv[i];
@@ -485,6 +478,14 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
     bool quiet = flags & BC_QUIET;
     bool mathlib = flags & BC_MATHLIB;
     initRandom();
+
+    char *operation = calloc(MAX_CHAR, sizeof(char));
+    
+    if (!operation) {
+        puts("Error: Allocation error!!");
+        return;
+    }
+
 
     while (true) {
         if (!appear && !quiet) {
@@ -584,6 +585,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         } else if (result == U64_NAN)
             puts("");
     }
+    SAFE_FREE(operation);
 }
 
 void grepCmd(char *instruction) {
@@ -1319,7 +1321,9 @@ void updatehistory(void) {
         "r1.0.85 - small changes\n\tRemoved: Kernel version from neofetch\n",
         "r1.1.0 - big changes\n\tAdded: now rm can move to the recycle bin\n",
         "r1.1.1 - minor changes\n\tEdited: time format\n",
-        "r1.1.13 - minor changes\n\tEdited: stop and clean in rev\n"
+        "r1.1.13 - minor changes\n\tEdited: stop and clean in rev\n",
+        "r1.1.18 - small changes\n\tFixed: now you can use hex(), oct() or bin() as parameters\n",
+        "r1.1.23 - minor changes\n\tEdited: factored the math code\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
