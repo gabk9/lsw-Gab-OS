@@ -1095,7 +1095,7 @@ bool aliasExists(const char *filePath, const char *shortcutName) {
 
     char *line = calloc(MAX_CHAR, sizeof(char));
 
-    while (fgets(line, MAX_CHAR, f) != NULL) {
+    while (fgets(line, MAX_CHAR, f)) {
         line[strcspn(line, "\n")] = '\0';
 
         char *original = line;
@@ -1226,7 +1226,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
 
     char *line = calloc(MAX_CHAR, sizeof(char));
 
-    while (fgets(line, MAX_CHAR, f) != NULL) {
+    while (fgets(line, MAX_CHAR, f)) {
         line[strcspn(line, "\n")] = '\0';
 
         char *clean = strrm(line, "alias");

@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.45"
+#define VERSION "r1.1.51"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -171,7 +171,7 @@ void revCmd(char *instruction) {
                 return;
             }
 
-            while (fgets(line, MAX_CHAR, source) != NULL) {
+            while (fgets(line, MAX_CHAR, source)) {
                 trim(line);
                 trimEnd(line);
 
@@ -721,35 +721,42 @@ void grepCmd(char *instruction) {
 }
 
 void historyCmd(const char *path) {
-#ifdef _WIN32
     FILE *f = fopen(path, "r");
-#else
-    FILE *f = fopen(path, "r");
-#endif
 
     if (!f) {
         perror("Error");
         return;
     }
 
-    uint32_t lineCount;
+    uint32_t lineCount = 0;
 
-    char **lines = readHistory(path, &lineCount);
+    //* temporary, ig
+    // char **lines = readHistory(path, &lineCount);
 
-    if (!lines) {
-        puts("Error: failed to read history file");
-        return;
+    // if (!lines) {
+    //     puts("Error: failed to read history file");
+    //     return;
+    // }
+
+    // for (uint32_t i = 0; i < lineCount; i++) {
+    //     charReplace(lines[i], '\n', '\0');
+    //     printf("%05u  %s\n", i + 1, lines[i]);
+    // }
+
+    // for (uint32_t i = 0; i < lineCount; i++)
+    //     SAFE_FREE(lines[i]);
+
+    // SAFE_FREE(lines);
+
+    char buffer[0x400];
+    while (fgets(buffer, sizeof(buffer), f)) {
+        buffer[strcspn(buffer, "\n")] = '\0';
+
+        printf("%5u  %s\n", lineCount, buffer);
+        lineCount++;
     }
 
-    for (uint32_t i = 0; i < lineCount; i++) {
-        charReplace(lines[i], '\n', '\0');
-        printf("%05u  %s\n", i + 1, lines[i]);
-    }
-
-    for (uint32_t i = 0; i < lineCount; i++)
-        SAFE_FREE(lines[i]);
-
-    SAFE_FREE(lines);
+    SAFE_FCLOSE(f);
 }
 
 void rmCmd(uint16_t argc, char **argv) {
@@ -1413,7 +1420,8 @@ void updatehistory(void) {
         "r1.1.3 - big changes\n\tAdded: rmdir can now also move to the recycle bin\n",
         "r1.1.34 - small changes\n\tFixed: early freed pointers\n",
         "r1.1.36 - minor changes\n\tEdited: bc manual\n",
-        "r1.1.45 - big changes\n\tEdited: improved the option identifier for all commands\n"
+        "r1.1.45 - big changes\n\tEdited: improved the option identifier for all commands\n",
+        "r1.1.51 - small changes\n\tEdited: optimized the history command since that 'future update' isn't coming any time soon\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
