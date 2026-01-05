@@ -334,11 +334,11 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         return;
     }
 
-    uint16_t Count = CountSubStr(temp, "&&");
+   char *first_andand = find_andand_outside_quotes(temp);
 
-    if (Count > 0) {
+    if (first_andand) {
         char *start = temp;
-
+        
         while (true) {
             char *pos = find_andand_outside_quotes(start);
 
@@ -355,15 +355,10 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
             trimEnd(segment);
 
             if (*segment) {
-                char *cmd;
-                char *sub_args;
-
-                split_instruction_args(segment, &cmd, &sub_args);
-
-                processCommand(segment, sub_args,
-                               cmds, cmdCount,
-                               address, history_path,
-                               data_folder, isInsideBash);
+                processCommand(segment, NULL,
+                            cmds, cmdCount,
+                            address, history_path,
+                            data_folder, isInsideBash);
             }
 
             if (!pos)
@@ -373,6 +368,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         SAFE_FREE(temp);
         return;
     }
+
 
     #ifdef _WIN32
         if (isalpha(temp[0]) && temp[1] == ':' && temp[2] == '\0') {
@@ -387,12 +383,16 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         }
     #endif
 
-    char *instruction = strtok(temp, " ");
+    char *instruction = extract_instruction(temp, &args);
 
     if (!instruction) {
         SAFE_FREE(temp);
         return;
     }
+
+    trim(instruction);
+    trimEnd(instruction);
+    trimBetween(instruction);
 
     if (strcmp(instruction, cmds[0]) == 0) //! clear
         cls();
@@ -543,7 +543,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     else if (strcmp(instruction, cmds[29]) == 0) { //! lc
         uint32_t lineCount = lcCmd(args ? args : "");
         if (lineCount != U32_NAN)
-            printf("%"PRId32"\n", lineCount);
+            printf("%d\n", lineCount);
     }
 
     else if (strcmp(instruction, cmds[30]) == 0) { //! yes

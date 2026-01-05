@@ -56,7 +56,8 @@ int main(int argc, char **argv) {
         
         FILE *f = fopen(history_path, "a");
         if (f) {
-            fprintf(f, "%s\n", input);
+            if (input[0] != '-')
+                fprintf(f, "%s\n", input);
             SAFE_FCLOSE(f);
         }
 
@@ -133,13 +134,7 @@ int main(int argc, char **argv) {
             SAFE_FCLOSE(f);
         }
 
-        char *args = strchr(input, ' ');
-        if (args) {
-            while (*args == ' ') args++;
-            if (*args == '\0') args = NULL;
-        }
-
-        processCommand(input, args, cmds, cmdCount, &address, history_path, data_folder, true);
+        processCommand(input, NULL, cmds, cmdCount, &address, history_path, data_folder, true);
     }
     
     SAFE_FREE(data_folder);

@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.51"
+#define VERSION "r1.1.6"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -315,7 +315,7 @@ int32_t lcCmd(char *instruction) {
         FILE *f = fopen(files[i], "r");
         if (!f) {
             perror(files[i]);
-            continue;
+            return U32_NAN;   
         }
 
         while (fgets(buffer, sizeof(buffer), f)) {
@@ -1421,7 +1421,8 @@ void updatehistory(void) {
         "r1.1.34 - small changes\n\tFixed: early freed pointers\n",
         "r1.1.36 - minor changes\n\tEdited: bc manual\n",
         "r1.1.45 - big changes\n\tEdited: improved the option identifier for all commands\n",
-        "r1.1.51 - small changes\n\tEdited: optimized the history command since that 'future update' isn't coming any time soon\n"
+        "r1.1.51 - small changes\n\tEdited: optimized the history command since that 'future update' isn't coming any time soon\n",
+        "r1.1.6 - big changes\n\tAdded: now the terminal works with commands with spaces, using quotes, e.g: '[COMMAND WITH SPACES]' [ARGS...]\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

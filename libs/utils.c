@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 170000
-#define PROJ_LINES_APPROX 6000
+#define PROJ_SIZE_APPROX 171000
+#define PROJ_LINES_APPROX 6100
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -24,6 +24,51 @@
 #endif
 
 static char *last_directory = NULL;
+
+char *extract_instruction(char *str, char **args) {
+
+    if (!str) {
+        *args = NULL;
+        return NULL;
+    }
+
+    
+    char *p = str;
+
+    while (*p == ' ') p++;
+
+    char *instruction = p;
+
+    if (*p == '"' || *p == '\'') {
+        char quote = *p++;
+        instruction = p;
+
+        while (*p && *p != quote) p++;
+
+        if (*p != quote) {
+            printf("Syntax error: unmatched %c\n", quote);
+            *args = NULL;
+            return NULL;
+        }
+
+        *p = '\0';
+        p++;
+    }
+    else {
+        while (*p && *p != ' ') p++;
+
+        if (*p) {
+            *p = '\0';
+            p++;
+        }
+    }
+
+    while (*p == ' ') p++;
+
+    *args = (*p) ? p : NULL;
+
+    return instruction;
+}
 
 int16_t rm_delete(char *path, uint8_t flags) {
     if (flags & RM_BIN) {
@@ -261,17 +306,22 @@ void split_instruction_args(char *line, char **cmd, char **args) {
 }
 
 char *find_andand_outside_quotes(char *s) {
-    int in_quotes = 0;
+    char quote = 0;
 
     for (char *p = s; *p && *(p + 1); p++) {
-        if (*p == '"')
-            in_quotes = !in_quotes;
+        if ((*p == '"' || *p == '\'') && !quote) {
+            quote = *p;
+        }
+        else if (*p == quote) {
+            quote = 0;
+        }
 
-        if (!in_quotes && *p == '&' && *(p + 1) == '&')
+        if (!quote && *p == '&' && *(p + 1) == '&')
             return p;
     }
     return NULL;
 }
+
 
 char **parseData(const char *str, uint16_t *count) {
     char **list = malloc(32 * sizeof(char*));
@@ -404,21 +454,6 @@ bool isValidBcCommand(char *str, char *command) {
         return true;
 
     return false;
-}
-
-uint16_t CountSubStr(const char *str, const char *sub) {
-
-    if (strlen(str) < strlen(sub)) 
-        return 0;
-    
-    uint16_t i = 0;
-
-    while ((str = strstr(str, sub))) {
-        i++;
-        str += strlen(sub);
-    }
-
-    return i;
 }
 
 char *myDirname(char *path) {
@@ -1168,6 +1203,7 @@ void createShortcut(char *instruction, char *path) {
         return;
     }
 
+    trimBetween(shortcutName);
     trimEnd(shortcutName);
     trim(shortcutName);
     trim(action);
@@ -1245,6 +1281,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
         removeComments(action);
         trimEnd(action);
 
+        trimBetween(shortcutName);
         trim(shortcutName);
         trim(action);
 
