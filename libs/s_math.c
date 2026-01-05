@@ -631,7 +631,6 @@ double s_root(char *operation) {
 
     char *comma = find_top_level_comma(test);
     
-    SAFE_FREE(test);
     if (!comma) {
         printf("Error: root() requires exactly 2 arguments\n\n");
         return NAN;
@@ -640,7 +639,8 @@ double s_root(char *operation) {
     *comma = '\0';
     char *indexStr = test;
     char *rootingStr = comma + 1;
-
+    SAFE_FREE(test);
+    
     uint8_t nullCount = isnull(2, indexStr, rootingStr);
     if (nullCount) {
         printf("Error: root() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
@@ -706,15 +706,15 @@ double s_log(char *operation) {
 
     char *comma = find_top_level_comma(test);
 
-    SAFE_FREE(test);
     if (!comma) {
         printf("Error: log() requires exactly 2 arguments\n\n");
         return NAN;
     }
-
+    
     *comma = '\0';
     char *baseStr = test;
     char *numStr = comma + 1;
+    SAFE_FREE(test);
 
     uint8_t nullCount = isnull(2, baseStr, numStr);
     if (nullCount) {
@@ -753,16 +753,17 @@ double s_randFloat(char *operation) {
 
     char *comma = find_top_level_comma(test);
 
-    SAFE_FREE(test);
     if (!comma) {
         printf("Error: randf() requires exactly 2 arguments\n\n");
         return NAN;
     }
-
+    
     *comma = '\0';
     char *str_min = test;
     char *str_max = comma + 1;
 
+    SAFE_FREE(test);
+    
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
         printf("Error: randf() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
@@ -806,15 +807,16 @@ double s_randInt(char *operation) {
 
     char *comma = find_top_level_comma(test);
 
-    SAFE_FREE(test);
     if (!comma) {
         printf("Error: rand() requires exactly 2 arguments\n\n");
         return NAN;
     }
-
+    
     *comma = '\0';
     char *str_min = test;
     char *str_max = comma + 1;
+    SAFE_FREE(test);
+
 
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {

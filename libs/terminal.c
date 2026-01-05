@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.3"
+#define VERSION "r1.1.45"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -335,10 +335,33 @@ void bashCmd(char *option) {
     if (*option == '\0') 
         return;
 
-    if (strcmp(option, "-v") == 0 || strcmp(option, "--version") == 0)
+    uint8_t flags;
+
+    if (option[0] == '-') {
+        if (option[1] == '-') {
+            if (strcmp(option, "--version") == 0)
+                flags |= BASH_VERSION;
+            else
+                printf("bash: invalid option: '%s'\n", option);
+        } else {
+            for (uint16_t i = 1; option[i]; i++) {
+                if (option[i] == 'v')
+                    flags |= BASH_VERSION;
+                else {
+                    printf("bash: invalid option: '-%c'\n", option[i]);
+                    return;
+                }
+            }
+        }
+    } else {
+        printf("bash: invalid argument: '%s'\n", option);
+        return;
+    }
+
+    if (flags & BASH_VERSION) {
         printf("lsw - Gab-OS  %s\n", VERSION);
-    else 
-        printf("invalid option: '%s'\n", option);
+    }
+
 }
 
 void renameCmd(char *instruction) {
@@ -448,7 +471,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         char *opt = argv[i];
 
         if (opt[0] != '-') {
-            printf("invalid option: '%s'\n", opt);
+            printf("bc: invalid argument: '%s'\n", opt);
             return;
         }
 
@@ -458,7 +481,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             else if (strcmp(opt, "--mathlib") == 0)
                 flags |= BC_MATHLIB;
             else {
-                printf("invalid option: '%s'\n", opt);
+                printf("bc: invalid option: '%s'\n", opt);
                 return;
             }
         }
@@ -468,7 +491,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                     case 'q': flags |= BC_QUIET; break;
                     case 'l': flags |= BC_MATHLIB; break;
                     default:
-                        printf("invalid option: '-%c'\n", opt[j]);
+                        printf("bc: invalid option: '-%c'\n", opt[j]);
                         return;
                 }
             }
@@ -603,17 +626,28 @@ void grepCmd(char *instruction) {
         option = strtok(buffer, " ");
         rest = strtok(NULL, "");
 
-        if (!rest || strlen(rest) == 0) {
-            puts("grep: missing operand\nUse \"man grep\" to check the manual");
-            return;
+        if (option && option[1] == '-') {
+            if (strcmp(option, "--ignore-case") == 0)
+                ignoreCase = 1;
+            else {
+                printf("grep: invalid option: '%s'\n", option);
+                return;
+            }
+        } else if (option && option [1] != '-') {
+            for (uint16_t i = 1; option[i]; i++) {
+                if (option[i] == 'i')
+                    ignoreCase = 1;
+                else {
+                    printf("grep: invalid option: '-%c'\n", option[i]);
+                    return;   
+                }
+            }
         }
+    }
 
-        if (option && (strcmp(option, "-i") == 0 || strcmp(option, "--ignore-case") == 0))
-            ignoreCase = 1;
-        else {
-            printf("invalid option '%s'\n", option ? option : "");
-            return;
-        }
+    if (!rest || strlen(rest) == 0) {
+        puts("grep: missing operand\nUse \"man grep\" to check the manual");
+        return;
     }
 
     instruction = rest;
@@ -669,8 +703,10 @@ void grepCmd(char *instruction) {
     while (fgets(line, sizeof(line), f)) {
         line[strcspn(line, "\n")] = '\0';
 
-        uint8_t match = ignoreCase ? myStrcasestr(line, pattern)
-                               : (strstr(line, pattern) != NULL);
+        const char *pos = ignoreCase ? strcasestr_ptr(line, pattern)
+                                    : strstr(line, pattern);
+
+        uint8_t match = (pos != NULL);
 
         if (match) {
             printTarg(line, pattern, RED, ignoreCase);
@@ -1012,9 +1048,9 @@ void tailCmd(char *instruction, uint32_t max_lines) {
 void rmdirCmd(char *instruction) {
 
     char *option;
-    uint8_t recycle_bin = 0;
+    uint8_t flags;
 
-   char *args = instruction;
+    char *args = instruction;
 
     if (args[0] == '-') {
         char *end = args;
@@ -1030,18 +1066,20 @@ void rmdirCmd(char *instruction) {
         option[len] = '\0';
 
         if (option[1] == '-') {
-            if (strcmp(option, "--recycle-bin") == 0)
-                recycle_bin = true;
+            if (strcmp(option, "recycle-bin") == 0)
+                flags |= RM_BIN;
             else {
                 printf("rmdir: invalid option: '%s'\n", option);
                 return;
             }
         } else {
-            if (strcmp(option, "-b") == 0)
-                recycle_bin = true;
-            else {
-                printf("rmdir: invalid option: '%s'\n", option);
-                return;
+            for (uint16_t i = 1; i < option[i]; i++) {
+                if (option[i] == 'b')
+                    flags |= RM_BIN;
+                else {
+                    printf("rmdir: invalid option: '-%c'\n", option[i]);
+                    return;                    
+                }
             }
         }
 
@@ -1068,7 +1106,7 @@ void rmdirCmd(char *instruction) {
         return;
     }
 
-    if (recycle_bin)
+    if (flags & RM_BIN)
         for (uint16_t i = 0; i < fileCount; i++) {
             if (!move_to_trash(files[i])) {
                 printf("Error: cannot move '%s' to the recycle bin: operation failed\n", files[i]);
@@ -1372,7 +1410,10 @@ void updatehistory(void) {
         "r1.1.13 - minor changes\n\tEdited: stop and clean in rev\n",
         "r1.1.18 - small changes\n\tFixed: now you can use hex(), oct() or bin() as parameters\n",
         "r1.1.23 - minor changes\n\tEdited: factored the math code\n",
-        "r1.1.3 - big changes\n\tAdded: rmdir can now also move to the recycle bin\n"
+        "r1.1.3 - big changes\n\tAdded: rmdir can now also move to the recycle bin\n",
+        "r1.1.34 - small changes\n\tFixed: early freed pointers\n",
+        "r1.1.36 - minor changes\n\tEdited: bc manual\n",
+        "r1.1.45 - big changes\n\tEdited: improved the option identifier for all commands\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1423,7 +1464,8 @@ char *unameCmd(uint16_t argc, char **argv) {
                     flags |= U_OPERATING_SYSTEM;
                 }
                 else {
-                    return "uname: invalid option";
+                    printf("uname: invalid option: '%s'\n", opt);
+                    return NULL;
                 }
                 continue;
             }
@@ -1442,7 +1484,8 @@ char *unameCmd(uint16_t argc, char **argv) {
                     case 'n': flags |= U_HOST_NAME; break;
                     case 'o': flags |= U_OPERATING_SYSTEM; break;
                     default:
-                        return "uname: invalid option";
+                        printf("uname: invalid option: '-%c'\n", opt[j]);
+                        return NULL;
                 }
             }
         }
@@ -1696,15 +1739,41 @@ void echoCmd(char *instruction) {
 }
 
 void lsCmd(const char *option, const char *address) {
-    uint8_t showAll = (option != NULL && (strcmp(option, "-a") == 0 || strcmp(option, "--all") == 0));
     const char *dirPath = (address && address[0]) ? address : ".";
+
+    uint8_t flags;
+
+    if (option[0] == '-') {
+
+        if (option[1] == '-') {
+            if (strcmp(option, "--all") == 0)
+                flags |= LS_ALL;
+            else {
+                printf("ls: invalid option: '%s'\n", option);
+                return;
+            }
+        } else {
+            for (uint16_t i = 1; option[i]; i++) {
+                if (option[i] == 'a')
+                    flags |= LS_ALL;
+                else {
+                    printf("ls: invalid option: '-%c'\n", option[i]);
+                    return;
+                }
+            }
+        }
+
+    } else if (*option != '\0' && option[0] != '-') {
+        printf("Error: invalid argument: '%s'\n", option);
+        return;
+    }
 
     enableAnsiIfNeeded();
 
 #ifdef _WIN32
-    lsCmdWin(dirPath, showAll);
+    lsCmdWin(dirPath, flags);
 #else
-    lsCmdLinux(dirPath, showAll);
+    lsCmdLinux(dirPath, flags);
 #endif
 }
 

@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 168000
+#define PROJ_SIZE_APPROX 170000
 #define PROJ_LINES_APPROX 6000
 
 #define ALIAS_FILE "shortcut.txt"
@@ -527,7 +527,7 @@ char *charNumber(void) {
     for (uint16_t i = 0; i < fileCount; i++) {
         FILE *f = fopen(buildPath(files[i]), "rb");
         if (!f) {
-            snprintf(result, sizeof(result), "%d B / %.2lf KB / %.2lf Mib", PROJ_SIZE_APPROX, (double)PROJ_SIZE_APPROX / 0x0400, (double)PROJ_SIZE_APPROX / 0x00100000);
+            snprintf(result, sizeof(result), "%d B / %.2lf KB / %.2lf Mib", PROJ_SIZE_APPROX, (double)PROJ_SIZE_APPROX / 0x400, (double)PROJ_SIZE_APPROX / 0x100000);
             return result;
         }
 
@@ -536,7 +536,7 @@ char *charNumber(void) {
         SAFE_FCLOSE(f);
     }
 
-    snprintf(result, sizeof(result), "%"PRIu32" B / %.2lf KB / %.2lf Mib", totalSize, (double)totalSize / 0x0400, (double)totalSize / 0x00100000);
+    snprintf(result, sizeof(result), "%"PRIu32" B / %.2lf KB / %.2lf Mib", totalSize, (double)totalSize / 0x400, (double)totalSize / 0x100000);
     return result;
 }
 

@@ -8,6 +8,12 @@
 #define PI 3.14159265358979323846
 #define E  2.77182818284590452353
 
+#define KG_TO_LB_FACTOR 2.20462262185
+#define LB_TO_KG_FACTOR 0.45359237
+
+#define KM_TO_MI_FACTOR 0.62137
+#define MI_TO_KM_FACTOR 1.609344
+
 #define BC_ERROR "__LSW__CALC__ERROR__"
 
 #ifdef _WIN32
@@ -55,11 +61,11 @@ double parse_double(char *str, char *funcName);
 #define DEG_TO_RAD(x) ((x) * (PI) / 180.0) 
 #define RAD_TO_DEG(x) ((x) * 180.0 / (PI))
 
-#define KM_TO_MI(x) ((x) * 0.62137)
-#define MI_TO_KM(x) ((x) * 1.609344)
+#define KM_TO_MI(x) ((x) * KM_TO_MI_FACTOR)
+#define MI_TO_KM(x) ((x) * MI_TO_KM_FACTOR)
 
-#define LB_TO_KG(x) ((x) * 0.45359237)
-#define KG_TO_LB(x) ((x) * 2.20462262185)
+#define LB_TO_KG(x) ((x) * LB_TO_KG_FACTOR)
+#define KG_TO_LB(x) ((x) * KG_TO_LB_FACTOR)
 
 #define C_TO_F(x) ((x) * 1.8 + (32.0))
 #define F_TO_C(x) (((x) - 32.0) * 1.8)

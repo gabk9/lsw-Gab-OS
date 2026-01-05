@@ -35,11 +35,11 @@ int main(int argc, char **argv) {
 
     char *address = get_default_address();
 
-    char *program_root = calloc(0x0400, sizeof(char));
-    char *data_folder = calloc(0x0400, sizeof(char));
-    char *history_path = calloc(0x04B0, sizeof(char));
+    char *program_root = calloc(0x400, sizeof(char));
+    char *data_folder = calloc(0x400, sizeof(char));
+    char *history_path = calloc(0x4B0, sizeof(char));
 
-    GetProjDir(program_root, 0x0400, data_folder, 0x0400, history_path, 0x04B0);
+    GetProjDir(program_root, 0x400, data_folder, 0x400, history_path, 0x4B0);
 
     if (argc > 1) {
         uint16_t total_len = 0;

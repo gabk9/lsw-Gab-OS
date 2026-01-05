@@ -152,7 +152,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
     else if (strcmp(instruction, cmds[12]) ==  0) //! mkdir
         printf("'mkdir' makes directories\n\nmkdir [FOLDER NAME...]\n");
 
-    else if (strcmp(instruction, cmds[13]) ==  0) {//! rmdir
+    else if (strcmp(instruction, cmds[13]) ==  0) { //! rmdir
         printf("'rmdir' removes empty directories\n\nrmdir [OPTION] [FOLDER NAME...]\n\n");
         printf("Options:\n\t'-b', '--recycle-bin'   moves to recycle bin\n");
     }
@@ -257,11 +257,11 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
                "\tPI   : 3.1415... constant (not case sensitive)\n"
                "\tE    : 2.7182... constant (not case sensitive)\n"
 
-               "\nSuffixes:\n"
-               "\tK   : 1.000             (not case sensitive and only works for non hexadecimals)\n"
-               "\tM   : 1.000.000         (not case sensitive and only works for non hexadecimals)\n"
-               "\tB   : 1.000.000.000     (not case sensitive and only works for non hexadecimals)\n"
-               "\tT   : 1.000.000.000.000 (not case sensitive and only works for non hexadecimals)\n"
+               "\nSuffixes: (not case sensitive and only works for non hexadecimals)\n"
+               "\tK   : 1.000               (1e+3)\n"
+               "\tM   : 1.000.000           (1e+6)\n"
+               "\tB   : 1.000.000.000       (1e+9)\n"
+               "\tT   : 1.000.000.000.000   (1e+12)\n"
         );
 
     }
@@ -492,7 +492,10 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
             token = strtok(NULL, " ");
         }
         
-        puts(unameCmd(argc_uname, argv_uname));
+        char *info = unameCmd(argc_uname, argv_uname);
+
+        if (info)
+            puts(info);
     }
     
     else if (strcmp(instruction, cmds[19]) == 0) //! grep

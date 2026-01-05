@@ -48,6 +48,10 @@
 #define BC_QUIET   0b00000001
 #define BC_MATHLIB 0b00000010
 
+#define LS_ALL 0b00000001
+
+#define BASH_VERSION 0b00000001
+
 #define U_KERN_NAME        0b00000001
 #define U_KERN_RELEASE     0b00000010
 #define U_MACHINE          0b00000100
