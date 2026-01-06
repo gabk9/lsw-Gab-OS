@@ -465,16 +465,22 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         argv_rm[0] = "rm";
 
         uint16_t count = 0;
-        char **list = parseData(args, &count);
-
-        for (uint16_t i = 0; i < count && argc_rm < MAX_ARGS; i++) {
-            argv_rm[argc_rm++] = list[i];
+        char **list;
+        if (args) {
+            list = parseData(args, &count);
+    
+            for (uint16_t i = 0; i < count && argc_rm < MAX_ARGS; i++) {
+                argv_rm[argc_rm++] = list[i];
+            }
         }
-        rmCmd(argc_rm, argv_rm);
 
-        for (uint16_t i = 0; i < count; i++)
-            SAFE_FREE(list[i]);
-        SAFE_FREE(list);
+        rmCmd(args ? argc_rm : 1, argv_rm);
+
+        if (args) {
+            for (uint16_t i = 0; i < count; i++)
+                SAFE_FREE(list[i]);
+            SAFE_FREE(list);
+        }
     }
 
     else if (strcmp(instruction, cmds[17]) == 0) //! history
@@ -486,10 +492,12 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
 
         argv_uname[0] = "uname";
 
-        char *token = strtok(args, " ");
-        while (token && argc_uname < MAX_ARGS) {
-            argv_uname[argc_uname++] = token;
-            token = strtok(NULL, " ");
+        if (args) {
+            char *token = strtok(args, " ");
+            while (token && argc_uname < MAX_ARGS) {
+                argv_uname[argc_uname++] = token;
+                token = strtok(NULL, " ");
+            }
         }
         
         char *info = unameCmd(argc_uname, argv_uname);
@@ -507,10 +515,12 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
 
         argv_bc[0] = "bc";
 
-        char *token = strtok(args, " ");
-        while (token && argc_bc < MAX_ARGS) {
-            argv_bc[argc_bc++] = token;
-            token = strtok(NULL, " ");
+        if (args) {
+            char *token = strtok(args, " ");
+            while (token && argc_bc < MAX_ARGS) {
+                argv_bc[argc_bc++] = token;
+                token = strtok(NULL, " ");
+            }
         }
 
         bcCmd(argc_bc, argv_bc, cmds);
@@ -535,7 +545,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         bashCmd(args ? args : "");
 
     else if (strcmp(instruction, cmds[27]) == 0) //! head
-        catCmd(args ? args : "", 10, "head");
+        catCmd(args ? args : "", 10, cmds[27]);
         
     else if (strcmp(instruction, cmds[28]) == 0) //! tail
         tailCmd(args ? args : "", 10);

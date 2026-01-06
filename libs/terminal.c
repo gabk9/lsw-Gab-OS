@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.63"
+#define VERSION "r1.1.7"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -335,7 +335,7 @@ void bashCmd(char *option) {
     if (*option == '\0') 
         return;
 
-    uint8_t flags;
+    uint8_t flags = 0;
 
     if (option[0] == '-') {
         if (option[1] == '-') {
@@ -954,7 +954,7 @@ void touchCmd(char *instruction) {
     SAFE_FREE(copy);
 }
 
-void catCmd(char *instruction, uint32_t max_lines, char *cmdName) {
+void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
 
     if (*instruction == '\0') {
         printf("%s: missing operand\nUse \"man %s\" to check the manual\n", cmdName, cmdName);
@@ -1055,7 +1055,7 @@ void tailCmd(char *instruction, uint32_t max_lines) {
 void rmdirCmd(char *instruction) {
 
     char *option;
-    uint8_t flags;
+    uint8_t flags = 0;
 
     char *args = instruction;
 
@@ -1423,7 +1423,8 @@ void updatehistory(void) {
         "r1.1.45 - big changes\n\tEdited: improved the option identifier for all commands\n",
         "r1.1.51 - small changes\n\tEdited: optimized the history command since that 'future update' isn't coming any time soon\n",
         "r1.1.6 - big changes\n\tAdded: now the terminal works with commands with spaces, using quotes, e.g: '[COMMAND WITH SPACES]' [ARGS...]\n",
-        "r1.1.63 - minor changes\n\tEdited: linesNumber() refactor\n"
+        "r1.1.63 - minor changes\n\tEdited: linesNumber() refactor\n",
+        "r1.1.7 - big changes\n\tFixed: bc, rm and uname seg-fault\n",
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1751,7 +1752,7 @@ void echoCmd(char *instruction) {
 void lsCmd(const char *option, const char *address) {
     const char *dirPath = (address && address[0]) ? address : ".";
 
-    uint8_t flags;
+    uint8_t flags = 0;
 
     if (option[0] == '-') {
 
