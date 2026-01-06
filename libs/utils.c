@@ -1332,7 +1332,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
             if (*args == '\0')
                 args = strtok_r(NULL, " ", &save);
 
-            processCommand(fullAction, args, cmds, cmdCount, address, history_path, data_folder, isInsideBash);
+            processCommand(fullAction, NULL, cmds, cmdCount, address, history_path, data_folder, isInsideBash);
             SAFE_FREE(fullAction);
             SAFE_FREE(clean);
             SAFE_FREE(line);
