@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.6"
+#define VERSION "r1.1.63"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1422,7 +1422,8 @@ void updatehistory(void) {
         "r1.1.36 - minor changes\n\tEdited: bc manual\n",
         "r1.1.45 - big changes\n\tEdited: improved the option identifier for all commands\n",
         "r1.1.51 - small changes\n\tEdited: optimized the history command since that 'future update' isn't coming any time soon\n",
-        "r1.1.6 - big changes\n\tAdded: now the terminal works with commands with spaces, using quotes, e.g: '[COMMAND WITH SPACES]' [ARGS...]\n"
+        "r1.1.6 - big changes\n\tAdded: now the terminal works with commands with spaces, using quotes, e.g: '[COMMAND WITH SPACES]' [ARGS...]\n",
+        "r1.1.63 - minor changes\n\tEdited: linesNumber() refactor\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

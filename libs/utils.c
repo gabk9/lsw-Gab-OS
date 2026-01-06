@@ -498,46 +498,40 @@ char *buildPath(const char *relative) {
 }
 
 char *linesNumber(void) {
-    uint16_t lines = 0;
+    uint32_t lines = 0;
     char buffer[0x400];
-    FILE *files[] = {
-        fopen(buildPath(PATH_MAIN_C), "r"),
-        fopen(buildPath(PATH_UTILS_C), "r"),
-        fopen(buildPath(PATH_UTILS_H), "r"),
-        fopen(buildPath(PATH_TERMINAL_C), "r"),
-        fopen(buildPath(PATH_TERMINAL_H), "r"),
-        fopen(buildPath(PATH_S_MATH_C), "r"),
-        fopen(buildPath(PATH_S_MATH_H), "r"),
-        fopen(buildPath(PATH_CHECKCMD_C), "r"),
-        fopen(buildPath(PATH_CHECKCMD_H), "r")
+
+    const char *files[] = {
+        PATH_MAIN_C,
+        PATH_UTILS_C,
+        PATH_UTILS_H,
+        PATH_TERMINAL_C,
+        PATH_TERMINAL_H,
+        PATH_S_MATH_C,
+        PATH_S_MATH_H,
+        PATH_CHECKCMD_C,
+        PATH_CHECKCMD_H
     };
 
-    uint8_t fileCount = sizeof(files) / sizeof(files[0]);
+    const uint8_t fileCount = sizeof(files) / sizeof(files[0]);
     static char result[0x40];
 
     for (uint8_t i = 0; i < fileCount; i++) {
-        if (!files[i]) {
-            for (uint8_t j = 0; j < i; j++) {
-                if (files[j]) {
-                    SAFE_FCLOSE(files[j]);
-                }
-            }
-            snprintf(result, sizeof(result), "%d", PROJ_LINES_APPROX);
+        FILE *f = fopen(buildPath(files[i]), "r");
+
+        if (!f) {
+            snprintf(result, sizeof(result), "%u", PROJ_LINES_APPROX);
             return result;
         }
-    }
 
-    for (uint8_t i = 0; i < fileCount; i++) {
-        if (files[i]) {
-            while (fgets(buffer, sizeof(buffer), files[i])) {
-                lines++;
-            }
-            SAFE_FCLOSE(files[i]);
-            files[i] = NULL;
+        while (fgets(buffer, sizeof(buffer), f)) {
+            lines++;
         }
+
+        SAFE_FCLOSE(f);
     }
 
-    snprintf(result, sizeof(result), "%" PRIu16, lines);
+    snprintf(result, sizeof(result), "%u", lines);
     return result;
 }
 
@@ -558,11 +552,11 @@ char *charNumber(void) {
 
     uint16_t fileCount = sizeof(files) / sizeof(files[0]);
     
-    static char result[0x20];
+    static char result[0x40];
     for (uint16_t i = 0; i < fileCount; i++) {
         FILE *f = fopen(buildPath(files[i]), "rb");
         if (!f) {
-            snprintf(result, sizeof(result), "%d B / %.2lf KB / %.2lf Mib", PROJ_SIZE_APPROX, (double)PROJ_SIZE_APPROX / 0x400, (double)PROJ_SIZE_APPROX / 0x100000);
+            snprintf(result, sizeof(result), "%d B / %.2lf KiB / %.2lf Mib", PROJ_SIZE_APPROX, (double)PROJ_SIZE_APPROX / 0x400, (double)PROJ_SIZE_APPROX / 0x100000);
             return result;
         }
 
@@ -571,7 +565,7 @@ char *charNumber(void) {
         SAFE_FCLOSE(f);
     }
 
-    snprintf(result, sizeof(result), "%"PRIu32" B / %.2lf KB / %.2lf Mib", totalSize, (double)totalSize / 0x400, (double)totalSize / 0x100000);
+    snprintf(result, sizeof(result), "%"PRIu32" B / %.2lf KiB / %.2lf Mib", totalSize, (double)totalSize / 0x400, (double)totalSize / 0x100000);
     return result;
 }
 
