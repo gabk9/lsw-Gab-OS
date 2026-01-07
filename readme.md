@@ -1,4 +1,25 @@
-# LSW — Linux Subsystem for Windows
+<div align="center">
+
+<h1>LSW — Linux Subsystem for Windows</h1>
+
+<pre style="
+font-size: 14px;
+line-height: 1.1;
+color: #58a6ff;
+text-shadow: 0 0 6px rgba(88,166,255,0.6);
+user-select: none;
+">
+ ██████╗  █████╗ ██████╗           ██████╗ ███████╗
+██╔════╝ ██╔══██╗██╔══██╗         ██╔═══██╗██╔════╝
+██║  ███╗███████║██████╔╝ ██████╗ ██║   ██║███████╗
+██║   ██║██╔══██║██╔══██╗ ╚═════╝ ██║   ██║╚════██║
+╚██████╔╝██║  ██║██████╔╝         ╚██████╔╝███████║
+ ╚═════╝ ╚═╝  ╚═╝╚═════╝           ╚═════╝ ╚══════╝
+</pre>
+
+<p><em>Lightweight educational shell inspired by Linux</em></p>
+
+</div>
 
 **LSW** is a lightweight terminal environment written in C, inspired by Linux systems.  
 It provides a custom shell with its own set of commands, behaviors and internal logic, designed for learning, experimentation and low-level programming practice.

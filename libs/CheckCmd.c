@@ -295,7 +295,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'tail' print the first 10 lines of a file starting from the bottom\n\ntail [FILE NAME]\n");
 
     else if (strcmp(instruction, cmds[29]) ==  0) //! lc
-        printf("'lc' print the line count of a file\n\nlc [FILE NAME]...\n");
+        printf("'lc' print the line count of a file\n\nlc [FILE NAME...]\n");
         
     else if (strcmp(instruction, cmds[30]) == 0) //! yes
         printf("'yes' output a string repeatedly until killed\n\nyes <-- print 'y' until killed\n\nyes [STRING] <-- print string until killed\n");
@@ -313,7 +313,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("\t'-l', --len   use it to set the length [-l=(int: size) / --len=(int: size)]\n");
     }
 
-    else if (strcmp(instruction, cmds[33]) == 0) { //!rev
+    else if (strcmp(instruction, cmds[33]) == 0) { //! rev
         printf("'rev' reverse strings\n\n");
         printf("rev <-- reads from input\n\n");
         printf("rev [SOURCE] <-- print [SOURCE] content reversed\n\n");
@@ -533,7 +533,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         clearHistoryCmd(history_path);
 
     else if (strcmp(instruction, cmds[23]) == 0) //! rand
-        printf("%" PRIu32 "\n", better_rand32());
+        printf("%u\n", better_rand32());
 
     else if (strcmp(instruction, cmds[24]) == 0) //! alias
         createShortcut(args ? args : "", data_folder);

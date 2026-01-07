@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.7"
+#define VERSION "r1.1.92"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -97,7 +97,8 @@ void revCmd(char *instruction) {
                 return;
             }
 
-            if (!isValidFile(sourceFile) || !isValidFile(destFile)) {
+            if (!isValidFolderOrFileName(sourceFile) ||
+                !isValidFolderOrFileName(destFile)) {
                 printf("Error: invalid file name\n");
                 return;
             }
@@ -152,7 +153,7 @@ void revCmd(char *instruction) {
                 return;
             }
 
-            if (!isValidFile(instruction)) {
+            if (!isValidFolderOrFileName(instruction)) {
                 printf("Error: invalid file name\n");
                 return;
             }
@@ -199,15 +200,27 @@ char *randstrCmd(char *instruction) {
 
     if (*instruction != '\0') {
 
-        if (strncmp(instruction, "--len", 5) == 0) {
-            len = parse_len(instruction + 5);
-        }
-        else if (strncmp(instruction, "-l", 2) == 0) {
-            len = parse_len(instruction + 2);
-        }
-        else {
-            printf("randstr: invalid option '%s'\n", instruction);
+        if (instruction[0] != '-') {
+            printf("randstr: invalid argument: '%s'\n", instruction);
             return NULL;
+        }
+
+        if (instruction[1] == '-') {
+            if (strncmp(instruction, "--len", 5) == 0)
+                len = parse_len(instruction + 5);
+            else {
+                printf("randstr: invalid option: '%s'\n", instruction);
+                return NULL;
+            }
+
+        } else  {
+            char opt = tolower((unsigned char)instruction[1]);
+            switch (opt) {
+                case 'l': len = parse_len(instruction + 2); break;
+                default:
+                    printf("randstr: invalid option: '-%c'\n", instruction[1]);
+                    return NULL;
+            }
         }
     }
 
@@ -345,11 +358,12 @@ void bashCmd(char *option) {
                 printf("bash: invalid option: '%s'\n", option);
         } else {
             for (uint16_t i = 1; option[i]; i++) {
-                if (option[i] == 'v')
-                    flags |= BASH_VERSION;
-                else {
-                    printf("bash: invalid option: '-%c'\n", option[i]);
-                    return;
+                char opt = tolower((unsigned char)option[i]);
+                switch (opt) {
+                    case 'v': flags |= BASH_VERSION; break;
+                    default:
+                        printf("bash: invalid option: '-%c'\n", option[i]);
+                        return;
                 }
             }
         }
@@ -487,7 +501,8 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         }
         else {
             for (uint16_t j = 1; opt[j]; j++) {
-                switch (opt[j]) {
+                char chr = tolower((unsigned char)opt[j]);
+                switch (chr) {
                     case 'q': flags |= BC_QUIET; break;
                     case 'l': flags |= BC_MATHLIB; break;
                     default:
@@ -635,11 +650,12 @@ void grepCmd(char *instruction) {
             }
         } else if (option && option [1] != '-') {
             for (uint16_t i = 1; option[i]; i++) {
-                if (option[i] == 'i')
-                    ignoreCase = 1;
-                else {
-                    printf("grep: invalid option: '-%c'\n", option[i]);
-                    return;   
+                char opt = tolower((unsigned char)option[i]);
+                switch (opt) {
+                    case 'i': ignoreCase = 1; break;
+                    default: 
+                        printf("grep: invalid option: '-%c'\n", option[i]);
+                        return;
                 }
             }
         }
@@ -847,7 +863,7 @@ void touchCmd(char *instruction) {
 
     if (string == -1) {
 
-        if (!isValidFile(instruction)) {
+        if (!isValidFolderOrFileName(instruction)) {
             printf("Error: invalid file name\n");
             return;
         }
@@ -864,7 +880,7 @@ void touchCmd(char *instruction) {
         trim(filename);
         trimEnd(filename);
 
-        if (!isValidFile(filename)) {
+        if (!isValidFolderOrFileName(filename)) {
             printf("Error: invalid file name\n");
             SAFE_FREE(copy);
             return;
@@ -896,7 +912,7 @@ void touchCmd(char *instruction) {
         trim(str); trimEnd(str);    
         trim(filename); trimEnd(filename);
 
-        if (!isValidFile(filename)) {
+        if (!isValidFolderOrFileName(filename)) {
             printf("Error: invalid file name\n");
             SAFE_FREE(copy);
             SAFE_FREE(test);
@@ -1081,11 +1097,12 @@ void rmdirCmd(char *instruction) {
             }
         } else {
             for (uint16_t i = 1; i < option[i]; i++) {
-                if (option[i] == 'b')
-                    flags |= RM_BIN;
-                else {
-                    printf("rmdir: invalid option: '-%c'\n", option[i]);
-                    return;                    
+                char opt = tolower((unsigned char)option[i]);
+                switch (opt) {
+                    case 'b': flags |= RM_BIN; break;
+                    default:
+                        printf("rmdir: invalid option: '-%c'\n", option[i]);
+                        return;
                 }
             }
         }
@@ -1158,6 +1175,14 @@ void mkdirCmd(char *command) {
 
 #ifdef _WIN32
     for (uint16_t i = 0; i < fileCount; i++) {
+        if (!isValidFolderOrFileName(files[i])) {
+            printf("mkdir: invalid folder name: '%s'\n", files[i]);
+            for (uint16_t j = 0; j < fileCount; j++) {
+                SAFE_FREE(files[i]);
+            }
+            SAFE_FREE(files);
+            return;
+        }
         if (_mkdir(files[i]) != 0) {
             perror(files[i]);
         }
@@ -1167,6 +1192,14 @@ void mkdirCmd(char *command) {
     uint16_t mode = 0777;
 
     for (uint16_t i = 0; i < fileCount; i++) {
+        if (!isValidFolderOrFileName(files[i])) {
+            printf("mkdir: invalid folder name: '%s'\n", files[i]);
+            for (uint16_t j = 0; j < fileCount; j++) {
+                SAFE_FREE(files[i]);
+            }
+            SAFE_FREE(files);
+            return;
+        }
         if (mkdir(files[i], mode) != 0) {
             perror(files[i]);
         }
@@ -1425,6 +1458,9 @@ void updatehistory(void) {
         "r1.1.6 - big changes\n\tAdded: now the terminal works with commands with spaces, using quotes, e.g: '[COMMAND WITH SPACES]' [ARGS...]\n",
         "r1.1.63 - minor changes\n\tEdited: linesNumber() refactor\n",
         "r1.1.7 - big changes\n\tFixed: bc, rm and uname seg-fault\n",
+        "r1.1.79 - big changes\n\tAdded: seg-fault message for windows\n",
+        "r1.1.83 - small changes\n\tEdited: uname and randstr option identifier\n",
+        "r1.1.92 - big changes\n\tEdited: now single characters options are no longer case sensitive, and also upgraded the file/folder name verification\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1449,7 +1485,8 @@ char *unameCmd(uint16_t argc, char **argv) {
             char *opt = argv[i];
 
             if (opt[0] != '-') {
-                return "uname: invalid argument";
+                printf("uname: invalid argument: '%s'\n", opt);
+                return NULL;
             }
 
             if (opt[1] == '-') {
@@ -1487,6 +1524,7 @@ char *unameCmd(uint16_t argc, char **argv) {
             }
 
             for (uint16_t j = 1; opt[j]; j++) {
+                opt[j] = tolower((unsigned char)opt[j]);
                 switch (opt[j]) {
                     case 's': flags |= U_KERN_NAME; break;
                     case 'r': flags |= U_KERN_RELEASE; break;
@@ -1612,7 +1650,7 @@ void echoCmd(char *instruction) {
 
         echoHandler(inFile);
 
-        if (!isValidFile(filename)) {
+        if (!isValidFolderOrFileName(filename)) {
             printf("Error: invalid file name\n");
             return;
         }
@@ -1685,7 +1723,7 @@ void echoCmd(char *instruction) {
             return;
         }
 
-        if (!isValidFile(filename)) {
+        if (!isValidFolderOrFileName(filename)) {
             printf("Error: invalid file name\n");
             return;
         }
@@ -1765,11 +1803,12 @@ void lsCmd(const char *option, const char *address) {
             }
         } else {
             for (uint16_t i = 1; option[i]; i++) {
-                if (option[i] == 'a')
-                    flags |= LS_ALL;
-                else {
-                    printf("ls: invalid option: '-%c'\n", option[i]);
-                    return;
+                char opt = tolower((unsigned char)option[i]);
+                switch (opt) {
+                    case 'a': flags |= LS_ALL; break;
+                    default:
+                        printf("ls: invalid option: '-%c'\n", option[i]);
+                        return;
                 }
             }
         }

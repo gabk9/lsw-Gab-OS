@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 171000
-#define PROJ_LINES_APPROX 6100
+#define PROJ_SIZE_APPROX 174000
+#define PROJ_LINES_APPROX 6200
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -24,6 +24,13 @@
 #endif
 
 static char *last_directory = NULL;
+
+#ifdef _WIN32
+LONG handler(EXCEPTION_POINTERS *e) {
+    printf("Segmentation fault (core dumped)\n");
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
 
 char *extract_instruction(char *str, char **args) {
 
@@ -206,16 +213,52 @@ void sleepF(double seconds) {
 #endif
 }
 
-bool isValidFile(char *file) {
-    char *invalidChars = "<>:\"/\\|?*";
+bool isValidFolderOrFileName(const char *name) {
+  if (!name || !*name) return false;
 
-    for (uint16_t i = 0; file[i]; i++) {
-        for (uint8_t j = 0; invalidChars[j]; j++)
-            if (file[i] == invalidChars[j])
-                return false;
+#ifdef _WIN32
+    const char *invalid = "<>:\"/\\|?*";
+    size_t len = strlen(name);
+
+    if (len > 255) return false;
+    if (name[len-1] == ' ' || name[len-1] == '.') return false;
+
+    for (size_t i = 0; i < len; ++i) {
+        unsigned char c = name[i];
+        if (c < 32) return false;
+
+        for (size_t j = 0; invalid[j]; ++j)
+            if (c == invalid[j]) return false;
     }
+
+    const char *reserved[] = {
+        "CON","PRN","AUX","NUL",
+        "COM1","COM2","COM3","COM4","COM5","COM6","COM7","COM8","COM9",
+        "LPT1","LPT2","LPT3","LPT4","LPT5","LPT6","LPT7","LPT8","LPT9"
+    };
+
+    char base[0x100];
+    strncpy(base, name, sizeof(base));
+    base[sizeof(base)-1] = 0;
+    char *dot = strchr(base, '.');
+    if (dot) *dot = 0;
+
+    for (size_t i = 0; i < sizeof(reserved)/sizeof(reserved[0]); ++i)
+        if (_stricmp(base, reserved[i]) == 0)
+            return false;
+
+#else
+    if (strlen(name) > 255) return false;
+    for (size_t i = 0; name[i]; ++i)
+        if (name[i] == '/') return false;
+#endif
+
+    if (!strcmp(name, ".") || !strcmp(name, ".."))
+        return false;
+
     return true;
 }
+
 
 char *revStr(const char *str) {
     int len = strlen(str);

@@ -101,7 +101,6 @@ bool isOct(const char *str);
 void trimBetween(char *str);
 char *myDirname(char *path);
 void echoHandler(char *str);
-bool isValidFile(char *file);
 void setColor(color4_t color);
 void enableAnsiIfNeeded(void);
 char *revStr(const char *str);
@@ -124,6 +123,12 @@ void update_last_directory(char *address);
 uint8_t sort(char **array, uint16_t count);
 char *strrm(char *str, const char *substr);
 char *findFirstEqualOutsideQuotes(char *s);
+bool isValidFolderOrFileName(const char *name);
+
+#ifdef _WIN32
+LONG WINAPI handler(EXCEPTION_POINTERS *e);
+
+#endif
 double eval(char *operation, bool mathlib);
 uint8_t is_pi_or_e_expression(const char *s);
 int16_t rm_delete(char *path, uint8_t flags);
