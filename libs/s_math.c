@@ -6,15 +6,18 @@
 
 double parse_double(char *str, char *funcName) {
     char *test;
+    uint8_t heap = 0;
     if (funcName) {
         test = functionHandler(str, funcName);
         if (strcmp(test, BC_ERROR) == 0) return U64_NAN;
+        heap = 1;
     } else 
         test = str;
 
     double num = eval(test, true);
 
-    SAFE_FREE(test);
+    if (heap)
+        SAFE_FREE(test);
 
     return num;
 }
@@ -907,7 +910,7 @@ double s_round(char *operation) {
     return round(num);
 }
 
-uint64_t fact(int32_t num) {
+uint64_t fact(int64_t num) {
     if (num < 0) {
         printf("Error: cant factorial negative numbers with fact function\n\n");
         return U64_NAN;
@@ -920,24 +923,24 @@ uint64_t fact(int32_t num) {
     return num;
 }
 
-uint64_t s_fact(char *operation) {
+double s_fact(char *operation) {
     char *test = functionHandler(operation, "fact");
-    if (strcmp(test, BC_ERROR) == 0) return U64_NAN;
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
 
     double num = eval(test, true);
     SAFE_FREE(test);
 
     if (num == U64_NAN) {
         putchar('\n');
-        return U64_NAN;
+        return NAN;
     }   
 
     if (ceil(num) != num) {
         printf("Error: must be integer\n\n");
-        return U64_NAN;
+        return NAN;
     }
 
-    return fact((int32_t)num);
+    return fact((int64_t)num);
 }
 
 double s_sign(char *operation) {

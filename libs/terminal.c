@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.1.92"
+#define VERSION "r1.2.0"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1460,7 +1460,8 @@ void updatehistory(void) {
         "r1.1.7 - big changes\n\tFixed: bc, rm and uname seg-fault\n",
         "r1.1.79 - big changes\n\tAdded: seg-fault message for windows\n",
         "r1.1.83 - small changes\n\tEdited: uname and randstr option identifier\n",
-        "r1.1.92 - big changes\n\tEdited: now single characters options are no longer case sensitive, and also upgraded the file/folder name verification\n"
+        "r1.1.92 - big changes\n\tEdited: now single characters options are no longer case sensitive, and also upgraded the file/folder name verification\n",
+        "r1.2.0 - minor changes\n\tEdited: fact() function\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1518,14 +1519,10 @@ char *unameCmd(uint16_t argc, char **argv) {
                 continue;
             }
 
-            if (strcmp(opt, "-a") == 0) {
-                flags = U_ALL;
-                continue;
-            }
-
             for (uint16_t j = 1; opt[j]; j++) {
-                opt[j] = tolower((unsigned char)opt[j]);
-                switch (opt[j]) {
+                char chr = tolower((unsigned char)opt[j]);
+                switch (chr) {
+                    case 'a': flags |= U_ALL; break;
                     case 's': flags |= U_KERN_NAME; break;
                     case 'r': flags |= U_KERN_RELEASE; break;
                     case 'm': flags |= U_MACHINE; break;

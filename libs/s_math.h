@@ -21,7 +21,7 @@
     #define RAND_MAX 0x7FFFFFFF
 #endif
 
-uint64_t fact(int32_t num)__attribute__((nonnull));
+uint64_t fact(int64_t num)__attribute__((nonnull));
 double s_ln(char *operation)__attribute__((nonnull));
 char *s_oct(char *operation)__attribute__((nonnull));
 char *s_hex(char *operation)__attribute__((nonnull));
@@ -43,6 +43,7 @@ double s_ceil(char *operation)__attribute__((nonnull));
 double s_sign(char *operation)__attribute__((nonnull));
 double s_log2(char *operation)__attribute__((nonnull));
 double s_sqrt(char *operation)__attribute__((nonnull));
+double s_fact(char *operation)__attribute__((nonnull));
 double s_miles(char *operation)__attribute__((nonnull));
 double s_trunc(char *operation)__attribute__((nonnull));
 double s_floor(char *operation)__attribute__((nonnull));
@@ -50,7 +51,6 @@ double s_round(char *operation)__attribute__((nonnull));
 double s_log10(char *operation)__attribute__((nonnull));
 double s_scale(char *operation)__attribute__((nonnull));
 double s_pounds(char *operation)__attribute__((nonnull));
-uint64_t s_fact(char *operation)__attribute__((nonnull));
 double s_randInt(char *operation)__attribute__((nonnull));
 char *find_top_level_comma(char *s)__attribute__((nonnull));
 double s_randFloat(char *operation)__attribute__((nonnull));

@@ -635,10 +635,8 @@ double CheckFunc(char *operation, char **functions, const char *uniOps, const ch
         return s_ceil(operation);
     else if (strncmp(operation, functions[11], 5) == 0 && mathlib) //! round()
         return s_round(operation);
-    else if (strncmp(operation, functions[12], 4) == 0 && mathlib) { //! fact()
-        uint64_t num = s_fact(operation);
-        return (num != U64_NAN) ? (long double)num : NAN;
-    }
+    else if (strncmp(operation, functions[12], 4) == 0 && mathlib) //! fact()
+        return s_fact(operation);
     else if (strncmp(operation, functions[13], 4) == 0 && mathlib) //! sign()
         return s_sign(operation);
     else if (strncmp(operation, functions[14], 3) == 0 && mathlib) //! sum()
