@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.2.0"
+#define VERSION "r1.2.1"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1304,7 +1304,7 @@ void cmdsCommand(const char **cmds, uint16_t count, uint8_t isInsideBash) {
         for (uint16_t i = 0; i < count; i++)
             copy[i] = strdup(cmds[i]);
 
-        sort(copy, count);
+        bsort(copy, count);
         initialized = 1;
     }
 
@@ -1461,7 +1461,8 @@ void updatehistory(void) {
         "r1.1.79 - big changes\n\tAdded: seg-fault message for windows\n",
         "r1.1.83 - small changes\n\tEdited: uname and randstr option identifier\n",
         "r1.1.92 - big changes\n\tEdited: now single characters options are no longer case sensitive, and also upgraded the file/folder name verification\n",
-        "r1.2.0 - minor changes\n\tEdited: fact() function\n"
+        "r1.2.0 - minor changes\n\tEdited: fact() function\n",
+        "r1.2.1 - small changes\n\tFixed: man seg-fault\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

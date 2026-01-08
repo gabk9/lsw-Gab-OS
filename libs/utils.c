@@ -1822,7 +1822,7 @@ bool isalldigit(const char *s) {
     return false;
 }
 
-uint8_t sort(char **array, uint16_t count) {
+uint8_t bsort(char **array, uint16_t count) {
     char *aux;
     uint8_t switches = 0;
 

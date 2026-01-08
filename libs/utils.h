@@ -120,9 +120,9 @@ void charRm(char *str, int8_t targ);
 char *handle_cd_dash(char *address);
 char *find_andand_outside_quotes(char *s);
 void update_last_directory(char *address);
-uint8_t sort(char **array, uint16_t count);
 char *strrm(char *str, const char *substr);
 char *findFirstEqualOutsideQuotes(char *s);
+uint8_t bsort(char **array, uint16_t count);
 bool isValidFolderOrFileName(const char *name);
 
 #ifdef _WIN32

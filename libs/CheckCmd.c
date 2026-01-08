@@ -435,7 +435,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         lsCmd(args ? args : "", *address);
 
     else if (strcmp(instruction, cmds[8]) == 0) //! man
-        manCmdMulti(args, cmds, isInsideBash);
+        manCmdMulti(args ? args : "", cmds, isInsideBash);
 
     else if (strcmp(instruction, cmds[9]) == 0) //! whoami
         puts(get_user());
