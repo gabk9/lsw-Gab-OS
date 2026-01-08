@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 174000
-#define PROJ_LINES_APPROX 6200
+#define PROJ_SIZE_APPROX 176000
+#define PROJ_LINES_APPROX 6300
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -31,6 +31,217 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+int8_t isAppend(const char *str) {
+    uint16_t in_single = 0, in_double = 0;
+    uint16_t found = 0;
+
+    for (uint16_t i = 0; str[i]; i++) {
+
+        if (str[i] == '\'' && !in_double) {
+            in_single = !in_single;
+            continue;
+        }
+        if (str[i] == '"' && !in_single) {
+            in_double = !in_double;
+            continue;
+        }
+
+        if (str[i] == '>') {
+
+            if (in_single || in_double)
+                return -1;
+
+            if (str[i+1] == '>') {
+                if (str[i+2] == '>')
+                    return -2;
+                if (found)
+                    return -2;
+                found = 2;
+                i++;
+            }
+            else {
+                if (found)
+                    return -2;
+                found = 1;
+            }
+        }
+    }
+
+    return found;
+}
+
+uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
+
+    char *save;
+    
+    char *str = strtok_r(copy, "*", &save);
+    char *num = strchr(instruction, '*');
+    
+    SAFE_FREE(copy);
+
+    if (!str || !num || (num[0] == '*' && num[1] == '\0')){
+        puts("Error: invalid syntax");
+        return 1;
+    }
+    
+    trim(str);
+    trimEnd(str);
+
+    bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
+                            reps < strrchar(instruction, '\''));
+
+    double count;
+
+    if (!QuoteAfterStar) {
+        count = eval(num+1, true);
+
+        if (count == U64_NAN) {
+            return 0;
+        }
+
+        if (count <= 0) {
+            errno = EINVAL;
+            perror("Error");
+            return 0;
+        }
+
+        
+        if (ceil(count) != count) {
+            printf("Error: must be integer\n");
+            return 0;
+        }
+    }
+    
+    echoHandler(str);
+    
+    if (QuoteAfterStar) {
+        echoHandler(instruction);
+        puts(instruction);
+    } else 
+        for (int32_t i = 0; i < count; i++)
+            puts(str);
+
+    return 1;
+}
+
+char* findStarOutsideQuotes(char *s) {
+    int in_single = 0, in_double = 0;
+
+    for (; *s; s++) {
+        if (*s == '\'' && !in_double) in_single = !in_single;
+        else if (*s == '"' && !in_single) in_double = !in_double;
+        else if (*s == '*' && !in_single && !in_double)
+            return s;
+    }
+    return NULL;
+}
+
+char* findCharOutsideQuotes(char *s, char target) {
+    bool in_quotes = false;
+
+    for (char *p = s; *p; ++p) {
+        if (*p == '"') in_quotes = !in_quotes;
+        else if (*p == target && !in_quotes)
+            return p;
+    }
+    return NULL;
+}
+
+uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t file) {
+
+    char *work = strdup(instruction);
+    if (!work) return 0;
+
+    char *redir = findCharOutsideQuotes(work, '>');
+
+    int append = 0;
+    char *filename = NULL;
+
+    if (redir) {
+        *redir = '\0';
+        redir++;
+
+        if (*redir == '>') {
+            append = 1;
+            redir++;
+        }
+
+        while (*redir == ' ') redir++;
+
+        if (!*redir) {
+            puts("Error: invalid syntax");
+            goto fail;
+        }
+
+        filename = redir;
+
+        trim(filename);
+        trimEnd(filename);
+
+        if (!isValidFolderOrFileName(filename)) {
+            puts("Error: invalid file name");
+            goto fail;
+        }
+    }
+
+    char *star = findCharOutsideQuotes(work, '*');
+    char *text = work;
+    double count = 1;
+
+    if (star) {
+        *star = '\0';
+        star++;
+
+        trim(star);
+        trim(text);
+        trimEnd(text);
+
+        count = eval(star, true);
+
+        if (count == U64_NAN || count <= 0 || ceil(count) != count) {
+            puts("Error: invalid repetition count");
+            goto fail;
+        }
+    }
+    else {
+        trim(text);
+        trimEnd(text);
+    }
+
+    echoHandler(text);
+
+    FILE *f = NULL;
+
+    if (filename) {
+        f = fopen(filename, append ? "a" : "w");
+        if (!f) {
+            perror("Error");
+            goto fail;
+        }
+    }
+
+    for (uint64_t i = 0; i < (uint64_t)count; i++) {
+        if (f) {
+            fputs(text, f);
+            fputc('\n', f);
+        }
+        else {
+            puts(text);
+        }
+    }
+
+    if (f) fclose(f);
+
+    SAFE_FREE(work);
+    SAFE_FREE(copy);
+    return 1;
+
+fail:
+    SAFE_FREE(work);
+    SAFE_FREE(copy);
+    return 0;
+}
 
 char *extract_instruction(char *str, char **args) {
 
@@ -1134,15 +1345,42 @@ uint16_t countIndex(const char *str, int8_t chr) {
 }
 
 void echoHandler(char *str) {
-    if ((str[0] == '\"' && str[strlen(str)-1] == '\"') || (
-         str[0] == '\'' && str[strlen(str)-1] == '\'')) {
+    char out[0x400];
+    int o = 0;
+    int inQuotes = 0;
+    char quoteChar = 0;
+    int wroteSomething = 0;
 
-        memmove(str, str + 1, strlen(str));
-        str[strlen(str) - 1] = '\0';
-    } else {
-        trimBetween(str);
-        charReplace(str, ' ', '\n');
+    for (int i = 0; str[i]; i++) {
+        char c = str[i];
+
+        if ((c == '"' || c == '\'') && !inQuotes) {
+            inQuotes = 1;
+            quoteChar = c;
+            continue;
+        }
+
+        if (inQuotes && c == quoteChar) {
+            inQuotes = 0;
+            continue;
+        }
+
+        if (!inQuotes && c == ' ') {
+            if (wroteSomething && out[o-1] != '\n') {
+                out[o++] = '\n';
+            }
+            continue;
+        }
+
+        out[o++] = c;
+        wroteSomething = 1;
     }
+
+    if (o > 0 && out[o-1] == '\n')
+        o--;
+
+    out[o] = '\0';
+    strcpy(str, out);
 }
 
 char *buildAliasPath(char *path) {

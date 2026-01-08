@@ -110,6 +110,7 @@ bool isalldigit(const char *s);
 int8_t isDir(const char *path);
 uint64_t get_total_ram_mb(void);
 char *get_default_address(void);
+int8_t isAppend(const char *str);
 void safe_lower_inplace(char *s);
 char *unameCmdWin(uint8_t flags);
 char *buildAliasPath(char *path);
@@ -118,25 +119,27 @@ int16_t move_to_trash(char *path);
 char *unameCmdLinux(uint8_t flags);
 void charRm(char *str, int8_t targ);
 char *handle_cd_dash(char *address);
+char* findStarOutsideQuotes(char *s);
 char *find_andand_outside_quotes(char *s);
 void update_last_directory(char *address);
 char *strrm(char *str, const char *substr);
 char *findFirstEqualOutsideQuotes(char *s);
-uint8_t bsort(char **array, uint16_t count);
-bool isValidFolderOrFileName(const char *name);
 
 #ifdef _WIN32
 LONG WINAPI handler(EXCEPTION_POINTERS *e);
 
 #endif
 double eval(char *operation, bool mathlib);
+uint8_t bsort(char **array, uint16_t count);
 uint8_t is_pi_or_e_expression(const char *s);
 int16_t rm_delete(char *path, uint8_t flags);
 int16_t strchar(const char *str, int8_t chr);
 int16_t strrchar(const char *str, int8_t chr);
+bool isValidFolderOrFileName(const char *name);
 bool isValidBcCommand(char *str, char *command);
 char *defaultAddressReplace(const char *address);
 uint16_t countIndex(const char *str, int8_t chr);
+char* findCharOutsideQuotes(char *s, char target);
 char *extract_instruction(char *str, char **args);
 void createShortcut(char *instruction, char *path);
 char **parseData(const char *str, uint16_t *count);
@@ -152,9 +155,11 @@ char **readHistory(const char *address, uint32_t *lineCount);
 
 char **copyMat(char **dest, const char **src, uint16_t size);
 void printInFileNTimes(FILE *stream, char *str, int64_t count);
+uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
 void split_instruction_args(char *line, char **out_cmd, char **out_args);
 void printc(const char *str, color4_t initColor, color4_t resetColor, ...);
+uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t file);
 void printTarg(const char *str, const char *targ, color4_t markColor, int8_t ignoreCase);
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp);
 void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint16_t data_size, char *history_path, uint16_t hist_size);

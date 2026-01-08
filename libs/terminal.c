@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.2.1"
+#define VERSION "r1.2.34"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -971,7 +971,6 @@ void touchCmd(char *instruction) {
 }
 
 void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
-
     if (*instruction == '\0') {
         printf("%s: missing operand\nUse \"man %s\" to check the manual\n", cmdName, cmdName);
         return;
@@ -984,31 +983,32 @@ void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
         fprintf(stderr, "Error: couldn't open %s\n", instruction);
         return;
     }
-    
-    int16_t byte;
+
+    char line[4096];
     uint32_t lines = 0;
 
-    int8_t last = -1;
-
-    while ((byte = fgetc(f)) != EOF) {
+    while (fgets(line, sizeof(line), f)) {
 
         if (max_lines > 0 && lines >= max_lines)
             break;
 
-        if (byte == '\n')
-            lines++;
+        size_t len = strlen(line);
+        if (len && line[len - 1] == '\n')
+            line[len - 1] = '\0';
 
-        last = byte;
+        for (size_t i = 0; line[i]; i++) {
+            unsigned char c = (unsigned char)line[i];
 
-        if (isprint(byte) || byte == '\n' || byte == '\t' || byte == '\r') {
-            putchar(byte);
-        } else {
-            printf("\\x%02X", (unsigned char)byte);
+            if (isprint(c) || c == '\t' || c == '\r') {
+                putchar(c);
+            } else {
+                printf("\\x%02X", c);
+            }
         }
-    }
 
-    if (last != '\n')
         putchar('\n');
+        lines++;
+    }
 
     SAFE_FCLOSE(f);
 }
@@ -1462,7 +1462,10 @@ void updatehistory(void) {
         "r1.1.83 - small changes\n\tEdited: uname and randstr option identifier\n",
         "r1.1.92 - big changes\n\tEdited: now single characters options are no longer case sensitive, and also upgraded the file/folder name verification\n",
         "r1.2.0 - minor changes\n\tEdited: fact() function\n",
-        "r1.2.1 - small changes\n\tFixed: man seg-fault\n"
+        "r1.2.1 - small changes\n\tFixed: man seg-fault\n",
+        "r1.2.16 - small changes\n\tEdite: echo function refactor\n",
+        "r1.2.27 - big changes\n\tAdded: append in echo command\n",
+        "r1.2.34 - small changes\n\tEdited: echoHandler()\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1552,7 +1555,6 @@ void echoCmd(char *instruction) {
         return;
     }
 
-
     int8_t file = strrchar(instruction, '>');
     int8_t reps = strrchar(instruction, '*');
 
@@ -1563,75 +1565,27 @@ void echoCmd(char *instruction) {
 
 
     if (reps != -1 && file == -1) {
-
-        char *str = strtok_r(copy, "*", &save);
-        char *num = strchr(instruction, '*');
-        
-        if (!str || !num || (num[0] == '*' && num[1] == '\0')){
-            puts("Error: invalid syntax");
-            SAFE_FREE(copy);
+        if (!echoNtimes(instruction, copy, reps)) {
             return;
         }
-        
-        trim(str);
-        trimEnd(str);
-
-        bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
-                               reps < strrchar(instruction, '\''));
-
-        double count;
-
-        if (!QuoteAfterStar) {
-            count = eval(num+1, true);
-    
-            if (count == U64_NAN) {
-                SAFE_FREE(copy);
-                return;
-            }
-    
-            if (count <= 0) {
-                errno = EINVAL;
-                perror("Error");
-                SAFE_FREE(copy);
-                return;
-            }
-    
-            
-            if (ceil(count) != count) {
-                printf("Error: must be integer\n");
-                SAFE_FREE(copy);
-                return;
-            }
-        }
-        
-        echoHandler(str);
-        
-        if (QuoteAfterStar) {
-            echoHandler(instruction);
-            puts(instruction);
-        } else 
-            for (int32_t i = 0; i < count; i++)
-                puts(str);
-
-        SAFE_FREE(copy);
-        return;
-    }
-
-    if (file == -1 && reps == -1) {
+    } else if (file == -1 && reps == -1) {
 
         echoHandler(copy);
         puts(copy);
 
         SAFE_FREE(copy);
         return;
-    }
 
-    if (reps == -1 && file != -1) {
+    } else if (reps == -1 && file != -1) {
 
         char *inFile = strtok_r(copy, ">", &save);
         char *filename = strtok_r(NULL, ">", &save);
 
-        if (!inFile || !filename) { puts("Error: invalid syntax"); SAFE_FREE(copy); return; }
+        if (!inFile || !filename) {
+            puts("Error: invalid syntax");
+            SAFE_FREE(copy);
+            return;
+        }
 
         trim(inFile); trimEnd(inFile);
         trim(filename); trimEnd(filename);
@@ -1639,6 +1593,30 @@ void echoCmd(char *instruction) {
                                        
         bool QuoteAfterAbracket = (file < strrchar(instruction, '\"') ||
                                    file < strrchar(instruction, '\''));
+
+        int8_t append = isAppend(instruction);
+        char *mode = NULL;
+
+        switch (append) {
+            case -1:
+                QuoteAfterAbracket = true;
+                break;
+
+            case -2:
+                puts("Error: invalid redirection syntax");
+                return;
+
+            case 1:
+                mode = "w";
+                break;
+
+            case 2:
+                mode = "a";
+                break;
+
+            case 0:
+                return;
+        }
 
         if (QuoteAfterAbracket) {
             echoHandler(instruction);
@@ -1653,135 +1631,25 @@ void echoCmd(char *instruction) {
             return;
         }
 
-        FILE *f = fopen(filename, "w");
-        if (!f) { perror("fopen"); SAFE_FREE(copy); return; }
+        printf("File name: '%s'\n", filename);
+        printf("Mode: '%s'\n", mode);
+        FILE *f = fopen(filename, mode);
+        if (!f) {
+            perror("fopen");
+            SAFE_FREE(copy);
+            return;
+        }
 
-        fprintf(f, "%s", inFile);
+        fprintf(f, "%s\n", inFile);
         SAFE_FCLOSE(f);
 
         SAFE_FREE(copy);
         return;
-    }
-
-    
-    if (reps != -1 && file != -1){
-
-        char *instructionCopy = strdup(instruction);
         
-        char *inFile = strtok_r(copy, ">", &save);
-        char *filename = strtok_r(NULL, ">", &save);
-        
-        if (!inFile || !filename) {
-            puts("Error: invalid syntax");
-            SAFE_FREE(copy);
-            SAFE_FREE(instructionCopy);
+    } else if (reps != -1 && file != -1) {
+        if (!echoFileNtimes(instruction, copy, reps, file)) {
             return;
         }
-        
-        char *test = strdup(inFile);
-        trimEnd(test);
-
-        char *str = strtok_r(inFile, "*", &save);
-        char *num = strchr(instruction, '*');
-
-        num = strtok(num, ">");
-
-        if (!str || !num) {
-            puts("Error: invalid syntax");
-            SAFE_FREE(copy);
-            SAFE_FREE(test);
-            SAFE_FREE(instructionCopy);
-            return;
-        }
-
-        trim(str); trimEnd(str);
-        trim(filename); trimEnd(filename);
-
-        char *dot = strchr(filename, '.');
-        if (dot) {
-            char *afterDot = dot + 1;
-            if (strchr(afterDot, '*')) {
-                puts("Error: invalid arguments, use \"man echo\" to check the manual");
-                SAFE_FREE(copy);
-                SAFE_FREE(test);
-                SAFE_FREE(instructionCopy);
-                return;
-            }
-        }
-
-        bool QuoteAfterAbracket = (file < strrchar(instructionCopy, '\"') ||
-                                   file < strrchar(instructionCopy, '\''));
-
-        if (QuoteAfterAbracket) {
-            echoHandler(instructionCopy);
-            puts(instructionCopy);
-            SAFE_FREE(copy);
-            SAFE_FREE(test);
-            SAFE_FREE(instructionCopy);
-            return;
-        }
-
-        if (!isValidFolderOrFileName(filename)) {
-            printf("Error: invalid file name\n");
-            return;
-        }
-
-        bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
-                               reps < strrchar(instruction, '\''));
-
-        double count;
-
-        if (!QuoteAfterStar) {
-            count = eval(num+1, true);
-    
-            if (count == U64_NAN) {
-                SAFE_FREE(copy);
-                SAFE_FREE(test);
-                SAFE_FREE(instructionCopy);
-                return;
-            }
-    
-            if (count <= 0) {
-                errno = EINVAL;
-                perror("Error");
-                SAFE_FREE(copy);
-                SAFE_FREE(test);
-                SAFE_FREE(instructionCopy);
-                return;
-            }
-    
-            
-            if (ceil(count) != count) {
-                printf("Error: must be integer\n");
-                SAFE_FREE(copy);
-                SAFE_FREE(test);
-                SAFE_FREE(instructionCopy);
-                return;
-            }
-        }
-
-        echoHandler(str);
-        
-        FILE *f = fopen(filename, "w");
-        if (!f) { 
-            perror("Error");
-            SAFE_FREE(test);
-            SAFE_FREE(copy);
-            SAFE_FREE(instructionCopy);
-            return;
-        }
-        
-
-        if (QuoteAfterStar) {
-            echoHandler(test);
-            fputs(test, f);
-        } else 
-            printInFileNTimes(f, str, count);
-
-        SAFE_FCLOSE(f);
-        SAFE_FREE(copy);
-        SAFE_FREE(test);
-        SAFE_FREE(instructionCopy);
     }
 }
 

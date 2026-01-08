@@ -114,10 +114,14 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'exit' exit the terminal\n");
 
     else if (strcmp(instruction, cmds[2]) == 0) { //! echo
-        printf("'echo' displays a line of text in the terminal or in a file\n\necho [STRING] <-- print [STRING]\n");
-        printf("\necho [STRING] > [FILE NAME] <-- print [STRING] inside [FILE NAME]\n"
+        printf("'echo' displays a line of text in the terminal or in a file\n");
+        printf("\nModes:\n");
+        printf("\t'>'    write\n");
+        printf("\t'>>'   append\n");
+        printf("\necho [STRING] <-- print [STRING]\n"
+               "\necho [STRING] [MODE] [FILE NAME] <-- print [STRING] inside [FILE NAME]\n"
                "\necho [STRING] * [int: COUNT] <-- print [STRING] [COUNT] times\n"
-               "\necho [STRING] * [int: COUNT] > [FILE NAME] <-- print [STRING] [COUNT] times inside [FILE NAME]\n");
+               "\necho [STRING] * [int: COUNT] [MODE] [FILE NAME] <-- print [STRING] [COUNT] times inside [FILE NAME]\n");
     }
 
     else if (strcmp(instruction, cmds[3]) == 0) //! neofetch
