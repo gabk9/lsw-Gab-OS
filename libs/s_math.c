@@ -1051,19 +1051,19 @@ double s_sum(char *operation) {
     double result = gauss_range_double(init, end, diff);
 
     if (result == PI+1) {
-        puts("Error: step value cannot be zero");
+        puts("Error: step value cannot be zero\n");
         SAFE_FREE(test);
         return NAN;
     } else if (result == PI+2) {
-        puts("Error: step direction does not progress from X to Y");
+        puts("Error: step direction does not progress from X to Y\n");
         SAFE_FREE(test);
         return NAN;
     } else if (result == PI+3) {
-        puts("Error: calculated number of steps is negative");
+        puts("Error: calculated number of steps is negative\n");
         SAFE_FREE(test);
         return NAN;
     } else if (result == PI+4) {
-        puts("Error: Numeric overflow or invalid result during summation");
+        puts("Error: Numeric overflow or invalid result during summation\n");
         SAFE_FREE(test);
         return NAN;
     }
