@@ -125,7 +125,10 @@ void revCmd(char *instruction) {
                 trimEnd(line);
                 line[strcspn(line, "\n")] = '\0';
 
-                fprintf(dest, "%s\n", revStr(line));
+                char *rev = revStr(line);
+
+                fprintf(dest, "%s\n", rev);
+                SAFE_FREE(rev);
             }
 
             SAFE_FCLOSE(source);
@@ -163,7 +166,10 @@ void revCmd(char *instruction) {
                 trimEnd(line);
                 line[strcspn(line, "\n")] = '\0';
 
-                puts(revStr(line));
+                char *rev = revStr(line);
+
+                puts(rev);
+                SAFE_FREE(rev);
             }
         }
 
