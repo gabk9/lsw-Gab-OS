@@ -436,7 +436,7 @@ bool isValidFolderOrFileName(const char *name) {
 
     for (size_t i = 0; i < len; ++i) {
         unsigned char c = name[i];
-        if (c < 32) return false;
+        if (c < 0x20) return false;
 
         for (size_t j = 0; invalid[j]; ++j)
             if (c == invalid[j]) return false;
