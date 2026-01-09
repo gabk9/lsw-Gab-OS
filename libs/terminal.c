@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.2.34"
+#define VERSION "r1.2.48"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -344,36 +344,59 @@ int32_t lcCmd(char *instruction) {
     return lines;
 }
 
-void bashCmd(char *option) {
-    if (*option == '\0') 
+void bashCmd(uint16_t argc, char **argv, bool insideBash) {
+    if (argc < 2) 
         return;
 
     uint8_t flags = 0;
 
-    if (option[0] == '-') {
-        if (option[1] == '-') {
-            if (strcmp(option, "--version") == 0)
+    for (uint16_t i = 1; i < argc; i ++) {
+
+        if (argv[i][0] != '-') {
+            printf("bash: invalid argument: '%s'\n", argv[i]);
+            return;
+        }
+
+        if (argv[i][1] == '-') {
+            if (strcmp(argv[i], "--version") == 0)
                 flags |= BASH_VERSION;
+            else if (strcmp(argv[i], "--help") == 0)
+                flags |= BASH_HELP;
+            else if (strcmp(argv[i], "--all") == 0)
+                flags |= BASH_ALL;
             else
-                printf("bash: invalid option: '%s'\n", option);
+                printf("bash: invalid option: '%s'\n", argv[i]);
         } else {
-            for (uint16_t i = 1; option[i]; i++) {
-                char opt = tolower((unsigned char)option[i]);
+            for (uint16_t j = 1; argv[i][j]; j++) {
+                char opt = tolower((unsigned char)argv[i][j]);
                 switch (opt) {
+                    case 'a': flags |= BASH_ALL; break;
+                    case 'h': flags |= BASH_HELP; break;
                     case 'v': flags |= BASH_VERSION; break;
                     default:
-                        printf("bash: invalid option: '-%c'\n", option[i]);
+                        printf("bash: invalid option: '-%c'\n", argv[i][j]);
                         return;
                 }
             }
         }
-    } else {
-        printf("bash: invalid argument: '%s'\n", option);
-        return;
     }
 
     if (flags & BASH_VERSION) {
         printf("lsw - Gab-OS  %s\n", VERSION);
+    }
+
+    if ((flags & BASH_HELP) && insideBash) {
+        printf("'bash' shows the shell information\n\nbash [OPTION...]\n\nOptions:\n");
+        printf("\t'-v', '--version'   show version information\n"
+               "\t'-h', '--help'      display manual\n"
+               "\t'-a', '--all'       displays everything\n");
+    } else if ((flags & BASH_HELP) && !insideBash) {
+        printf("You can run commands using 'lsw [COMMAND...]', or you can use options 'lsw [OPTION...]', lsw is just an exemple, ");
+        printf("it may differ if you choose a different name to save on the path, you can use quotes and spaces to separate arguments\n");
+        printf("\nOptions:\n");
+        printf("\t'-v', '--version'   show version information\n"
+               "\t'-h', '--help'      display manual\n"
+               "\t'-a', '--all'       displays everything\n");
     }
 
 }
@@ -1465,7 +1488,9 @@ void updatehistory(void) {
         "r1.2.1 - small changes\n\tFixed: man seg-fault\n",
         "r1.2.16 - small changes\n\tEdite: echo function refactor\n",
         "r1.2.27 - big changes\n\tAdded: append in echo command\n",
-        "r1.2.34 - small changes\n\tEdited: echoHandler()\n"
+        "r1.2.34 - small changes\n\tEdited: echoHandler()\n",
+        "r1.2.43 - big changes\n\tAdded: help option to bash command\n\tEdited: bash now uses argc and argv\n",
+        "r1.2.48 - small changes\n\tAdded: all option to bash command\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

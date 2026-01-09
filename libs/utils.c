@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 176000
-#define PROJ_LINES_APPROX 6300
+#define PROJ_SIZE_APPROX 178500
+#define PROJ_LINES_APPROX 6400
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -1584,7 +1584,28 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
             }
             trim(option);
 
-            bashCmd(option);
+            char *argv_bash[MAX_ARGS];
+            uint16_t argc_bash = 1;
+
+            argv_bash[0] = "bash";
+
+            uint16_t count = 0;
+            char **list;
+            if (args) {
+                list = parseData(args, &count);
+        
+                for (uint16_t i = 0; i < count && argc_bash < MAX_ARGS; i++) {
+                    argv_bash[argc_bash++] = list[i];
+                }
+            }
+
+            bashCmd(argc_bash, argv_bash, true);
+            
+            if (args) {
+                for (uint16_t i = 0; i < count; i++)
+                    SAFE_FREE(list[i]);
+                SAFE_FREE(list);
+            }
 
             SAFE_FREE(clean);
             return true;

@@ -288,8 +288,10 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'rename' renames folders or files\n\nrename [OLD NAME] [NEW NAME]\n");
 
     else if (strcmp(instruction, cmds[26]) ==  0 && isInsideBash) { //! bash
-        printf("'bash' shows bash version information\n\nbash [OPTION]\n\nOptions:\n");
-        printf("\t'-v', '--version'   show version information\n");
+        printf("'bash' shows the shell information\n\nbash [OPTION...]\n\nOptions:\n");
+        printf("\t'-v', '--version'   show version information\n"
+               "\t'-h', '--help'      display manual\n"
+               "\t'-a', '--all'       displays everything\n");
     }
 
     else if (strcmp(instruction, cmds[27]) ==  0) //! head
@@ -545,8 +547,30 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     else if (strcmp(instruction, cmds[25]) == 0) //! rename
         renameCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[26]) == 0 && isInsideBash) //! bash
-        bashCmd(args ? args : "");
+    else if (strcmp(instruction, cmds[26]) == 0 && isInsideBash) { //! bash
+       char *argv_bash[MAX_ARGS];
+        uint16_t argc_bash = 1;
+
+        argv_bash[0] = "bash";
+
+        uint16_t count = 0;
+        char **list;
+        if (args) {
+            list = parseData(args, &count);
+    
+            for (uint16_t i = 0; i < count && argc_bash < MAX_ARGS; i++) {
+                argv_bash[argc_bash++] = list[i];
+            }
+        }
+
+        bashCmd(argc_bash, argv_bash, true);
+        
+        if (args) {
+            for (uint16_t i = 0; i < count; i++)
+                SAFE_FREE(list[i]);
+            SAFE_FREE(list);
+        }
+    }
 
     else if (strcmp(instruction, cmds[27]) == 0) //! head
         catCmd(args ? args : "", 10, cmds[27]);
