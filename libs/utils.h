@@ -129,8 +129,8 @@ char *findFirstEqualOutsideQuotes(char *s);
 
 #ifdef _WIN32
 LONG WINAPI handler(EXCEPTION_POINTERS *e);
-
 #endif
+
 double eval(char *operation, bool mathlib);
 uint8_t bsort(char **array, uint16_t count);
 uint8_t is_pi_or_e_expression(const char *s);
