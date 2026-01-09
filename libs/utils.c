@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 178500
-#define PROJ_LINES_APPROX 6400
+#define PROJ_SIZE_APPROX 178000
+#define PROJ_LINES_APPROX 6300
 
 #define ALIAS_FILE "shortcut.txt"
 

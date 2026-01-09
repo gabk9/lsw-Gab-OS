@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.2.48"
+#define VERSION "r1.2.52"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -111,37 +111,23 @@ void revCmd(char *instruction) {
             }
 
 
-            char *line = calloc(MAX_CHAR, sizeof(char));
+            char line[0x400];
 
             FILE *dest = fopen(destFile, "w");
             if (!dest) {
                 printf("Error: could not create '%s'\n", destFile);
                 SAFE_FCLOSE(source);
-                SAFE_FREE(line);
                 return;
             }
 
             while (fgets(line, MAX_CHAR, source)) {
                 trim(line);
                 trimEnd(line);
+                line[strcspn(line, "\n")] = '\0';
 
-                size_t len = strlen(line);
-                int has_nl = (len > 0 && line[len - 1] == '\n');
-
-                if (has_nl)
-                    line[len - 1] = '\0';
-
-                char *rev = revStr(line);
-                if (!rev) break;
-
-                fputs(rev, dest);
-                if (has_nl)
-                    fputc('\n', dest);
-
-                SAFE_FREE(rev);
+                fprintf(dest, "%s\n", revStr(line));
             }
 
-            SAFE_FREE(line);
             SAFE_FCLOSE(source);
             SAFE_FCLOSE(dest);
         } else {
@@ -165,7 +151,7 @@ void revCmd(char *instruction) {
                 return;
             }
 
-            char *line = calloc(MAX_CHAR, sizeof(char));
+            char line[0x400];
 
             if (!line) {
                 printf("Error: memory allocation error!!\n");
@@ -175,21 +161,10 @@ void revCmd(char *instruction) {
             while (fgets(line, MAX_CHAR, source)) {
                 trim(line);
                 trimEnd(line);
+                line[strcspn(line, "\n")] = '\0';
 
-                size_t len = strlen(line);
-                int has_nl = (len > 0 && line[len - 1] == '\n');
-
-                if (has_nl)
-                    line[len - 1] = '\0';
-
-                char *rev = revStr(line);
-                if (!rev) break;
-
-                puts(rev);
-
-                SAFE_FREE(rev);
+                puts(revStr(line));
             }
-
         }
 
     }
@@ -1490,7 +1465,8 @@ void updatehistory(void) {
         "r1.2.27 - big changes\n\tAdded: append in echo command\n",
         "r1.2.34 - small changes\n\tEdited: echoHandler()\n",
         "r1.2.43 - big changes\n\tAdded: help option to bash command\n\tEdited: bash now uses argc and argv\n",
-        "r1.2.48 - small changes\n\tAdded: all option to bash command\n"
+        "r1.2.48 - small changes\n\tAdded: all option to bash command\n",
+        "r1.2.52 - minor changes\n\tEdited: rev\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
