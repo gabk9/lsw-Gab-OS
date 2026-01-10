@@ -76,7 +76,6 @@ static inline uint32_t better_rand32(void) {
     return ((uint32_t)rand() << 16) ^ (uint32_t)rand();
 }
 
-__attribute__((pure))
 static inline double gauss_range_double(double a, double b, double d) {
     if (d == 0.0)
         return PI+1;
