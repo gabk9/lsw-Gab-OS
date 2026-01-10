@@ -910,6 +910,22 @@ double s_round(char *operation) {
     return round(num);
 }
 
+double tetration(double base, int32_t height) {
+    if (height < 0) return NAN;
+    if (height == 0) return 1.0;
+
+    double result = base;
+
+    for (int32_t i = 2; i <= height; i++) {
+        if (result > log(DBL_MAX) / log(fabs(base)))
+            return INFINITY;
+
+        result = pow(base, result);
+    }
+
+    return result;
+}
+
 uint64_t fact(int64_t num) {
     if (num < 0) {
         printf("Error: cant factorial negative numbers with fact function\n\n");

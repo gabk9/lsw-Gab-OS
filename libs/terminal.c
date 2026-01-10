@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.2.52"
+#define VERSION "r1.2.7"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -36,14 +36,12 @@ void revCmd(char *instruction) {
             appear = 0;
 
             fgets(string, MAX_CHAR, stdin);
+            string[strcspn(string, "\n")] = '\0';
             
             if (*string == '\0') {
                 printf("Error: insert a string!\n\n");
                 continue;
             }
-            
-            string[strcspn(string, "\n")] = '\0';
-            removeComments(string);
             
             trim(string);
             trimEnd(string);
@@ -550,13 +548,14 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         
         fgets(operation, MAX_CHAR, stdin);
         operation[strcspn(operation, "\n")] = '\0';
+        
+        removeComments(operation);
 
         if (*operation == '\0') {
             puts("Error: insert an operation\n");
             continue;
         }
 
-        removeComments(operation);
 
         trim(operation);
         trimEnd(operation);
@@ -1472,7 +1471,9 @@ void updatehistory(void) {
         "r1.2.34 - small changes\n\tEdited: echoHandler()\n",
         "r1.2.43 - big changes\n\tAdded: help option to bash command\n\tEdited: bash now uses argc and argv\n",
         "r1.2.48 - small changes\n\tAdded: all option to bash command\n",
-        "r1.2.52 - minor changes\n\tEdited: rev\n"
+        "r1.2.52 - minor changes\n\tEdited: rev\n",
+        "r1.2.64 - big changes\n\tAdded: tetration operator to the calculator\n",
+        "r1.2.7 - small changes\n\tEdited: bc behavior with comments\n\tRemoved: comments from rev command\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

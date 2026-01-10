@@ -62,6 +62,39 @@ double calc(double num1, char *operation, double num2) {
         } else
             return pow(num1, num2);
     }
+
+    else if (strcmp(operation, "^^") == 0) {
+
+        if (num2 != (int32_t)num2) {
+            printf("Error: tetration height must be an integer\n\n");
+            return NAN;
+        }
+        else if (num2 < 0) {
+            printf("Error: tetration height must be non-negative\n\n");
+            return NAN;
+        }
+        else if (num1 == 0.0 && num2 == 0.0) {
+            printf("Error: 0^^0 is undefined\n\n");
+            return NAN;
+        }
+        else {
+
+            double result = tetration(num1, (int)num2);
+
+            if (isnan(result)) {
+                printf("Error: invalid input for tetration\n\n");
+                return NAN;
+            }
+            else if (isinf(result)) {
+                printf("Error: result overflow (too large)\n\n");
+                return NAN;
+            }
+            else
+                return result;
+            
+        }
+    }
+
     else if (strcmp(operation, "<<") == 0) {
         if (num2 < 0 || num2 >= sizeof(long long) * 8) {
             printf("Error: shift amount must be between 0 and %zu\n\n", sizeof(uint64_t) * 8 - 1);
@@ -208,6 +241,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
                "\t'-'    : Subtraction\n"
                "\t'*'    : Multiplication\n"
                "\t'**'   : Power (num1 raised to num2)\n"
+               "\t'^^'   : Tetration (num1 raised to itself num2 times)\n"
                "\t'/'    : Division\n"
                "\t'%%'    : Modulus (remainder of division)\n"
                "\t'^'    : Bitwise XOR (1 if bits differ)\n"

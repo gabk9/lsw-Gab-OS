@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 178000
-#define PROJ_LINES_APPROX 6300
+#define PROJ_SIZE_APPROX 180000
+#define PROJ_LINES_APPROX 6400
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -1518,7 +1518,7 @@ void createShortcut(char *instruction, char *path) {
 }
 
 void removeComments(char *str) {
-    if (!str) return;
+    if (!str || *str == '\0') return;
 
     for (int i = 0; str[i] != '\0'; i++) {
         if ((str[i] == '/' && str[i+1] == '/') || str[i] == '#') {
@@ -1856,7 +1856,8 @@ double eval(char *operation, bool mathlib) {
     const char uniOps[] = "+-/*^%%&|<>";
     const char *multiOps[] = {
         "**", "&&", "||", "<<", ">>",
-        "<=", "==", ">=", "!=", NULL
+        "<=", "==", ">=", "!=", "^^", 
+        NULL
     };
 
     charRm(operation, ' ');

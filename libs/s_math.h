@@ -21,6 +21,7 @@
     #define RAND_MAX 0x7FFFFFFF
 #endif
 
+double tetration(double base, int32_t height);
 uint64_t fact(int64_t num)__attribute__((nonnull));
 double s_ln(char *operation)__attribute__((nonnull));
 char *s_oct(char *operation)__attribute__((nonnull));
