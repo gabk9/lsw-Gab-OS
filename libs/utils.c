@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 180000
+#define PROJ_SIZE_APPROX 181000
 #define PROJ_LINES_APPROX 6400
 
 #define ALIAS_FILE "shortcut.txt"
@@ -1849,7 +1849,8 @@ double eval(char *operation, bool mathlib) {
         "scale", "sqrt", "sin", "cos", "tan", "ln",
         "log10", "log2", "log", "floor", "ceil", "round",
         "fact", "sign", "sum", "rad", "deg", "trunc", "randf",
-        "fah", "cel", "root", "rand", "mi", "km", "lb", "kg"
+        "fah", "cel", "root", "rand", "mi", "km", "lb", "kg",
+        "oct", "hex", "bin", "abs", "fabs"
     };
 
 

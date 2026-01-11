@@ -290,6 +290,8 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
                "\tkm(X)          : Converts X to kilometers\n"
                "\tlb(X)          : Converts X to pounds\n"
                "\tkg(X)          : Converts X to kilograms\n"
+               "\tfabs(X)        : Returns the absolute value of a single point precision number (X)\n"
+               "\tabs(X)         : Returns the absolute value of an integer number (X)\n"
 
                "\nConstants:\n"
                "\tPI   : 3.1415... constant (not case sensitive)\n"
@@ -727,12 +729,16 @@ double CheckFunc(char *operation, char **functions, const char *uniOps, const ch
         return s_pounds(operation);
     else if (strncmp(operation, functions[26], 2) == 0 && mathlib) //! kg()
         return s_kg(operation);
-    else if (strncmp(operation, "oct", 3) == 0 && mathlib) //! oct()
-        return parse_double(operation, "oct");
-    else if (strncmp(operation, "hex", 3) == 0 && mathlib) //! hex()
-        return parse_double(operation, "hex");
-    else if (strncmp(operation, "bin", 3) == 0 && mathlib) //! hex()
-        return parse_double(operation, "bin");
+    else if (strncmp(operation, functions[27], 3) == 0 && mathlib) //! oct()
+        return parse_double(operation, functions[27]);
+    else if (strncmp(operation, functions[28], 3) == 0 && mathlib) //! hex()
+        return parse_double(operation, functions[28]);
+    else if (strncmp(operation, functions[29], 3) == 0 && mathlib) //! hex()
+        return parse_double(operation, functions[29]);
+    else if (strncmp(operation, functions[30], 3) == 0 && mathlib) //! abs()
+        return s_fabs_or_abs(operation, false);
+    else if (strncmp(operation, functions[31], 4) == 0 && mathlib) //! fabs()
+        return s_fabs_or_abs(operation, true);
 
     uint16_t op_pos = 0;
 

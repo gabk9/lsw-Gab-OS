@@ -22,6 +22,7 @@
 #endif
 
 double tetration(double base, int32_t height);
+double parse_double(char *str, char *funcName);
 uint64_t fact(int64_t num)__attribute__((nonnull));
 double s_ln(char *operation)__attribute__((nonnull));
 char *s_oct(char *operation)__attribute__((nonnull));
@@ -57,7 +58,8 @@ char *find_top_level_comma(char *s)__attribute__((nonnull));
 double s_randFloat(char *operation)__attribute__((nonnull));
 bool parentheses_balanced(const char *s)__attribute__((nonnull));
 uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
-double parse_double(char *str, char *funcName);
+double s_fabs_or_abs(char *operation, bool enable_single_point)__attribute__((nonnull));
+char *functionHandler(char *operation, const char *function)__attribute__((warn_unused_result));
 
 #define DEG_TO_RAD(x) ((x) * (PI) / 180.0) 
 #define RAD_TO_DEG(x) ((x) * 180.0 / (PI))
@@ -100,11 +102,7 @@ static inline double gauss_range_double(double a, double b, double d) {
     if (isnan(sum) || isinf(sum))
         return PI+4;
 
-    return sum;
 }
-
-__attribute__((warn_unused_result))
-char *functionHandler(char *operation, const char *function);
 
 __attribute__((always_inline))
 static inline double random_range_float(double min, double max) {

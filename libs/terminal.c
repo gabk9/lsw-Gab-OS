@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.2.7"
+#define VERSION "r1.2.79"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1473,7 +1473,8 @@ void updatehistory(void) {
         "r1.2.48 - small changes\n\tAdded: all option to bash command\n",
         "r1.2.52 - minor changes\n\tEdited: rev\n",
         "r1.2.64 - big changes\n\tAdded: tetration operator to the calculator\n",
-        "r1.2.7 - small changes\n\tEdited: bc behavior with comments\n\tRemoved: comments from rev command\n"
+        "r1.2.7 - small changes\n\tEdited: bc behavior with comments\n\tRemoved: comments from rev command\n",
+        "r1.2.79 - big changes\n\tAdded: fabs() and abs() function to the calculator\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

@@ -193,6 +193,29 @@ double h_atof(const char *str) {
     return atof(buf);
 }
 
+double s_fabs_or_abs(char *operation, bool enable_single_point) {
+    char *function = enable_single_point ? "fabs" : "abs"; 
+    char *test = functionHandler(operation, function);
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double value = eval(test, true);
+
+    SAFE_FREE(test);
+    if (value == U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }
+
+    if (!enable_single_point) {
+        if (value != (int64_t)value) {
+            printf("Error: must be integer\n\n");
+            return NAN;
+        }
+    }
+
+    return enable_single_point ? fabs(value) : (double)llabs((int64_t)value);
+}
+
 double s_miles(char *operation) {
     char *test = functionHandler(operation, "mi");
     if (strcmp(test, BC_ERROR) == 0) return NAN;
