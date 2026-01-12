@@ -593,7 +593,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
             }
         }
 
-        bashCmd(argc_bash, argv_bash, true);
+        bashCmd(argc_bash, argv_bash, cmds, cmdCount, true);
         
         if (args) {
             for (uint16_t i = 0; i < count; i++)

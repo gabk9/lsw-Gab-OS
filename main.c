@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
         }
         
         if (input[0] == '-') 
-            bashCmd(argc, argv, false);
+            bashCmd(argc, argv, cmds, cmdCount, false);
         else
             processCommand(input, arguments, cmds, cmdCount, &address, history_path, data_folder, false);
 

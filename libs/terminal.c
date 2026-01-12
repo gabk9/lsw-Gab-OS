@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.2.91"
+#define VERSION "r1.2.97"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -323,7 +323,7 @@ int32_t lcCmd(char *instruction) {
     return lines;
 }
 
-void bashCmd(uint16_t argc, char **argv, bool insideBash) {
+void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, bool insideBash) {
     if (argc < 2) 
         return;
 
@@ -365,17 +365,22 @@ void bashCmd(uint16_t argc, char **argv, bool insideBash) {
     }
 
     if ((flags & BASH_HELP) && insideBash) {
+        printf("LSW - Gab OS, a Linux like shell (Linux Subsystem for Windows)\n\n");
         printf("'bash' shows the shell information\n\nbash [OPTION...]\n\nOptions:\n");
         printf("\t'-v', '--version'   show version information\n"
                "\t'-h', '--help'      display manual\n"
                "\t'-a', '--all'       displays everything\n");
     } else if ((flags & BASH_HELP) && !insideBash) {
+        printf("LSW - Gab OS, a Linux like shell (Linux Subsystem for Windows)\n\n");
         printf("You can run commands using 'lsw [COMMAND...]', or you can use options 'lsw [OPTION...]', lsw is just an exemple, ");
         printf("it may differ if you choose a different name to save on the path, you can use quotes and spaces to separate arguments\n");
         printf("\nOptions:\n");
         printf("\t'-v', '--version'   show version information\n"
                "\t'-h', '--help'      display manual\n"
-               "\t'-a', '--all'       displays everything\n");
+               "\t'-a', '--all'       displays everything\n\n");
+        printf("Commands:\n");
+        for (uint16_t i = 0; i < cmdCount; i++)
+            printf("\t%s\n", cmds[i]);
     }
 
 }
@@ -1476,8 +1481,9 @@ void updatehistory(void) {
         "r1.2.64 - big changes\n\tAdded: tetration operator to the calculator\n",
         "r1.2.7 - small changes\n\tEdited: bc behavior with comments\n\tRemoved: comments from rev command\n",
         "r1.2.79 - big changes\n\tAdded: fabs() and abs() function to the calculator\n",
-        "r1.2.91 - big changes\n\tFixed: early freed pointers in the calculator and negative numbers not working with mathlib turned on\n\tEdited: some calculator error messages\n"
-    };
+        "r1.2.91 - big changes\n\tFixed: early freed pointers in the calculator and negative numbers not working with mathlib turned on\n\tEdited: some calculator error messages\n",
+        "r1.2.97 - small changes\n\tEdited: bash command strings\n"
+        };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
 
