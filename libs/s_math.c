@@ -84,8 +84,11 @@ char *functionHandler(char *operation, const char *function) {
     operation = strrm(operation, function);    
     trim(operation);
     
-    if (operation[0] != '(' || operation[strlen(operation)-1] != ')') {
-        printf("Error: invalid syntax\n\n");
+    size_t end = strlen(operation) - 1;
+    if (operation[0] != '(' || operation[end] != ')') {
+        char missing1 = (operation[0] != '(') ? '(' : '\0';
+        char missing2 = (operation[end] != ')') ? ')' : '\0';
+        printf("Error: expected '%c%c'\n\n", missing1, missing2);
         return BC_ERROR;
     }
 
@@ -665,11 +668,11 @@ double s_root(char *operation) {
     *comma = '\0';
     char *indexStr = test;
     char *rootingStr = comma + 1;
-    SAFE_FREE(test);
     
     uint8_t nullCount = isnull(2, indexStr, rootingStr);
     if (nullCount) {
         printf("Error: root() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        SAFE_FREE(test);
         return NAN;
     }
 
@@ -680,6 +683,7 @@ double s_root(char *operation) {
 
     if (index == U64_NAN) {
         putchar('\n');
+        SAFE_FREE(test);
         return NAN;
     }  
     
@@ -687,9 +691,12 @@ double s_root(char *operation) {
 
     if (rooting == U64_NAN) {
         putchar('\n');
+        SAFE_FREE(test);
         return NAN;
-    }  
-    
+    }
+
+    SAFE_FREE(test);
+
     bool invert = false;
 
     if (index == 0) {
@@ -740,11 +747,11 @@ double s_log(char *operation) {
     *comma = '\0';
     char *baseStr = test;
     char *numStr = comma + 1;
-    SAFE_FREE(test);
 
     uint8_t nullCount = isnull(2, baseStr, numStr);
     if (nullCount) {
         printf("Error: log() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        SAFE_FREE(test);
         return NAN;
     }
 
@@ -755,6 +762,7 @@ double s_log(char *operation) {
 
     if (base == U64_NAN) {
         putchar('\n');
+        SAFE_FREE(test);
         return NAN;
     }  
 
@@ -762,8 +770,11 @@ double s_log(char *operation) {
     
     if (num == U64_NAN) {
         putchar('\n');
+        SAFE_FREE(test);
         return NAN;
     }  
+
+    SAFE_FREE(test);
 
     if (base <= 1 || num <= 0) {
         printf("Error: invalid values for log()\n\n");
@@ -788,11 +799,11 @@ double s_randFloat(char *operation) {
     char *str_min = test;
     char *str_max = comma + 1;
 
-    SAFE_FREE(test);
     
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
         printf("Error: randf() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        SAFE_FREE(test);
         return NAN;
     }
 
@@ -824,6 +835,8 @@ double s_randFloat(char *operation) {
         return NAN;
     }  
 
+    SAFE_FREE(test);
+
     return random_range_float(minLf, maxLf);
 }
 
@@ -841,12 +854,11 @@ double s_randInt(char *operation) {
     *comma = '\0';
     char *str_min = test;
     char *str_max = comma + 1;
-    SAFE_FREE(test);
-
-
+    
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
         printf("Error: rand() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        SAFE_FREE(test);
         return NAN;
     }
 
@@ -878,7 +890,8 @@ double s_randInt(char *operation) {
         return NAN;
     }  
 
-    
+    SAFE_FREE(test);
+
     if (ceil(minInt) != minInt || ceil(maxInt) != maxInt) {
         printf("Error: it must be integer!\n\n");
         return NAN;
@@ -1088,24 +1101,6 @@ double s_sum(char *operation) {
     }
 
     double result = gauss_range_double(init, end, diff);
-
-    if (result == PI+1) {
-        puts("Error: step value cannot be zero\n");
-        SAFE_FREE(test);
-        return NAN;
-    } else if (result == PI+2) {
-        puts("Error: step direction does not progress from X to Y\n");
-        SAFE_FREE(test);
-        return NAN;
-    } else if (result == PI+3) {
-        puts("Error: calculated number of steps is negative\n");
-        SAFE_FREE(test);
-        return NAN;
-    } else if (result == PI+4) {
-        puts("Error: Numeric overflow or invalid result during summation\n");
-        SAFE_FREE(test);
-        return NAN;
-    }
 
     SAFE_FREE(test);
     return result;

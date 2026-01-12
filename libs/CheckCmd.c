@@ -6,33 +6,35 @@
 
 double calc(double num1, char *operation, double num2) {
 
+    double result;
+
     if (strcmp(operation, "+") == 0)
-        return num1 + num2;
+        result = num1 + num2;
     else if (strcmp(operation, "-") == 0)
-        return num1 - num2;
+        result = num1 - num2;
     else if (strcmp(operation, "*") == 0)
-        return num1 * num2;
+        result = num1 * num2;
     else if (strcmp(operation, "/") == 0) {
         if (!num2) {
-            puts("Error: can't divide by 0!\n\n");
+            printf("Error: can't divide by 0\n\n");
             return NAN;
         }
 
-        return num1 / num2;
+        result = num1 / num2;
     } else if (strcmp(operation, "%") == 0) {
         if (!num2) {
-            puts("Error: can't divide by 0!\n\n");
+            printf("Error: can't divide by 0\n\n");
             return NAN;
         }
         
-        return fmod(num1, num2);
+        result = fmod(num1, num2);
     } else if (strcmp(operation, "^") == 0) {
         if (ceil(num1) != num1 || ceil(num2) != num2) {
             printf("Error: must be integers\n\n");
             return NAN;
         }
 
-        return (int32_t)num1 ^ (int32_t)num2;
+        result = (int32_t)num1 ^ (int32_t)num2;
     }
     else if (strcmp(operation, "&") == 0) {
         if (ceil(num1) != num1 || ceil(num2) != num2) {
@@ -40,7 +42,7 @@ double calc(double num1, char *operation, double num2) {
             return NAN;
         }
 
-        return (int32_t)num1 & (int32_t)num2;
+        result = (int32_t)num1 & (int32_t)num2;
     }
     else if (strcmp(operation, "|") == 0) {
         if (ceil(num1) != num1 || ceil(num2) != num2) {
@@ -48,50 +50,36 @@ double calc(double num1, char *operation, double num2) {
             return NAN;
         }
 
-        return (int32_t)num1 | (int32_t)num2;
+        result = (int32_t)num1 | (int32_t)num2;
     }
     else if (strcmp(operation, "<") == 0)
-        return num1 < num2;
+        result = num1 < num2;
     else if (strcmp(operation, ">") == 0)
-        return num1 > num2;
+        result = num1 > num2;
 
     else if (strcmp(operation, "**") == 0) {
-        if (num1 < 0 && floor(num2) != num2) {
+        if (num1 < 0 && floor(num2) != num2)
             printf("Error: negative base with non-integer exponent\n\n");
-            return NAN;
-        } else
-            return pow(num1, num2);
+        else
+            result = pow(num1, num2);
     }
 
     else if (strcmp(operation, "^^") == 0) {
 
-        if (num2 != (int32_t)num2) {
+        if (num2 != (int32_t)num2)
             printf("Error: tetration height must be an integer\n\n");
-            return NAN;
-        }
-        else if (num2 < 0) {
+        else if (num2 < 0)
             printf("Error: tetration height must be non-negative\n\n");
-            return NAN;
-        }
-        else if (num1 == 0.0 && num2 == 0.0) {
+        else if (num1 == 0.0 && num2 == 0.0)
             printf("Error: 0^^0 is undefined\n\n");
-            return NAN;
-        }
         else {
 
-            double result = tetration(num1, (int)num2);
+            result = tetration(num1, (int)num2);
 
-            if (isnan(result)) {
+            if (isnan(result))
                 printf("Error: invalid input for tetration\n\n");
-                return NAN;
-            }
-            else if (isinf(result)) {
+            else if (isinf(result))
                 printf("Error: result overflow (too large)\n\n");
-                return NAN;
-            }
-            else
-                return result;
-            
         }
     }
 
@@ -100,14 +88,15 @@ double calc(double num1, char *operation, double num2) {
             printf("Error: shift amount must be between 0 and %zu\n\n", sizeof(uint64_t) * 8 - 1);
             return NAN;
         }
-        return (uint64_t)num1 << (uint64_t)num2;
+        result = (uint64_t)num1 << (uint64_t)num2;
     }
     else if (strcmp(operation, ">>") == 0) {
         if (num2 < 0 || num2 >= sizeof(long long) * 8) {
             printf("Error: shift amount must be between 0 and %zu\n\n", sizeof(int64_t) * 8 - 1);
             return NAN;
         }
-        return (int64_t)num1 >> (int64_t)num2;
+
+        result = (int64_t)num1 >> (int64_t)num2;
     }
 
     else if (strcmp(operation, "&&") == 0)
@@ -115,18 +104,23 @@ double calc(double num1, char *operation, double num2) {
     else if (strcmp(operation, "||") == 0)
         return (num1 != 0 || num2 != 0);
     else if (strcmp(operation, "<=") == 0)
-        return num1 <= num2;
+        result = num1 <= num2;
     else if (strcmp(operation, ">=") == 0)
-        return num1 >= num2;
+        result = num1 >= num2;
     else if (strcmp(operation, "!=") == 0)
-        return num1 != num2;
+        result = num1 != num2;
     else if (strcmp(operation, "==") == 0)
-        return num1 == num2;
+        result = num1 == num2;
 
-    else {
+    else
         printf("Error: Unknown operator '%s'\n\n", operation);
+    
+    if (isinf(result)) {
+        printf("Error: result overflow (too large)\n\n");
         return NAN;
     }
+        
+    return result;
 }
 
 void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
@@ -651,29 +645,6 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
 
 double CheckFunc(char *operation, char **functions, const char *uniOps, const char **multiOps, bool mathlib) {
     char op[0x3] = {0};
-
-    if (mathlib) {
-        int16_t main_op = find_main_operator_full(
-            operation,
-            multiOps,
-            uniOps,
-            op
-        );
-
-        if (main_op > 0 && operation[main_op - 1] != '(') {
-            char left[0x100], right[0x100];
-
-            strncpy(left, operation, main_op);
-            left[main_op] = '\0';
-
-            strcpy(right, operation + main_op + strlen(op));
-
-            double n1 = eval(left, mathlib);
-            double n2 = eval(right, mathlib);
-
-            return calc(n1, op, n2);
-        }
-    }
 
     if (strncmp(operation, functions[0], 5) == 0 && mathlib) //! scale()
         return s_scale(operation);

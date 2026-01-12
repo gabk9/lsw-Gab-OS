@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.2.79"
+#define VERSION "r1.2.91"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -623,8 +623,9 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         if (!isnan(result) && result != U64_NAN) {
             printf("%g\n\n", result);
             fflush(stdout);
-        } else if (result == U64_NAN)
-            puts("");
+        } 
+        if (result == U64_NAN)
+            putchar('\n');
     }
     SAFE_FREE(operation);
 }
@@ -1474,7 +1475,8 @@ void updatehistory(void) {
         "r1.2.52 - minor changes\n\tEdited: rev\n",
         "r1.2.64 - big changes\n\tAdded: tetration operator to the calculator\n",
         "r1.2.7 - small changes\n\tEdited: bc behavior with comments\n\tRemoved: comments from rev command\n",
-        "r1.2.79 - big changes\n\tAdded: fabs() and abs() function to the calculator\n"
+        "r1.2.79 - big changes\n\tAdded: fabs() and abs() function to the calculator\n",
+        "r1.2.91 - big changes\n\tFixed: early freed pointers in the calculator and negative numbers not working with mathlib turned on\n\tEdited: some calculator error messages\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
