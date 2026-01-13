@@ -56,6 +56,7 @@ double s_pounds(char *operation)__attribute__((nonnull));
 double s_randInt(char *operation)__attribute__((nonnull));
 char *find_top_level_comma(char *s)__attribute__((nonnull));
 double s_randFloat(char *operation)__attribute__((nonnull));
+int64_t parseBinToInt(const char *str)__attribute__((nonnull));
 bool parentheses_balanced(const char *s)__attribute__((nonnull));
 uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
 double s_fabs_or_abs(char *operation, bool enable_single_point)__attribute__((nonnull));

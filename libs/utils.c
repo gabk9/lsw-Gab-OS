@@ -1769,10 +1769,11 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
         pos++;
     }
 
+    bool isBinary = false; 
     if (strncasecmp(str + pos, "0x", 2) == 0) {
         base = 16;
     } else if (strncasecmp(str + pos, "0b", 2) == 0) {
-        base = 2;
+        isBinary = true;
     } else {
         return 0.0;
     }
@@ -1812,7 +1813,25 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
     strncpy(buf, str + num_start, len);
     buf[len] = '\0';
 
-    long value = strtol(buf, NULL, base);
+    int64_t value;
+    if (!isBinary)
+        value = strtol(buf, NULL, base);
+    else {
+        size_t extra = strlen(buf) + 3;
+        char *temp = malloc(extra);
+
+        if (!temp) {
+            printf("Error: Memory allocation error!\n\n");
+            return NAN;
+        }
+        temp[0] = '0';
+        temp[1] = 'b';
+        temp[2] = '\0';
+        
+        strcat(temp, buf);
+
+        value = parseBinToInt(temp);
+    }
 
     *ok = 1;
     return sign * value * mult;

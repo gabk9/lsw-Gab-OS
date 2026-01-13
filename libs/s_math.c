@@ -184,16 +184,26 @@ double h_atof(const char *str) {
         return (double)strtol(buf, NULL, 8);
     }
 
-    if (is_bin) {
-        int64_t n = 0;
-        for (uint16_t i = 0; buf[i]; i++) {
-            n <<= 1;
-            if (buf[i] == '1') n |= 1;
-        }
-        return (double)n;
-    }
+    if (is_bin)
+        return parseBinToInt(buf);
 
     return atof(buf);
+}
+
+int64_t parseBinToInt(const char *str) {
+    int64_t n = 0;
+    int32_t bits = 0;
+
+    for (uint16_t i = 2; str[i]; i++) {
+        n = (n << 1) | (str[i] - '0');
+        bits++;
+    }
+
+    if (str[2] == '1') {
+        n -= 1 << bits;
+    }
+
+    return n;
 }
 
 double s_fabs_or_abs(char *operation, bool enable_single_point) {
@@ -380,12 +390,11 @@ char *s_hex(char *operation) {
 char *s_bin(char *operation) {
     char *test = functionHandler(operation, "bin");
     if (strcmp(test, BC_ERROR) == 0)
-        return NULL; 
+        return NULL;
 
     double val = eval(test, true);
-
     SAFE_FREE(test);
-    
+
     if (val == U64_NAN) {
         putchar('\n');
         return NULL;
@@ -398,36 +407,28 @@ char *s_bin(char *operation) {
 
     int64_t n = (int64_t)val;
 
-    bool negative = (n < 0);
-    if (negative) n = -n;
-
-    if (n == 0) {
-        char *out = malloc(4);
-        strcpy(out, "0b0");
-        return out;
-    }
+    uint64_t u = (uint64_t)n;
 
     char buf[0x41];
-    uint16_t i = 64;
-    buf[i] = '\0';
+    buf[64] = '\0';
 
-    while (n > 0) {
-        buf[--i] = (n & 1) ? '1' : '0';
-        n >>= 1;
+    for (int32_t i = 63; i >= 0; i--) {
+        buf[i] = (u & 1) ? '1' : '0';
+        u >>= 1;
     }
 
-    uint16_t len = strlen(buf + i);
-    char *result = malloc(len + 3 + (negative ? 1 : 0));
+    int16_t start = 0;
+    while (start < 63 && buf[start] == buf[0] && buf[start + 1] == buf[0])
+        start++;
 
+    int16_t len = 64 - start;
+
+    char *result = malloc(len + 3);
     char *p = result;
-
-    if (negative)
-        *p++ = '-';
 
     *p++ = '0';
     *p++ = 'b';
-
-    strcpy(p, buf + i);
+    memcpy(p, buf + start, len + 1);
 
     return result;
 }
