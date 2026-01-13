@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.3.28"
+#define VERSION "r1.3.44"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1512,7 +1512,9 @@ void updatehistory(void) {
         "r1.3.05 - minor changes\n\tEdited: the command list is now sorted with 'lsw --help'\n",
         "r1.3.1 - small changes\n\tEdited: improved history command output speed\n",
         "r1.3.17 - small changes\n\tEdited: argv and argc extractor refactored\n",
-        "r1.3.28 - big changes\n\tEdited: now binaries work with negative numbers and they can be converted from them\n"
+        "r1.3.28 - big changes\n\tEdited: now binaries work with negative numbers and they can be converted from them\n",
+        "r1.3.4 - big changes\n\tAdded: '~' unary operator to the calculator\n",
+        "r1.3.44 - small changes\n\tEdited: bc manual\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

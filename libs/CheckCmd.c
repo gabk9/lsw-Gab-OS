@@ -230,73 +230,132 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'bc' a simple calculator on the terminal, so far it only works with 2 numbers.\n\nbc [OPTION...]\n\nOptions:\n");
         printf("\t'-q', '--quiet'     will not print the initial text\n");
         printf("\t'-l', '--mathlib'   includes the mathlib header\n");
-        printf("\nOperators:\n"
-               "\t'+'    : Addition\n"
-               "\t'-'    : Subtraction\n"
-               "\t'*'    : Multiplication\n"
-               "\t'**'   : Power (num1 raised to num2)\n"
-               "\t'^^'   : Tetration (num1 raised to itself num2 times)\n"
-               "\t'/'    : Division\n"
-               "\t'%%'    : Modulus (remainder of division)\n"
-               "\t'^'    : Bitwise XOR (1 if bits differ)\n"
-               "\t'&'    : Bitwise AND (1 only if both bits are 1)\n"
-               "\t'|'    : Bitwise OR  (1 if at least one bit is 1)\n"
-               "\t'<<'   : Bitwise left shift (num1 shifted left num2 times)\n"
-               "\t'>>'   : Bitwise right shift (num1 shifted right num2 times)\n"
-               "\t'&&'   : Logical AND (true if both nonzero)\n"
-               "\t'||'   : Logical OR  (true if at least one nonzero)\n"
-               "\t'<'    : Less than (true if num1 < num2)\n"
-               "\t'<='   : Less than or equal (true if num1 <= num2)\n"
-               "\t'>'    : Greater than (true if num1 > num2)\n"
-               "\t'>='   : Greater than or equal (true if num1 >= num2)\n"
-               "\t'=='   : Equal to (true if num1 equals num2)\n"
-               "\t'!='   : Not equal to (true if num1 differs from num2)\n"
+        printf(
+            "\nOperations:\n"
+            "\t'+'    : Addition\n"
+            "\t        Example: 2 + 3 = 5\n"
+            "\t'-'    : Subtraction\n"
+            "\t        Example: 10 - 4 = 6\n"
+            "\t'*'    : Multiplication\n"
+            "\t        Example: 6 * 7 = 42\n"
+            "\t'/'    : Division\n"
+            "\t        Example: 8 / 2 = 4\n"
+            "\t'%%'    : Modulus (remainder of division)\n"
+            "\t        Example: 10 %% 3 = 1\n"
+            "\t'**'   : Power (num1 raised to num2)\n"
+            "\t        Example: 2 ** 5 = 32\n"
+            "\t'^^'   : Tetration (num1 raised to itself num2 times)\n"
+            "\t        Example: 2 ^^ 3 = 16\n"
+            "\t'^'    : Bitwise XOR\n"
+            "\t        Example: 5 ^ 3 = 6\n"
+            "\t'&'    : Bitwise AND\n"
+            "\t        Example: 5 & 3 = 1\n"
+            "\t'|'    : Bitwise OR\n"
+            "\t        Example: 5 | 2 = 7\n"
+            "\t'<<'   : Bitwise left shift\n"
+            "\t        Example: 1 << 3 = 8\n"
+            "\t'>>'   : Bitwise right shift\n"
+            "\t        Example: 8 >> 2 = 2\n"
+            "\t'&&'   : Logical AND\n"
+            "\t        Example: 5 && 0 = 0\n"
+            "\t'||'   : Logical OR\n"
+            "\t        Example: 0 || 5 = 1\n"
+            "\t'<'    : Less than\n"
+            "\t        Example: 2 < 5 = 1\n"
+            "\t'<='   : Less than or equal\n"
+            "\t        Example: 5 <= 5 = 1\n"
+            "\t'>'    : Greater than\n"
+            "\t        Example: 8 > 3 = 1\n"
+            "\t'>='   : Greater than or equal\n"
+            "\t        Example: 4 >= 4 = 1\n"
+            "\t'=='   : Equal to\n"
+            "\t        Example: 6 == 6 = 1\n"
+            "\t'!='   : Not equal to\n"
+            "\t        Example: 6 != 5 = 1\n"
 
-               "\nFunctions: (only works if mathlib is turned on)\n"
-               "\tclear, cls     : Clears the calculator scrollback\n"
-               "\tmathlib        : Turns mathlib on/off\n"
-               "\tscale(X)       : Sets the precision (number of digits after decimal)\n"
-               "\tsqrt(X)        : Calculates the square root of X\n"
-               "\troot(X, Y)     : Calculates the Y-th root of X\n"
-               "\tsin(X)         : Calculates the sine of X\n"
-               "\tcos(X)         : Calculates the cosine of X\n"
-               "\ttan(X)         : Calculates the tangent of X\n"
-               "\trad(X)         : Converts radian to degrees\n"
-               "\tdeg(X)         : Converts degrees to radians\n"
-               "\tln(X)          : Calculates the natural logarithm of X\n"
-               "\tlog10(X)       : Calculates the base 10 logarithm of X\n"
-               "\tlog2(X)        : Calculates the base 2 logarithm of X\n"
-               "\tlog(X, Y)      : Calculates the base X logarithm of Y\n"
-               "\tfloor(X)       : Rounds X down to the nearest integer\n"
-               "\tceil(X)        : Rounds X up to the nearest integer\n"
-               "\tround(X)       : Rounds X to the nearest integer\n"
-               "\tfact(X)        : Calculates the factorial of X (X!)\n"
-               "\tsum(X, Y, Z)   : Calculates the sum of all numeric values from X up to Y (inclusive), stepping by Z. If Z is not provided, it defaults to 1\n"
-               "\ttrunc(X)       : Returns the integer part of a floating point number\n"
-               "\trand(X, Y)     : Randomizes an integer between X and Y (inclusive)\n\t\t         keywords: RAND_MAX (not case sensitive)\n\n"
-               "\trandf(X, Y)    : Randomizes a floating point number between X and Y (inclusive)\n\t\t         keywords: RAND_MAX (not case sensitive)\n\n"
-               "\thex(X)         : Converts X to hexadecimal\n"
-               "\toct(X)         : Converts X to octal\n"
-               "\tbin(X)         : Converts X to binary\n"
-               "\tfah(X)         : Converts X celsius to fahrenheit\n"
-               "\tcel(X)         : Converts X fahrenheit to celsius\n"
-               "\tmi(X)          : Converts X to miles\n"
-               "\tkm(X)          : Converts X to kilometers\n"
-               "\tlb(X)          : Converts X to pounds\n"
-               "\tkg(X)          : Converts X to kilograms\n"
-               "\tfabs(X)        : Returns the absolute value of a single point precision number (X)\n"
-               "\tabs(X)         : Returns the absolute value of an integer number (X)\n"
+            "\nFunctions: (only works if mathlib is turned on)\n"
+            "\tclear, cls     : Clears the calculator scrollback\n"
+            "\tmathlib        : Turns mathlib on/off\n"
+            "\tscale(X)       : Sets decimal precision\n"
+            "\t               Example: scale(3.1415) = 4\n"
+            "\tsqrt(X)        : Square root\n"
+            "\t               Example: sqrt(16) = 4\n"
+            "\troot(X, Y)     : Y-th root of X\n"
+            "\t               Example: root(27, 3) = 3\n"
+            "\tsin(X)         : Sine of X\n"
+            "\t               Example: sin(90) = 1\n"
+            "\tcos(X)         : Cosine of X\n"
+            "\t               Example: cos(0) = 1\n"
+            "\ttan(X)         : Tangent of X\n"
+            "\t               Example: tan(45) = 1\n"
+            "\trad(X)         : Radians to degrees\n"
+            "\t               Example: rad(3.1415) = 180\n"
+            "\tdeg(X)         : Degrees to radians\n"
+            "\t               Example: deg(180) = 3.1415\n"
+            "\tln(X)          : Natural logarithm\n"
+            "\t               Example: ln(E) = 1\n"
+            "\tlog10(X)       : Base-10 logarithm\n"
+            "\t               Example: log10(1000) = 3\n"
+            "\tlog2(X)        : Base-2 logarithm\n"
+            "\t               Example: log2(8) = 3\n"
+            "\tlog(X, Y)      : Logarithm of Y in base X\n"
+            "\t               Example: log(2, 32) = 5\n"
+            "\tfloor(X)       : Rounds down\n"
+            "\t               Example: floor(3.7) = 3\n"
+            "\tceil(X)        : Rounds up\n"
+            "\t               Example: ceil(3.2) = 4\n"
+            "\tround(X)       : Rounds to nearest integer\n"
+            "\t               Example: round(3.5) = 4\n"
+            "\tfact(X)        : Factorial\n"
+            "\t               Example: fact(5) = 120\n"
+            "\tsum(X, Y, Z)   : Sum from X to Y with step Z\n"
+            "\t               Example: sum(1, 10, 2) = 25\n"
+            "\ttrunc(X)       : Integer part of X\n"
+            "\t               Example: trunc(3.9) = 3\n"
+            "\trand(X, Y)     : Random integer between X and Y\n"
+            "\t               Example: rand(1, 10)\n"
+            "\trandf(X, Y)    : Random float between X and Y\n"
+            "\t               Example: randf(0, 1)\n"
+            "\thex(X)         : Convert X to hexadecimal\n"
+            "\t               Example: hex(255) = 0xFF\n"
+            "\toct(X)         : Convert X to octal\n"
+            "\t               Example: oct(8) = 010\n"
+            "\tbin(X)         : Convert X to binary\n"
+            "\t               Example: bin(5) = 0b0101\n"
+            "\tfah(X)         : Celsius to Fahrenheit\n"
+            "\t               Example: fah(0) = 32\n"
+            "\tcel(X)         : Fahrenheit to Celsius\n"
+            "\t               Example: cel(32) = 0\n"
+            "\tmi(X)          : Kilometers to miles\n"
+            "\t               Example: mi(1) = 0.621\n"
+            "\tkm(X)          : Miles to kilometers\n"
+            "\t               Example: km(1) = 1.609\n"
+            "\tlb(X)          : Kilograms to pounds\n"
+            "\t               Example: lb(1) = 2.2046\n"
+            "\tkg(X)          : Pounds to kilograms\n"
+            "\t               Example: kg(1) = 0.4535\n"
+            "\tfabs(X)        : Absolute value (float)\n"
+            "\t               Example: fabs(-3.5) = 3.5\n"
+            "\tabs(X)         : Absolute value (integer)\n"
+            "\t               Example: abs(-7) = 7\n"
 
-               "\nConstants:\n"
-               "\tPI   : 3.1415... constant (not case sensitive)\n"
-               "\tE    : 2.7182... constant (not case sensitive)\n"
+            "\nConstants:\n"
+            "\tPI   : 3.141592...\n"
+            "\t       Example: sin(PI / 2) = 1\n"
+            "\tE    : 2.718281...\n"
+            "\t       Example: ln(E) = 1\n"
 
-               "\nSuffixes: (not case sensitive and only works for non hexadecimals)\n"
-               "\tK   : 1.000               (1e+3)\n"
-               "\tM   : 1.000.000           (1e+6)\n"
-               "\tB   : 1.000.000.000       (1e+9)\n"
-               "\tT   : 1.000.000.000.000   (1e+12)\n"
-        );
+            "\nSuffixes: (not case sensitive and only works for non hexadecimals)\n"
+            "\tK   : 1.000               (1e+3)\n"
+            "\t       Example: 5K = 5.000\n"
+            "\tM   : 1.000.000           (1e+6)\n"
+            "\t       Example: 3M = 3.000.000\n"
+            "\tB   : 1.000.000.000       (1e+9)\n"
+            "\t       Example: 2B = 2.000.000.000\n"
+            "\tT   : 1.000.000.000.000   (1e+12)\n"
+            "\t       Example: 1T = 1.000.000.000.000\n"
+            );
+
 
     }
 
@@ -679,6 +738,21 @@ double CheckFunc(char *operation, char **functions, const char *uniOps, const ch
         return s_fabs_or_abs(operation, true);
 
     uint16_t op_pos = 0;
+    if (operation[0] == '~') {
+        double v = eval(operation + 1, mathlib);
+
+        if (v != (int64_t)v) {
+            printf("Error: to use the not(~) operator the number must be integer\n\n");
+            return NAN;
+        }
+
+        if (v < INT64_MIN || v > INT64_MAX) {
+            printf("Error: integer overflow\n\n");
+            return NAN;
+        }
+
+        return (double)(~(int64_t)v);
+    }
 
     for (uint16_t i = 0; operation[i]; i++) {
         for (uint16_t j = 0; multiOps[j]; j++) {
@@ -711,6 +785,42 @@ op_found:
         char *num1 = buffer;
         char *num2 = buffer + op_pos + strlen(op);
 
-        return calc(h_atof(num1), op, h_atof(num2));
+        double num1_int;
+        if (num1[0] == '~') {
+            num1_int = eval(num1+1, mathlib); 
+            
+            if (num1_int != (int64_t)num1_int) {
+                printf("Error: to use the not(~) operator the number must be integer\n\n");
+                return NAN;
+            }
+
+            if (num1_int < INT64_MIN || num1_int > INT64_MAX) {
+                printf("Error: integer overflow\n\n");
+                return NAN;
+            }
+
+            num1_int = ~(int64_t)num1_int;
+        } else
+            num1_int = eval(num1, mathlib);
+
+        double num2_int;
+        if (num2[0] == '~') {
+            num2_int = eval(num2+1, mathlib); 
+
+            if (num2_int != (int64_t)num2_int) {
+                printf("Error: to use the not(~) operator the number must be integer\n\n");
+                return NAN;
+            }
+
+            if (num2_int < INT64_MIN || num2_int > INT64_MAX) {
+                printf("Error: integer overflow\n\n");
+                return NAN;
+            }
+
+            num2_int = ~(int64_t)num2_int;
+        } else
+            num2_int = eval(num2, mathlib);
+
+        return calc(num1_int, op, num2_int);
     }
 }
