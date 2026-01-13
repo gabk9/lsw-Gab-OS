@@ -158,6 +158,7 @@ char **readHistory(const char *address, uint32_t *lineCount);
 
 char **copyMat(char **dest, const char **src, uint16_t size);
 void printInFileNTimes(FILE *stream, char *str, int64_t count);
+char **extract_args(char *args, uint16_t *argc, char *firstArg);
 uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
 void split_instruction_args(char *line, char **out_cmd, char **out_args);

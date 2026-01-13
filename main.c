@@ -12,8 +12,8 @@
 int main(int argc, char **argv) {
 #ifdef _WIN32
     SetUnhandledExceptionFilter(handler);
-    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    setup_console();strlen(operation)
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE); 
+    setup_console();
 #endif
     initRandom();
 

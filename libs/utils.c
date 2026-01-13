@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 181000
+#define PROJ_SIZE_APPROX 182000
 #define PROJ_LINES_APPROX 6400
 
 #define ALIAS_FILE "shortcut.txt"
@@ -31,6 +31,27 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+char **extract_args(char *args, uint16_t *argc, char *firstArg) {
+    char **argv = malloc(sizeof(char*) * MAX_ARGS);
+    if (!argv) return NULL;
+
+    *argc = 1;
+    argv[0] = firstArg;
+
+    uint16_t count = 0;
+    if (args) {
+        char **list = parseData(args, &count);
+
+        for (uint16_t i = 0; i < count && *argc < MAX_ARGS; i++) {
+            argv[(*argc)++] = list[i];
+        }
+
+        SAFE_FREE(list);
+    }
+    return argv;
+}
+
 
 int8_t isAppend(const char *str) {
     uint16_t in_single = 0, in_double = 0;
@@ -1584,27 +1605,15 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
             }
             trim(option);
 
-            char *argv_bash[MAX_ARGS];
-            uint16_t argc_bash = 1;
-
-            argv_bash[0] = "bash";
-
-            uint16_t count = 0;
-            char **list;
-            if (args) {
-                list = parseData(args, &count);
-        
-                for (uint16_t i = 0; i < count && argc_bash < MAX_ARGS; i++) {
-                    argv_bash[argc_bash++] = list[i];
-                }
-            }
+            uint16_t argc_bash;
+            char **argv_bash = extract_args(args, &argc_bash, "bash");
 
             bashCmd(argc_bash, argv_bash, cmds, cmdCount, true);
             
             if (args) {
-                for (uint16_t i = 0; i < count; i++)
-                    SAFE_FREE(list[i]);
-                SAFE_FREE(list);
+                for (uint16_t i = 1; i < argc_bash; i++)
+                    SAFE_FREE(argv_bash[i]);
+                SAFE_FREE(argv_bash);
             }
 
             SAFE_FREE(clean);

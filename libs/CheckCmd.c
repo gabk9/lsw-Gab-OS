@@ -495,27 +495,15 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         touchCmd(args ? args : "");
 
     else if (strcmp(instruction, cmds[16]) == 0) { //! rm
-        char *argv_rm[MAX_ARGS];
-        uint16_t argc_rm = 1;
-
-        argv_rm[0] = "rm";
-
-        uint16_t count = 0;
-        char **list;
-        if (args) {
-            list = parseData(args, &count);
-    
-            for (uint16_t i = 0; i < count && argc_rm < MAX_ARGS; i++) {
-                argv_rm[argc_rm++] = list[i];
-            }
-        }
+        uint16_t argc_rm;
+        char **argv_rm = extract_args(args, &argc_rm, "rm");
 
         rmCmd(args ? argc_rm : 1, argv_rm);
 
         if (args) {
-            for (uint16_t i = 0; i < count; i++)
-                SAFE_FREE(list[i]);
-            SAFE_FREE(list);
+            for (uint16_t i = 1; i < argc_rm; i++)
+                SAFE_FREE(argv_rm[i]);
+            SAFE_FREE(argv_rm);
         }
     }
 
@@ -523,43 +511,34 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         historyCmd(history_path);
 
     else if (strcmp(instruction, cmds[18]) == 0) { //! uname
-        char *argv_uname[MAX_ARGS];
-        uint16_t argc_uname = 1;
-
-        argv_uname[0] = "uname";
-
-        if (args) {
-            char *token = strtok(args, " ");
-            while (token && argc_uname < MAX_ARGS) {
-                argv_uname[argc_uname++] = token;
-                token = strtok(NULL, " ");
-            }
-        }
+        uint16_t argc_uname;
+        char **argv_uname = extract_args(args, &argc_uname, "uname");
         
         char *info = unameCmd(argc_uname, argv_uname);
 
         if (info)
             puts(info);
+
+        if (args) {
+            for (uint16_t i = 1; i < argc_uname; i++)
+                SAFE_FREE(argv_uname[i]);
+            SAFE_FREE(argv_uname);
+        }   
     }
     
     else if (strcmp(instruction, cmds[19]) == 0) //! grep
         grepCmd(args ? args : "");
 
     else if (strcmp(instruction, cmds[20]) == 0) { //! bc
-        char *argv_bc[MAX_ARGS];
-        uint16_t argc_bc = 1;
-
-        argv_bc[0] = "bc";
-
-        if (args) {
-            char *token = strtok(args, " ");
-            while (token && argc_bc < MAX_ARGS) {
-                argv_bc[argc_bc++] = token;
-                token = strtok(NULL, " ");
-            }
-        }
+        uint16_t argc_bc;
+        char **argv_bc = extract_args(args, &argc_bc, "bc");
 
         bcCmd(argc_bc, argv_bc, cmds);
+        if (args) {
+            for (uint16_t i = 1; i < argc_bc; i++)
+                SAFE_FREE(argv_bc[i]);
+            SAFE_FREE(argv_bc);
+        }   
     }
     
     else if (strcmp(instruction, cmds[21]) == 0) //! drives
@@ -578,27 +557,15 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         renameCmd(args ? args : "");
 
     else if (strcmp(instruction, cmds[26]) == 0 && isInsideBash) { //! bash
-       char *argv_bash[MAX_ARGS];
-        uint16_t argc_bash = 1;
-
-        argv_bash[0] = "bash";
-
-        uint16_t count = 0;
-        char **list;
-        if (args) {
-            list = parseData(args, &count);
-    
-            for (uint16_t i = 0; i < count && argc_bash < MAX_ARGS; i++) {
-                argv_bash[argc_bash++] = list[i];
-            }
-        }
+        uint16_t argc_bash;
+        char **argv_bash = extract_args(args, &argc_bash, "bash");
 
         bashCmd(argc_bash, argv_bash, cmds, cmdCount, true);
         
         if (args) {
-            for (uint16_t i = 0; i < count; i++)
-                SAFE_FREE(list[i]);
-            SAFE_FREE(list);
+            for (uint16_t i = 1; i < argc_bash; i++)
+                SAFE_FREE(argv_bash[i]);
+            SAFE_FREE(argv_bash);
         }
     }
 

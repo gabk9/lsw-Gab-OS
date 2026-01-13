@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.2.97"
+#define VERSION "r1.3.17"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -379,10 +379,26 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
                "\t'-h', '--help'      display manual\n"
                "\t'-a', '--all'       displays everything\n\n");
         printf("Commands:\n");
-        for (uint16_t i = 0; i < cmdCount; i++)
-            printf("\t%s\n", cmds[i]);
-    }
 
+        char **copy = NULL;
+        static int8_t initialized = 0;
+
+        if (!initialized) {
+            copy = malloc(cmdCount * sizeof(char *));
+            for (uint16_t i = 0; i < cmdCount; i++)
+                copy[i] = strdup(cmds[i]);
+
+            bsort(copy, cmdCount);
+            initialized = 1;
+        }
+
+        for (uint16_t i = 0; i < cmdCount; i++)
+            printf("\t%s\n", copy[i]);
+            
+        for (uint16_t i = 0; i < cmdCount; i++)
+            SAFE_FREE(copy[i]);
+        SAFE_FREE(copy);
+    }
 }
 
 void renameCmd(char *instruction) {
@@ -457,7 +473,7 @@ void manCmdMulti(char *instruction, const char **cmds, uint8_t isInsideBash) {
 void clearHistoryCmd(const char *path) {
     char answer[0x20];
     
-    printf("Are you sure you want to delete 'history.txt'? (y/n): ");
+    printf("Are you sure you want to clear 'history.txt'? (y/n): ");
     if (!fgets(answer, sizeof(answer), stdin)) {
         puts("Error reading input");
         return;
@@ -470,11 +486,12 @@ void clearHistoryCmd(const char *path) {
 
     if (answer[0] == 'y' && (answer[1] == '\0' || answer[1] == ' ')) {
 
-        if (remove(path) != 0) {
+        FILE *f = fopen(path, "w");
+
+        if (!f) 
             perror("Error");
-        } else {
-            puts("'history.txt' deleted successfully");
-        }
+        else
+            puts("'history.txt' cleared successfully");
 
     } else {
         puts("Deletion cancelled");
@@ -533,13 +550,15 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
 
     while (true) {
-        if (!appear && !quiet) {
-            printf("A simple calculator command, so far it only works with 2 numbers, type 'quit' or 'exit' to exit\n");
-            printf("type 'man' to check the manual inside the calculator, otherwise use 'man bc'\n");
-            printf("it no longer supports comma instead of dots and type 'clear' or 'cls' to clear the screen and scrollback buffer");
-            printf("\nPS: mathlib is off by default, type 'mathlib' to turn it on/off "
-                   "if you're inside the terminal, otherwise use 'bc -l' or 'bc --mathlib', it enables functions and "
-                   "binary, hexadecimal and octal numbers\n");
+        if (!appear) {
+            if (!quiet) {
+                printf("A simple calculator command, so far it only works with 2 numbers, type 'quit' or 'exit' to exit\n");
+                printf("type 'man' to check the manual inside the calculator, otherwise use 'man bc'\n");
+                printf("it no longer supports comma instead of dots and type 'clear' or 'cls' to clear the screen and scrollback buffer");
+                printf("\nPS: mathlib is off by default, type 'mathlib' to turn it on/off "
+                       "if you're inside the terminal, otherwise use 'bc -l' or 'bc --mathlib', it enables functions and "
+                       "binary, hexadecimal and octal numbers\n");
+            }
             printf("Mathlib status: ");
             if (mathlib)
                 printc("on\n\n", GREEN, WHITE);
@@ -753,7 +772,7 @@ void historyCmd(const char *path) {
         return;
     }
 
-    uint32_t lineCount = 0;
+    uint32_t lineCount = 1;
 
     //* temporary, ig
     // char **lines = readHistory(path, &lineCount);
@@ -765,7 +784,7 @@ void historyCmd(const char *path) {
 
     // for (uint32_t i = 0; i < lineCount; i++) {
     //     charReplace(lines[i], '\n', '\0');
-    //     printf("%05u  %s\n", i + 1, lines[i]);
+    //     printf("%05u  %s\n", lineCount++, lines[i]);
     // }
 
     // for (uint32_t i = 0; i < lineCount; i++)
@@ -773,15 +792,21 @@ void historyCmd(const char *path) {
 
     // SAFE_FREE(lines);
 
-    char buffer[0x400];
-    while (fgets(buffer, sizeof(buffer), f)) {
-        buffer[strcspn(buffer, "\n")] = '\0';
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    fseek(f, 0, SEEK_SET);
 
-        printf("%5u  %s\n", lineCount, buffer);
-        lineCount++;
+    char *fileBuffer = malloc(size + 1);
+    fread(fileBuffer, 1, size, f);
+    fileBuffer[size] = '\0';
+
+    char *line = strtok(fileBuffer, "\n");
+    while (line) {
+        printf("%5u  %s\n", lineCount++, line);
+        line = strtok(NULL, "\n");
     }
 
-    SAFE_FCLOSE(f);
+    free(fileBuffer);
 }
 
 void rmCmd(uint16_t argc, char **argv) {
@@ -1324,7 +1349,7 @@ void cmdsCommand(const char **cmds, uint16_t count, uint8_t isInsideBash) {
         puts(copy[i]);
     }
 
-    count = (isInsideBash) ? count : count - 1;
+    count = isInsideBash ? count : count - 1;
 
     printf("\n\nTotal commands: %"PRIu16"\n", count);
 }
@@ -1482,8 +1507,12 @@ void updatehistory(void) {
         "r1.2.7 - small changes\n\tEdited: bc behavior with comments\n\tRemoved: comments from rev command\n",
         "r1.2.79 - big changes\n\tAdded: fabs() and abs() function to the calculator\n",
         "r1.2.91 - big changes\n\tFixed: early freed pointers in the calculator and negative numbers not working with mathlib turned on\n\tEdited: some calculator error messages\n",
-        "r1.2.97 - small changes\n\tEdited: bash command strings\n"
-        };
+        "r1.2.97 - small changes\n\tEdited: bash command strings\n",
+        "r1.3.0 - minor changes\n\tEdited: bc initial message\n",
+        "r1.3.05 - minor changes\n\tEdited: the command list is now sorted with 'lsw --help'\n",
+        "r1.3.1 - small changes\n\tEdited: improved history command output speed\n",
+        "r1.3.17 - small changes\n\tEdited: argv and argc extractor refactored\n"
+    };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
 
