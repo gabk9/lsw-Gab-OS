@@ -1108,35 +1108,30 @@ char *unameCmdLinux(uint8_t flags) {
     }
     
     if (flags & U_OPERATING_SYSTEM) {
-    #ifdef __linux__
+
+    #if defined(__ANDROID__)
+        strcat(result, "Android ");
+
+    #elif defined(__linux__)
+
         FILE *fp = fopen("/proc/version", "r");
 
-        if (!fp) {
-            sprintf(buffer, "%s ", pc.sysname);
-            strcat(result, buffer);
-        } else {
-            char version[0x100];
+        if (fp) {
+            char version[256];
 
             if (fgets(version, sizeof(version), fp)) {
-                if (strstr(version, "GNU")) {
+                if (strstr(version, "GNU"))
                     strcat(result, "GNU/Linux ");
-                } else {
-                    sprintf(buffer, "%s ", pc.sysname);
-                    strcat(result, buffer);
-                }
+                else
+                    strcat(result, "Linux ");
             } else {
-                sprintf(buffer, "%s ", pc.sysname);
-                strcat(result, buffer);
+                strcat(result, "Linux ");
             }
 
             SAFE_FCLOSE(fp);
+        } else {
+            strcat(result, "Linux ");
         }
-
-        char test[sizeof(buffer)];
-        sprintf(test, "%s", pc.version);
-
-        if (strcasestr(test, "android"))
-            strcpy(result, "Android ");
 
     #else
         sprintf(buffer, "%s ", pc.sysname);
