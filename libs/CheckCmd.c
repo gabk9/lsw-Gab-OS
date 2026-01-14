@@ -824,7 +824,7 @@ double CheckFunc(char *operation, char **functions, const char *uniOps, const ch
             return NAN;
         }
 
-        if (v < (double)INT64_MIN || v > (double)INT64_MAX) {
+        if (v < MIN_SAFE_INT64_D || v > MAX_SAFE_INT64_D) {
             printf("Error: integer overflow\n\n");
             return NAN;
         }
@@ -872,7 +872,7 @@ op_found:
                 return NAN;
             }
 
-            if (num1_int < INT64_MIN || num1_int > INT64_MAX) {
+            if (num1_int < MIN_SAFE_INT64_D || num1_int > MAX_SAFE_INT64_D) {
                 printf("Error: integer overflow\n\n");
                 return NAN;
             }
@@ -890,7 +890,7 @@ op_found:
                 return NAN;
             }
 
-            if (num2_int < INT64_MIN || num2_int > INT64_MAX) {
+            if (num2_int < MIN_SAFE_INT64_D || num2_int > MAX_SAFE_INT64_D) {
                 printf("Error: integer overflow\n\n");
                 return NAN;
             }
