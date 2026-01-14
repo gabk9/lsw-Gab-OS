@@ -203,7 +203,7 @@ char *randstrCmd(char *instruction) {
         }
     }
 
-    if (len == U64_NAN) {
+    if (len == (double)U64_NAN) {
         errno = EINVAL;
         perror("Error");
         return NULL;
@@ -269,7 +269,7 @@ void sleepCmd(char *instruction) {
 
     double time = eval(instruction, true);
 
-    if (isnan(time) || time == U64_NAN)
+    if (isnan(time) || time == (double)U64_NAN)
         return;
 
     time *= unit;
@@ -644,11 +644,11 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
         result = eval(operation, mathlib);
 
-        if (!isnan(result) && result != U64_NAN) {
+        if (!isnan(result) && result != (double)U64_NAN) {
             printf("%g\n\n", result);
             fflush(stdout);
         } 
-        if (result == U64_NAN)
+        if (result == (double)U64_NAN)
             putchar('\n');
     }
     SAFE_FREE(operation);
@@ -963,7 +963,7 @@ void touchCmd(char *instruction) {
         if (!QuoteAfterStar) {
             count = eval(num+1, true);
     
-            if (count == U64_NAN) {
+            if (count == (double)U64_NAN) {
                 SAFE_FREE(copy);
                 SAFE_FREE(test);
                 return;

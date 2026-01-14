@@ -117,7 +117,7 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
     if (!QuoteAfterStar) {
         count = eval(num+1, true);
 
-        if (count == U64_NAN) {
+        if (count == (double)U64_NAN) {
             return 0;
         }
 
@@ -220,7 +220,7 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
 
         count = eval(star, true);
 
-        if (count == U64_NAN || count <= 0 || ceil(count) != count) {
+        if (count == (double)U64_NAN || count <= 0 || ceil(count) != count) {
             puts("Error: invalid repetition count");
             goto fail;
         }

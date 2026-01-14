@@ -214,7 +214,7 @@ double s_fabs_or_abs(char *operation, bool enable_single_point) {
     double value = eval(test, true);
 
     SAFE_FREE(test);
-    if (value == U64_NAN) {
+    if (value == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }
@@ -236,7 +236,7 @@ double s_miles(char *operation) {
     double km = eval(test, true);
 
     SAFE_FREE(test);
-    if (km == U64_NAN) {
+    if (km == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -251,7 +251,7 @@ double s_km(char *operation) {
     double miles = eval(test, true);
 
     SAFE_FREE(test);
-    if (miles == U64_NAN) {
+    if (miles == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }
@@ -266,7 +266,7 @@ double s_pounds(char *operation) {
     double kg = eval(test, true);
     
     SAFE_FREE(test);
-    if (kg == U64_NAN) {
+    if (kg == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }
@@ -281,7 +281,7 @@ double s_kg(char *operation) {
     double lbs = eval(test, true);
     
     SAFE_FREE(test);
-    if (lbs == U64_NAN) {
+    if (lbs == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }
@@ -296,7 +296,7 @@ double s_fah(char *operation) {
     double cel = eval(test, true);
     
     SAFE_FREE(test);
-    if (cel == U64_NAN) {
+    if (cel == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }
@@ -311,7 +311,7 @@ double s_cel(char *operation) {
     double fah = eval(test, true);
     
     SAFE_FREE(test);
-    if (fah == U64_NAN) {
+    if (fah == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }
@@ -327,7 +327,7 @@ char *s_oct(char *operation) {
 
     SAFE_FREE(test);
     
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NULL;
     }
@@ -359,7 +359,7 @@ char *s_hex(char *operation) {
     double val = eval(test, true);
 
     SAFE_FREE(test);
-    if (val == U64_NAN) {
+    if (val == (double)U64_NAN) {
         putchar('\n');
         return NULL;
     }
@@ -395,7 +395,7 @@ char *s_bin(char *operation) {
     double val = eval(test, true);
     SAFE_FREE(test);
 
-    if (val == U64_NAN) {
+    if (val == (double)U64_NAN) {
         putchar('\n');
         return NULL;
     }
@@ -440,7 +440,7 @@ double s_trunc(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -455,7 +455,7 @@ double s_rad(char *operation) {
     double deg = eval(test, true);
 
     SAFE_FREE(test);
-    if (deg == U64_NAN) {
+    if (deg == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -470,7 +470,7 @@ double s_deg(char *operation) {
     double rad = eval(test, true);
 
     SAFE_FREE(test);
-    if (rad == U64_NAN) {
+    if (rad == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }
@@ -485,7 +485,7 @@ double s_sqrt(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }
@@ -506,7 +506,7 @@ double s_scale(char *operation) {
     double value = eval(test, true);
 
     SAFE_FREE(test);
-    if (value == U64_NAN) {
+    if (value == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -544,7 +544,7 @@ double s_sin(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -567,7 +567,7 @@ double s_cos(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -591,7 +591,7 @@ double s_tan(char *operation) {
     double angle = eval(test, true);
 
     SAFE_FREE(test);
-    if (angle == U64_NAN) {
+    if (angle == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -617,7 +617,7 @@ double s_ln(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -632,7 +632,7 @@ double s_log10(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -647,7 +647,7 @@ double s_log2(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }    
@@ -682,7 +682,7 @@ double s_root(char *operation) {
 
     double index = eval(indexStr, true);
 
-    if (index == U64_NAN) {
+    if (index == (double)U64_NAN) {
         putchar('\n');
         SAFE_FREE(test);
         return NAN;
@@ -690,7 +690,7 @@ double s_root(char *operation) {
     
     double rooting = eval(rootingStr, true);
 
-    if (rooting == U64_NAN) {
+    if (rooting == (double)U64_NAN) {
         putchar('\n');
         SAFE_FREE(test);
         return NAN;
@@ -761,7 +761,7 @@ double s_log(char *operation) {
 
     double base = eval(baseStr, true);
 
-    if (base == U64_NAN) {
+    if (base == (double)U64_NAN) {
         putchar('\n');
         SAFE_FREE(test);
         return NAN;
@@ -769,7 +769,7 @@ double s_log(char *operation) {
 
     double num = eval(numStr, true);
     
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         SAFE_FREE(test);
         return NAN;
@@ -821,7 +821,7 @@ double s_randFloat(char *operation) {
     else 
         maxLf = eval(str_max, true);
 
-    if (maxLf == U64_NAN) {
+    if (maxLf == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }  
@@ -831,7 +831,7 @@ double s_randFloat(char *operation) {
     else 
         minLf = eval(str_min, true);
     
-    if (minLf == U64_NAN) {
+    if (minLf == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }  
@@ -876,7 +876,7 @@ double s_randInt(char *operation) {
     else 
         maxInt = eval(str_max, true);
 
-    if (maxInt == U64_NAN) {
+    if (maxInt == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }  
@@ -886,7 +886,7 @@ double s_randInt(char *operation) {
     else 
         minInt = eval(str_min, true);
     
-    if (minInt == U64_NAN) {
+    if (minInt == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }  
@@ -908,7 +908,7 @@ double s_floor(char *operation) {
     double num = eval(test, true);
     
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }   
@@ -924,7 +924,7 @@ double s_ceil(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }   
@@ -939,7 +939,7 @@ double s_round(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }   
@@ -983,7 +983,7 @@ double s_fact(char *operation) {
     double num = eval(test, true);
     SAFE_FREE(test);
 
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }   
@@ -1003,7 +1003,7 @@ double s_sign(char *operation) {
     double num = eval(test, true);
     SAFE_FREE(test);
 
-    if (num == U64_NAN) {
+    if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }   
@@ -1078,7 +1078,7 @@ double s_sum(char *operation) {
 
     double init = eval(initStr, true);
 
-    if (init == U64_NAN) {
+    if (init == (double)U64_NAN) {
         putchar('\n');
         SAFE_FREE(test);
         return NAN;
@@ -1086,7 +1086,7 @@ double s_sum(char *operation) {
 
     double end  = eval(endStr, true);
 
-    if (end == U64_NAN) {
+    if (end == (double)U64_NAN) {
         putchar('\n');
         SAFE_FREE(test);
         return NAN;
@@ -1095,7 +1095,7 @@ double s_sum(char *operation) {
     char defaultDiff[] = "1";
     double diff = eval(diffStr ? diffStr : defaultDiff, true);
 
-    if (diff == U64_NAN) {
+    if (diff == (double)U64_NAN) {
         putchar('\n');
         SAFE_FREE(test);
         return NAN;

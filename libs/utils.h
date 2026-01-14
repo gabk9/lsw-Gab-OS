@@ -40,8 +40,8 @@
 #define MAX_ARGS 0x20
 #define MAX_CHAR (1ULL << 10)
 #define TIME_FMT "%a %d %b %Y %H:%M:%S %z"
-#define U32_NAN ((uint32_t)(UINT32_MAX - 1))
-#define U64_NAN ((uint64_t)(UINT64_MAX - 1))
+#define U32_NAN ((uint32_t)(UINT32_MAX - 1u))
+#define U64_NAN ((uint64_t)(UINT64_MAX - 1ull))
 
 #define RM_FORCE 0b00000001
 #define RM_BIN   0b00000010
