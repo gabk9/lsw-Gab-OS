@@ -1108,29 +1108,33 @@ char *unameCmdLinux(uint8_t flags) {
     }
     
     if (flags & U_OPERATING_SYSTEM) {
-        #ifdef __linux__
-            FILE *fp = fopen("/proc/version", "r");
-            if (!fp) {
-                sprintf(buffer, "%s ", pc.sysname);
-                strcat(result, buffer);
-            }
+    #ifdef __linux__
+        FILE *fp = fopen("/proc/version", "r");
 
-            char version[0x100];
-            
-            if (!fgets(version, sizeof(version), fp)) {
-                sprintf(buffer, "%s ", pc.sysname);
-                strcat(result, buffer);
-            }
-
-            if (strstr(version, "GNU")) {
-                strcat(result, "GNU/Linux ");
-            }
-            
-            SAFE_FCLOSE(fp);
-        #else
+        if (!fp) {
             sprintf(buffer, "%s ", pc.sysname);
             strcat(result, buffer);
-        #endif
+        } else {
+            char version[0x100];
+
+            if (fgets(version, sizeof(version), fp)) {
+                if (strstr(version, "GNU")) {
+                    strcat(result, "GNU/Linux ");
+                } else {
+                    sprintf(buffer, "%s ", pc.sysname);
+                    strcat(result, buffer);
+                }
+            } else {
+                sprintf(buffer, "%s ", pc.sysname);
+                strcat(result, buffer);
+            }
+
+            SAFE_FCLOSE(fp);
+        }
+    #else
+        sprintf(buffer, "%s ", pc.sysname);
+        strcat(result, buffer);
+    #endif
     }
 
     if (result[0] == '\0') {

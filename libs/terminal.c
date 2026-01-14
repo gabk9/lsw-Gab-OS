@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.3.5"
+#define VERSION "r1.3.61"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1510,7 +1510,8 @@ void updatehistory(void) {
         "r1.3.28 - big changes\n\tEdited: now binaries work with negative numbers and they can be converted from them\n",
         "r1.3.4 - big changes\n\tAdded: '~' unary operator to the calculator\n",
         "r1.3.44 - small changes\n\tEdited: bc manual\n",
-        "r1.3.5 - small changes\n\tEdited: bc manual once again\n"
+        "r1.3.5 - small changes\n\tEdited: bc manual once again\n",
+        "r1.3.61 - big changes\n\tNow the code works on arm64 aka aarch64 devices\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
