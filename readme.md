@@ -1,3 +1,15 @@
+
+<div align="center">
+
+<h3>LSW in action</h3>
+
+<p>
+  <img src="docs/lsw-bc.png" style="border-radius:20px;" width="85%" alt="LSW calculator example"><br><br>
+  <img src="docs/lsw-neofetch.png" style="border-radius:20px;" width="85%" alt="LSW system info screen">
+</p>
+
+</div>
+
 <div align="center">
 
 <h1>LSW — Linux Subsystem for Windows</h1>
@@ -5,8 +17,6 @@
 <pre style="
 font-size: 14px;
 line-height: 1.1;
-color: #58a6ff;
-text-shadow: 0 0 6px rgba(88,166,255,0.6);
 user-select: none;
 ">
  ██████╗  █████╗ ██████╗           ██████╗ ███████╗
