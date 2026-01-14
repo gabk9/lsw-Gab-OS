@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.3.7"
+#define VERSION "r1.3.74"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1512,7 +1512,8 @@ void updatehistory(void) {
         "r1.3.44 - small changes\n\tEdited: bc manual\n",
         "r1.3.5 - small changes\n\tEdited: bc manual once again\n",
         "r1.3.61 - big changes\n\tEdited: now the code works on arm64 aka aarch64 devices\n",
-        "r1.3.7 - big changes\n\tAdded: support for android\n"
+        "r1.3.7 - big changes\n\tAdded: support for android\n",
+        "r1.3.74 - minor changes\n\tAdded: numeric systems to the bc manual\n\tEdited: bc initial string\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
