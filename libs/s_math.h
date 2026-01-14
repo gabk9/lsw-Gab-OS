@@ -21,9 +21,9 @@
     #define RAND_MAX 0x7FFFFFFF
 #endif
 
+uint64_t fact(int64_t num);
 double tetration(double base, int32_t height);
 double parse_double(char *str, char *funcName);
-uint64_t fact(int64_t num)__attribute__((nonnull));
 double s_ln(char *operation)__attribute__((nonnull));
 char *s_oct(char *operation)__attribute__((nonnull));
 char *s_hex(char *operation)__attribute__((nonnull));
