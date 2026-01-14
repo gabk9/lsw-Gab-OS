@@ -110,7 +110,7 @@ static inline double gauss_range_double(double a, double b, double d) {
         puts("Error: Numeric overflow or invalid result during summation");
         return NAN;
     }
-
+    return sum;
 }
 
 __attribute__((always_inline))

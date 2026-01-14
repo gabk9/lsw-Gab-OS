@@ -154,11 +154,6 @@ void revCmd(char *instruction) {
 
             char line[0x400];
 
-            if (!line) {
-                printf("Error: memory allocation error!!\n");
-                return;
-            }
-
             while (fgets(line, MAX_CHAR, source)) {
                 trim(line);
                 trimEnd(line);

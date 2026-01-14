@@ -824,7 +824,7 @@ double CheckFunc(char *operation, char **functions, const char *uniOps, const ch
             return NAN;
         }
 
-        if (v < INT64_MIN || v > INT64_MAX) {
+        if (v < (double)INT64_MIN || v > (double)INT64_MAX) {
             printf("Error: integer overflow\n\n");
             return NAN;
         }
@@ -851,7 +851,7 @@ double CheckFunc(char *operation, char **functions, const char *uniOps, const ch
     }
 
     printf("Error: Invalid expression\n");
-    return U64_NAN;
+    return (double)U64_NAN;
 
 op_found:
     {

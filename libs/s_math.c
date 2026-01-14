@@ -9,7 +9,7 @@ double parse_double(char *str, char *funcName) {
     uint8_t heap = 0;
     if (funcName) {
         test = functionHandler(str, funcName);
-        if (strcmp(test, BC_ERROR) == 0) return U64_NAN;
+        if (strcmp(test, BC_ERROR) == 0) return (double)U64_NAN;
         heap = 1;
     } else 
         test = str;
@@ -22,7 +22,7 @@ double parse_double(char *str, char *funcName) {
     return num;
 }
 
-static uint8_t isnull(int16_t count, ...) {
+static uint8_t isnull(int32_t count, ...) {
 
     if (count < 1) {
         fprintf(stderr, "invalid count for <count>\n");
