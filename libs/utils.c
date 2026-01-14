@@ -1131,6 +1131,13 @@ char *unameCmdLinux(uint8_t flags) {
 
             SAFE_FCLOSE(fp);
         }
+
+        char test[sizeof(buffer)];
+        sprintf(test, "%s", pc.version);
+
+        if (strcasestr(test, "android"))
+            strcpy(result, "Android ");
+
     #else
         sprintf(buffer, "%s ", pc.sysname);
         strcat(result, buffer);
