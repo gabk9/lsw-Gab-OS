@@ -552,7 +552,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                 printf("it no longer supports comma instead of dots and type 'clear' or 'cls' to clear the screen and scrollback buffer");
                 printf("\nPS: mathlib is off by default, type 'mathlib' to turn it on/off "
                        "if you're inside the terminal, otherwise use 'bc -l' or 'bc --mathlib', it enables functions and "
-                       "binary, hexadecimal and octal numbers\n");
+                       "the other numeric systems\n");
             }
             printf("Mathlib status: ");
             if (mathlib)
