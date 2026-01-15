@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.3.74"
+#define VERSION "r1.3.84"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -104,7 +104,7 @@ void revCmd(char *instruction) {
             FILE *source = fopen(sourceFile, "r");
 
             if (!source) {
-                printf("Error: '%s' does not exist!\n", sourceFile);
+                printf("Error: could not open '%s'\n", sourceFile);
                 return;
             }
 
@@ -148,7 +148,7 @@ void revCmd(char *instruction) {
             FILE *source = fopen(instruction, "r");
 
             if (!source) {
-                printf("Error: '%s' does not exist\n", instruction);
+                printf("Error: could not open '%s'\n", instruction);
                 return;
             }
 
@@ -801,7 +801,7 @@ void historyCmd(const char *path) {
         line = strtok(NULL, "\n");
     }
 
-    free(fileBuffer);
+    SAFE_FREE(fileBuffer);
 }
 
 void rmCmd(uint16_t argc, char **argv) {
@@ -948,8 +948,6 @@ void touchCmd(char *instruction) {
             return;
         }
 
-        printf("Instruction: '%s'\n", instruction);
-
         bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
                                reps < strrchar(instruction, '\''));
 
@@ -1000,6 +998,7 @@ void touchCmd(char *instruction) {
 }
 
 void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
+
     if (*instruction == '\0') {
         printf("%s: missing operand\nUse \"man %s\" to check the manual\n", cmdName, cmdName);
         return;
@@ -1007,39 +1006,57 @@ void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
 
     trim(instruction);
 
-    FILE *f = fopen(instruction, "rb");
-    if (!f) {
-        fprintf(stderr, "Error: couldn't open %s\n", instruction);
-        return;
-    }
+    char *rest = strdup(instruction);
 
-    char line[4096];
+    
+    char line[0x1000];
     uint32_t lines = 0;
-
-    while (fgets(line, sizeof(line), f)) {
-
-        if (max_lines > 0 && lines >= max_lines)
-            break;
-
-        size_t len = strlen(line);
-        if (len && line[len - 1] == '\n')
-            line[len - 1] = '\0';
-
-        for (size_t i = 0; line[i]; i++) {
-            unsigned char c = (unsigned char)line[i];
-
-            if (isprint(c) || c == '\t' || c == '\r') {
-                putchar(c);
-            } else {
-                printf("\\x%02X", c);
+    
+    uint16_t fileCount = 0;
+    char **files = parseData(rest, &fileCount);
+    
+    for (uint16_t i = 0; i < fileCount; i++) {
+        
+        FILE *f = fopen(files[i], "rb");
+        if (!f) {
+            fprintf(stderr, "Error: could not open '%s'\n", files[i]);
+            for (uint16_t j = 0; j < fileCount; j++)
+                SAFE_FREE(files[j]);
+            SAFE_FREE(files);
+            return;
+        }
+    
+        while (fgets(line, sizeof(line), f)) {
+    
+            if (max_lines > 0 && lines >= max_lines)
+                break;
+    
+            size_t len = strlen(line);
+            if (len && line[len - 1] == '\n')
+                line[len - 1] = '\0';
+    
+            for (size_t i = 0; line[i]; i++) {
+                unsigned char c = (unsigned char)line[i];
+    
+                if (isprint(c) || c == '\t' || c == '\r') {
+                    putchar(c);
+                } else {
+                    printf("\\x%02X", c);
+                }
             }
+    
+            putchar('\n');
+            lines++;
         }
 
-        putchar('\n');
-        lines++;
+        SAFE_FCLOSE(f);
     }
 
-    SAFE_FCLOSE(f);
+    for (uint16_t i = 0; i < fileCount; i++)
+        SAFE_FREE(files[i]);
+    SAFE_FREE(files);
+
+    SAFE_FREE(rest);
 }
 
 void tailCmd(char *instruction, uint32_t max_lines) {
@@ -1513,7 +1530,8 @@ void updatehistory(void) {
         "r1.3.5 - small changes\n\tEdited: bc manual once again\n",
         "r1.3.61 - big changes\n\tEdited: now the code works on arm64 aka aarch64 devices\n",
         "r1.3.7 - big changes\n\tAdded: support for android\n",
-        "r1.3.74 - minor changes\n\tAdded: numeric systems to the bc manual\n\tEdited: bc initial string\n"
+        "r1.3.79 - big changes\n\tEdited: now you can cat multiple files\n",
+        "r1.3.84 - minor changes\n\tEdited: uname should work on mac, supposedly\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1790,17 +1808,17 @@ void neofetchCmd(void) {
     printf("%s ", SYSTEM);
 
 #ifdef _WIN32
-    puts(unameCmdWin(0b100));
+    puts(unameCmdWin(U_MACHINE));
 #else
-    puts(unameCmdLinux(0b100));
+    puts(unameCmdLinux(U_MACHINE));
 #endif
 
 
     printc("KERNEL-RELEASE: ", label_color, WHITE);
 #ifdef _WIN32
-    puts(unameCmdWin(0b10));
+    puts(unameCmdWin(U_KERN_RELEASE));
 #else
-    puts(unameCmdLinux(0b10));
+    puts(unameCmdLinux(U_KERN_RELEASE));
 #endif
     
 

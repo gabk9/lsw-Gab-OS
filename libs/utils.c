@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_SIZE_APPROX 189000
-#define PROJ_LINES_APPROX 6600
+#define PROJ_LINES_APPROX 6700
+#define PROJ_SIZE_APPROX_BYTES 190000
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -831,7 +831,7 @@ char *charNumber(void) {
     for (uint16_t i = 0; i < fileCount; i++) {
         FILE *f = fopen(buildPath(files[i]), "rb");
         if (!f) {
-            snprintf(result, sizeof(result), "%d B / %.2lf KiB / %.2lf Mib", PROJ_SIZE_APPROX, (double)PROJ_SIZE_APPROX / 0x400, (double)PROJ_SIZE_APPROX / 0x100000);
+            snprintf(result, sizeof(result), "%d B / %.2lf KiB / %.2lf Mib", PROJ_SIZE_APPROX_BYTES, (double)PROJ_SIZE_APPROX_BYTES / 0x400, (double)PROJ_SIZE_APPROX_BYTES / 0x100000);
             return result;
         }
 
@@ -1133,6 +1133,8 @@ char *unameCmdLinux(uint8_t flags) {
             strcat(result, "Linux ");
         }
 
+    #elif defined(__APPLE__)
+        strcat(result, "Darwin ");
     #else
         sprintf(buffer, "%s ", pc.sysname);
         strcat(result, buffer);
