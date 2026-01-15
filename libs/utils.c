@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 6700
-#define PROJ_SIZE_APPROX_BYTES 191000
+#define PROJ_SIZE_APPROX_BYTES 192000
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -51,7 +51,6 @@ char **extract_args(char *args, uint16_t *argc, char *firstArg) {
     }
     return argv;
 }
-
 
 int8_t isAppend(const char *str) {
     uint16_t in_single = 0, in_double = 0;
@@ -660,6 +659,53 @@ int8_t isDir(const char *path) {
 #endif
 }
 
+void int64_to_hex_min(int64_t v, char *out, size_t size) {
+    uint64_t u = (uint64_t)v;
+
+    int bits;
+    for (bits = 8; bits < 64; bits++) {
+        int64_t sign_bit = 1LL << (bits - 1);
+        int64_t min = -sign_bit;
+        int64_t max = sign_bit - 1;
+
+        if (v >= min && v <= max)
+            break;
+    }
+
+    int hex_digits = (bits + 3) / 4;
+    uint64_t mask = (1ULL << (hex_digits * 4)) - 1;
+    u &= mask;
+
+    snprintf(out, size, "0x%0*"PRIX64, hex_digits, u);
+}
+
+int64_t hex_to_long(char *str) {
+    char *end;
+    int64_t v = strtoll(str, &end, 16);
+
+    if (*end == '\0') {
+
+        const char *p = str;
+        if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X'))
+            p += 2;
+
+        size_t digits = 0;
+        for (; *p; ++p)
+            if (isxdigit(*p)) digits++;
+
+        size_t bits = digits * 4;
+
+        int64_t sign_bit = 1LL << (bits - 1);
+        int64_t mask     = (1LL << bits) - 1;
+
+        v &= mask;
+        if (v & sign_bit)
+            v -= (1LL << bits);
+
+        return v;
+    }
+}
+
 bool isBin(const char *str) {
     if (!str) return false;
 
@@ -707,13 +753,10 @@ bool isOct(const char *str) {
     if (!str || str[0] == '\0')
         return false;
 
-    if (strncasecmp(str, "0x", 2) == 0)
+    if (strncasecmp(str, "0o", 2) != 0)
         return false;
 
-    if (str[0] != '0')
-        return false;
-
-    for (uint16_t i = 1; str[i]; i++) {
+    for (uint16_t i = 2; str[i]; i++) {
         if (str[i] < '0' || str[i] > '7')
             return false;
     }

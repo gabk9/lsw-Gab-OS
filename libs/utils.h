@@ -110,6 +110,7 @@ void setColor(color4_t color);
 void enableAnsiIfNeeded(void);
 char *revStr(const char *str);
 char *extractPath(char **str);
+int64_t hex_to_long(char *str);
 void removeComments(char *str);
 bool isalldigit(const char *s);
 int8_t isDir(const char *path);
@@ -154,6 +155,7 @@ void charReplace(char *str, int8_t targ, int8_t repl);
 uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
 double parse_hex_pi_e_bin(const char *str, int16_t *ok);
+void int64_to_hex_min(int64_t v, char *out, size_t size);
 
 __attribute__((unused))
 char **readHistory(const char *address, uint32_t *lineCount);

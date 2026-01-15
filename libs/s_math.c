@@ -174,14 +174,11 @@ double h_atof(const char *str) {
         return h_atof(temp) * E;
     }
 
-    if (is_hex) {
-        char *end;
-        int64_t v = strtol(buf, &end, 16);
-        if (*end == '\0') return (double)v;
-    }
+    if (is_hex)
+        return (double)hex_to_long(buf);
 
     if (is_octal) {
-        return (double)strtol(buf, NULL, 8);
+        return (double)strtol(buf+2, NULL, 8);
     }
 
     if (is_bin)
@@ -347,7 +344,7 @@ char *s_oct(char *operation) {
         return NULL;
 
 
-    snprintf(buffer, 64, "0%" PRIo64, value);
+    snprintf(buffer, 64, "0o%" PRIo64, value);
 
     return buffer;
 }
@@ -379,7 +376,7 @@ char *s_hex(char *operation) {
         return NULL;
     }
 
-    snprintf(buffer, 64, "0x%" PRIx64, value);
+    int64_to_hex_min(value, buffer, 0x40);
 
     for (uint16_t i = 2; buffer[i]; i++)
         buffer[i] = toupper((unsigned char)buffer[i]);
