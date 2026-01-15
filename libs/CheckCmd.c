@@ -765,71 +765,70 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
     bool hasOp = has_top_level_operator(operation, uniOps, multiOps);
 
-    if (!hasOp) {
-
-        if (strncmp(operation, functions[0], 5) == 0 && mathlib) //! scale()
+    if (!hasOp && mathlib) {
+        if (strncmp(operation, functions[0], 5) == 0) //! scale()
             return s_scale(operation);
-        else if (strncmp(operation, functions[1], 4) == 0 && mathlib) //! sqrt()
+        else if (strncmp(operation, functions[1], 4) == 0) //! sqrt()
             return s_sqrt(operation);
-        else if (strncmp(operation, functions[2], 3) == 0 && mathlib) //! sin()
+        else if (strncmp(operation, functions[2], 3) == 0) //! sin()
             return s_sin(operation);
-        else if (strncmp(operation, functions[3], 3) == 0 && mathlib) //! cos()
+        else if (strncmp(operation, functions[3], 3) == 0) //! cos()
             return s_cos(operation);
-        else if (strncmp(operation, functions[4], 3) == 0 && mathlib) //! tan()
+        else if (strncmp(operation, functions[4], 3) == 0) //! tan()
             return s_tan(operation);
-        else if (strncmp(operation, functions[5], 2) == 0 && mathlib) //! ln()
+        else if (strncmp(operation, functions[5], 2) == 0) //! ln()
             return s_ln(operation);
-        else if (strncmp(operation, functions[6], 5) == 0 && mathlib) //! log10()
+        else if (strncmp(operation, functions[6], 5) == 0) //! log10()
             return s_log10(operation);
-        else if (strncmp(operation, functions[7], 4) == 0 && mathlib) //! log2()
+        else if (strncmp(operation, functions[7], 4) == 0) //! log2()
             return s_log2(operation);
-        else if (strncmp(operation, functions[8], 3) == 0 && mathlib) //! log()
+        else if (strncmp(operation, functions[8], 3) == 0) //! log()
             return s_log(operation);
-        else if (strncmp(operation, functions[9], 5) == 0 && mathlib) //! floor()
+        else if (strncmp(operation, functions[9], 5) == 0) //! floor()
             return s_floor(operation);
-        else if (strncmp(operation, functions[10], 4) == 0 && mathlib) //! ceil()
+        else if (strncmp(operation, functions[10], 4) == 0) //! ceil()
             return s_ceil(operation);
-        else if (strncmp(operation, functions[11], 5) == 0 && mathlib) //! round()
+        else if (strncmp(operation, functions[11], 5) == 0) //! round()
             return s_round(operation);
-        else if (strncmp(operation, functions[12], 4) == 0 && mathlib) //! fact()
+        else if (strncmp(operation, functions[12], 4) == 0) //! fact()
             return s_fact(operation);
-        else if (strncmp(operation, functions[13], 4) == 0 && mathlib) //! sign()
+        else if (strncmp(operation, functions[13], 4) == 0) //! sign()
             return s_sign(operation);
-        else if (strncmp(operation, functions[14], 3) == 0 && mathlib) //! sum()
+        else if (strncmp(operation, functions[14], 3) == 0) //! sum()
             return s_sum(operation);
-        else if (strncmp(operation, functions[15], 3) == 0 && mathlib) //! rad()
+        else if (strncmp(operation, functions[15], 3) == 0) //! rad()
             return s_rad(operation);
-        else if (strncmp(operation, functions[16], 3) == 0 && mathlib) //! deg()
+        else if (strncmp(operation, functions[16], 3) == 0) //! deg()
             return s_deg(operation);
-        else if (strncmp(operation, functions[17], 5) == 0 && mathlib) //! trunc()
+        else if (strncmp(operation, functions[17], 5) == 0) //! trunc()
             return s_trunc(operation);
-        else if (strncmp(operation, functions[18], 5) == 0 && mathlib) //! randf()
+        else if (strncmp(operation, functions[18], 5) == 0) //! randf()
             return s_randFloat(operation);
-        else if (strncmp(operation, functions[19], 3) == 0 && mathlib) //! fah()
+        else if (strncmp(operation, functions[19], 3) == 0) //! fah()
             return s_fah(operation);
-        else if (strncmp(operation, functions[20], 3) == 0 && mathlib) //! cel()
+        else if (strncmp(operation, functions[20], 3) == 0) //! cel()
             return s_cel(operation);
-        else if (strncmp(operation, functions[21], 4) == 0 && mathlib) //! root()
+        else if (strncmp(operation, functions[21], 4) == 0) //! root()
             return s_root(operation);
-        else if (strncmp(operation, functions[22], 4) == 0 && mathlib) //! rand()
+        else if (strncmp(operation, functions[22], 4) == 0) //! rand()
             return s_randInt(operation);
-        else if (strncmp(operation, functions[23], 2) == 0 && mathlib) //! mi()
+        else if (strncmp(operation, functions[23], 2) == 0) //! mi()
             return s_miles(operation);
-        else if (strncmp(operation, functions[24], 2) == 0 && mathlib) //! km()
+        else if (strncmp(operation, functions[24], 2) == 0) //! km()
             return s_km(operation);
-        else if (strncmp(operation, functions[25], 2) == 0 && mathlib) //! lb()
+        else if (strncmp(operation, functions[25], 2) == 0) //! lb()
             return s_pounds(operation);
-        else if (strncmp(operation, functions[26], 2) == 0 && mathlib) //! kg()
+        else if (strncmp(operation, functions[26], 2) == 0) //! kg()
             return s_kg(operation);
-        else if (strncmp(operation, functions[27], 3) == 0 && mathlib) //! oct()
+        else if (strncmp(operation, functions[27], 3) == 0) //! oct()
             return parse_double(operation, functions[27]);
-        else if (strncmp(operation, functions[28], 3) == 0 && mathlib) //! hex()
+        else if (strncmp(operation, functions[28], 3) == 0) //! hex()
             return parse_double(operation, functions[28]);
-        else if (strncmp(operation, functions[29], 3) == 0 && mathlib) //! hex()
+        else if (strncmp(operation, functions[29], 3) == 0) //! hex()
             return parse_double(operation, functions[29]);
-        else if (strncmp(operation, functions[30], 3) == 0 && mathlib) //! abs()
+        else if (strncmp(operation, functions[30], 3) == 0) //! abs()
             return s_fabs_or_abs(operation, false);
-        else if (strncmp(operation, functions[31], 4) == 0 && mathlib) //! fabs()
+        else if (strncmp(operation, functions[31], 4) == 0) //! fabs()
             return s_fabs_or_abs(operation, true);
     }    
     uint16_t op_pos = 0;
