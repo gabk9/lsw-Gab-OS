@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.3.84"
+#define VERSION "r1.3.95"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1531,7 +1531,8 @@ void updatehistory(void) {
         "r1.3.61 - big changes\n\tEdited: now the code works on arm64 aka aarch64 devices\n",
         "r1.3.7 - big changes\n\tAdded: support for android\n",
         "r1.3.79 - big changes\n\tEdited: now you can cat multiple files\n",
-        "r1.3.84 - minor changes\n\tEdited: uname should work on mac, supposedly\n"
+        "r1.3.84 - minor changes\n\tEdited: uname should work on mac, supposedly\n",
+        "r1.3.95 - big changes\n\tEdited: improved eval() so you can make operations like 'sqrt(4) + sqrt(4)'\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

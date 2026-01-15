@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 6700
-#define PROJ_SIZE_APPROX_BYTES 190000
+#define PROJ_SIZE_APPROX_BYTES 191000
 
 #define ALIAS_FILE "shortcut.txt"
 
@@ -1845,6 +1845,28 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
     return sign * value * mult;
 }
 
+bool has_top_level_operator(const char *s, const char *uniOps, const char **multiOps) {
+    int depth = 0;
+
+    for (int i = 0; s[i]; i++) {
+        if (s[i] == '(') depth++;
+        else if (s[i] == ')') depth--;
+
+        if (depth == 0) {
+            for (int j = 0; multiOps[j]; j++) {
+                int len = strlen(multiOps[j]);
+                if (strncmp(&s[i], multiOps[j], len) == 0)
+                    return true;
+            }
+
+            if (strchr(uniOps, s[i]))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp) {
     int depth = 0;
     int len = strlen(s);
@@ -1928,7 +1950,7 @@ double eval(char *operation, bool mathlib) {
     if (isalldigit(operation) || is_pi_or_e_expression(operation))
         return h_atof(operation);
 
-    return CheckFunc(operation, functions, uniOps, multiOps, mathlib);
+    return CheckOperation(operation, functions, uniOps, multiOps, mathlib);
 }
 
 char *handle_cd_dash(char *address) {

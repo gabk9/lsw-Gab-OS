@@ -166,6 +166,7 @@ const char *strcasestr_ptr(const char *haystack, const char *needle);
 void split_instruction_args(char *line, char **out_cmd, char **out_args);
 void printc(const char *str, color4_t initColor, color4_t resetColor, ...);
 uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t file);
+bool has_top_level_operator(const char *s, const char *uniOps, const char **multiOps);
 void printTarg(const char *str, const char *targ, color4_t markColor, int8_t ignoreCase);
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp);
 void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint16_t data_size, char *history_path, uint16_t hist_size);

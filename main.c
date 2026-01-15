@@ -5,7 +5,7 @@
     #define chdir _chdir
     #define getcwd _getcwd
     HANDLE hConsole;
-#elif !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
+#elif !defined(_WIN3ls2) && !defined(__linux__) && !defined(__APPLE__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
