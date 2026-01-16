@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.4.1"
+#define VERSION "r1.4.13"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -324,10 +324,12 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
 
     uint8_t flags = 0;
 
+    char *shell = insideBash ? "bash" : "LSW";
+
     for (uint16_t i = 1; i < argc; i ++) {
 
         if (argv[i][0] != '-') {
-            printf("bash: invalid argument: '%s'\n", argv[i]);
+            printf("%s: invalid argument: '%s'\n", shell, argv[i]);
             return;
         }
 
@@ -339,7 +341,7 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
             else if (strcmp(argv[i], "--all") == 0)
                 flags |= BASH_ALL;
             else
-                printf("bash: invalid option: '%s'\n", argv[i]);
+                printf("%s: invalid option: '%s'\n", shell, argv[i]);
         } else {
             for (uint16_t j = 1; argv[i][j]; j++) {
                 char opt = tolower((unsigned char)argv[i][j]);
@@ -348,7 +350,7 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
                     case 'h': flags |= BASH_HELP; break;
                     case 'v': flags |= BASH_VERSION; break;
                     default:
-                        printf("bash: invalid option: '-%c'\n", argv[i][j]);
+                        printf("%s: invalid option: '-%c'\n", shell, argv[i][j]);
                         return;
                 }
             }
@@ -356,7 +358,7 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
     }
 
     if (flags & BASH_VERSION) {
-        printf("lsw - Gab-OS  %s\n", VERSION);
+        printf("LSW - Gab-OS  %s\n", VERSION);
     }
 
     if ((flags & BASH_HELP) && insideBash) {
@@ -1534,7 +1536,8 @@ void updatehistory(void) {
         "r1.3.84 - minor changes\n\tEdited: uname should work on mac, supposedly\n",
         "r1.3.95 - big changes\n\tEdited: improved eval() so you can make operations like 'sqrt(4) + sqrt(4)'\n",
         "r1.4.06 - big changes\n\tAdded: support for negative hex\n\tEdited: octal prefix\n",
-        "r1.4.1 - minor changes\n\tEdited: optimized eval()\n"
+        "r1.4.1 - minor changes\n\tEdited: optimized eval()\n",
+        "r1.4.13 - minor changes\n\tEdited bash cmd and version string\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1874,7 +1877,7 @@ void neofetchCmd(void) {
 
     
     printc("VERSION: ", label_color, WHITE);
-    printf("lsw - Gab-OS  %s\n", VERSION);
+    printf("LSW - Gab-OS  %s\n", VERSION);
 
 
     printc("CREATION DATE: ", label_color, WHITE);
