@@ -363,10 +363,7 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
 
     if ((flags & BASH_HELP) && insideBash) {
         printf("LSW - Gab OS, a Linux like shell (Linux Subsystem for Windows)\n\n");
-        printf("'bash' shows the shell information\n\nbash [OPTION...]\n\nOptions:\n");
-        printf("\t'-v', '--version'   show version information\n"
-               "\t'-h', '--help'      display manual\n"
-               "\t'-a', '--all'       displays everything\n");
+        manCmd("bash", cmds, true);
     } else if ((flags & BASH_HELP) && !insideBash) {
         printf("LSW - Gab OS, a Linux like shell (Linux Subsystem for Windows)\n\n");
         printf("You can run commands using 'lsw [COMMAND...]', or you can use options 'lsw [OPTION...]', lsw is just an exemple, ");

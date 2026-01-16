@@ -130,10 +130,6 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         return;
     }
 
-    trim(instruction);
-    trimEnd(instruction);
-
-
     if (strcmp(instruction, cmds[0]) == 0) //! clear
         printf("'clear' clears your terminal's screen and its scrollback buffer\n");
 
