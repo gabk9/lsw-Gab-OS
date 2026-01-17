@@ -704,6 +704,8 @@ int64_t hex_to_long(char *str) {
 
         return v;
     }
+
+    return U64_NAN;
 }
 
 bool isBin(const char *str) {
