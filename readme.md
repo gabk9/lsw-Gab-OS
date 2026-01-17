@@ -132,7 +132,7 @@ cd lsw-Gab-OS
 git checkout pc-linux
 cmake .
 cmake --build .
-./main
+./lsw
 ```
 
 ### Windows (Powershell)
@@ -143,5 +143,5 @@ cd lsw-Gab-OS
 git checkout pc-linux
 cmake .
 cmake --build .
-.\main.exe
+.\lsw.exe
 ```
