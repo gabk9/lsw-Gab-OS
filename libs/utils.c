@@ -4,7 +4,7 @@
 #define PROJ_LINES_APPROX 6700
 #define PROJ_SIZE_APPROX_BYTES 192000
 
-#define ALIAS_FILE "shortcut.txt"
+#define ALIAS_FILE "lswrc.txt"
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
