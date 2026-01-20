@@ -1,3 +1,0 @@
-/home/gabriel/Documentos/PROGRAMACAO/terminal/CMakeFiles/lsw.dir
-/home/gabriel/Documentos/PROGRAMACAO/terminal/CMakeFiles/edit_cache.dir
-/home/gabriel/Documentos/PROGRAMACAO/terminal/CMakeFiles/rebuild_cache.dir

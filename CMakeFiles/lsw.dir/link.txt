@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/lsw.dir/main.c.o CMakeFiles/lsw.dir/libs/utils.c.o CMakeFiles/lsw.dir/libs/s_math.c.o CMakeFiles/lsw.dir/libs/CheckCmd.c.o CMakeFiles/lsw.dir/libs/terminal.c.o -o lsw  -lm 
