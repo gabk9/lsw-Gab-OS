@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.4.17"
+#define VERSION "r1.4.21"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1534,7 +1534,8 @@ void updatehistory(void) {
         "r1.4.06 - big changes\n\tAdded: support for negative hex\n\tEdited: octal prefix\n",
         "r1.4.1 - minor changes\n\tEdited: optimized eval()\n",
         "r1.4.13 - minor changes\n\tEdited bash cmd and version string\n",
-        "r1.4.17 - small changes\n\tEdited: shortcut.txt --> lswrc.txt, planning to make it work like .bashrc and .zshrc\n"
+        "r1.4.17 - small changes\n\tEdited: shortcut.txt --> lswrc.txt, planning to make it work like .bashrc and .zshrc\n",
+        "r1.4.21 - small changes\n\tEdited: a simple thing in neofetch function\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1808,12 +1809,10 @@ void neofetchCmd(void) {
     printc("SYSTEM\n", title_color, WHITE);
     
     printc("OS: ", label_color, 7);
-    printf("%s ", SYSTEM);
-
 #ifdef _WIN32
-    puts(unameCmdWin(U_MACHINE));
+    puts(unameCmdWin(U_KERN_NAME | U_MACHINE));
 #else
-    puts(unameCmdLinux(U_MACHINE));
+    puts(unameCmdLinux(U_KERN_NAME | U_MACHINE));
 #endif
 
 
