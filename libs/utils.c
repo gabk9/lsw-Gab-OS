@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 6700
-#define PROJ_SIZE_APPROX_BYTES 192000
+#define PROJ_LINES_APPROX 6800
+#define PROJ_SIZE_APPROX_BYTES 193000
 
 #define ALIAS_FILE "lswrc.txt"
 

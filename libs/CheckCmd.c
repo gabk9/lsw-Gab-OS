@@ -201,7 +201,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
     }
 
     else if (strcmp(instruction, cmds[17]) ==  0) //! history
-        printf("'history' displays the history of commands you used\n");
+        printf("'history' displays the history of commands you used\n\nhistory [int: lines]\n");
 
     else if (strcmp(instruction, cmds[18]) ==  0) { //! uname
         printf("'uname' displays system information\n\nuname [OPTION...]\n\nOptions:\n");
@@ -654,7 +654,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     }
 
     else if (strcmp(instruction, cmds[17]) == 0) //! history
-        historyCmd(history_path);
+        historyCmd(args ? args : "", history_path);
 
     else if (strcmp(instruction, cmds[18]) == 0) { //! uname
         uint16_t argc_uname;

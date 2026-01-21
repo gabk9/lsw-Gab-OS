@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.4.21"
+#define VERSION "r1.4.30"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -757,7 +757,7 @@ void grepCmd(char *instruction) {
     SAFE_FCLOSE(f);
 }
 
-void historyCmd(const char *path) {
+void historyCmd(char *operation, const char *path) {
     FILE *f = fopen(path, "r");
 
     if (!f) {
@@ -785,21 +785,62 @@ void historyCmd(const char *path) {
 
     // SAFE_FREE(lines);
 
-    fseek(f, 0, SEEK_END);
-    long size = ftell(f);
-    fseek(f, 0, SEEK_SET);
 
-    char *fileBuffer = malloc(size + 1);
-    fread(fileBuffer, 1, size, f);
-    fileBuffer[size] = '\0';
+    if (*operation == '\0') {
+        fseek(f, 0, SEEK_END);
+        long size = ftell(f);
+        fseek(f, 0, SEEK_SET);
+    
+        char *fileBuffer = malloc(size + 1);
+        fread(fileBuffer, 1, size, f);
+        fileBuffer[size] = '\0';
+    
+        char *line = strtok(fileBuffer, "\n");
+        while (line) {
+            printf("%5u  %s\n", lineCount++, line);
+            line = strtok(NULL, "\n");
+        }
+        SAFE_FREE(fileBuffer);
+    } else {
 
-    char *line = strtok(fileBuffer, "\n");
-    while (line) {
-        printf("%5u  %s\n", lineCount++, line);
-        line = strtok(NULL, "\n");
+        double num = eval(operation, true);
+        
+        if (isnan(num) || num == U64_NAN) {
+            SAFE_FCLOSE(f);
+            return;
+        }
+
+        if (num != (int64_t)num) {
+            printf("Error: must be integer\n");
+            SAFE_FCLOSE(f);
+            return;
+        }
+
+        if (num <= 0 || num >= 10000) {
+            printf("Error: must be greater than 0 and less than 10000 (10e+4)\n");
+            SAFE_FCLOSE(f);
+            return;
+        }
+
+        uint16_t i = 1;
+
+        char buff[0x400];
+
+        while (i <= num) {
+            if (!fgets(buff, sizeof(buff), f)) 
+                break;
+
+            buff[strcspn(buff, "\n")] = '\0';
+            if (*buff == '\0') 
+                continue;
+        
+            printf("%5u  %s\n", i, buff);
+
+            i++;
+        }
     }
-
-    SAFE_FREE(fileBuffer);
+        
+    SAFE_FCLOSE(f);
 }
 
 void rmCmd(uint16_t argc, char **argv) {
@@ -1535,7 +1576,8 @@ void updatehistory(void) {
         "r1.4.1 - minor changes\n\tEdited: optimized eval()\n",
         "r1.4.13 - minor changes\n\tEdited bash cmd and version string\n",
         "r1.4.17 - small changes\n\tEdited: shortcut.txt --> lswrc.txt, planning to make it work like .bashrc and .zshrc\n",
-        "r1.4.21 - small changes\n\tEdited: a simple thing in neofetch function\n"
+        "r1.4.21 - small changes\n\tEdited: a simple thing in neofetch function\n",
+        "r1.4.30 - big changes\n\tAdded: now you can choose how many lines of command history you want to see\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
