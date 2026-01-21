@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 6800
-#define PROJ_SIZE_APPROX_BYTES 193000
+#define PROJ_LINES_APPROX 7000
+#define PROJ_SIZE_APPROX_BYTES 199500
 
 #define ALIAS_FILE "lswrc.txt"
 
@@ -32,12 +32,176 @@ LONG handler(EXCEPTION_POINTERS *e) {
 }
 #endif
 
+void saveHist(char *operation, char *history_path, char *data_folder) {
+    char *path = buildLswRcPath(data_folder);
+    uint16_t lines = getSavedHistSize(history_path);
+    uint16_t MaxLines = getHistSizeConfig(path);
+
+    if (lines <= MaxLines) {
+        FILE *file = fopen(history_path, "a");
+        if (!file) {
+            printf("Error: could not open 'history.txt'\n");
+            return;
+        }
+
+        fprintf(file, "%s\n", operation);
+        SAFE_FCLOSE(file);
+        return;
+    }
+
+    FILE *f = fopen(history_path, "r");
+    if (!f) {
+        printf("Error: could not open 'history.txt'\n");
+        return;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    if (size <= 0) {
+        SAFE_FCLOSE(f);
+        return;
+    }
+
+    char *buffer = malloc(size + 1);
+    if (!buffer) {
+        SAFE_FCLOSE(f);
+        return;
+    }
+
+    size_t read = fread(buffer, 1, size, f);
+    buffer[read] = '\0';
+    SAFE_FCLOSE(f);
+
+    uint16_t to_remove = lines - MaxLines + 1;
+    char *content = buffer;
+
+    while (to_remove > 0 && content) {
+        content = strchr(content, '\n');
+        if (content) {
+            content++;
+            to_remove--;
+        }
+    }
+
+    if (!content)
+        content = buffer + strlen(buffer);
+
+    size_t contentLen = strlen(content);
+    size_t opLen = strlen(operation);
+
+    char *newBuffer = malloc(contentLen + opLen + 2);
+    if (!newBuffer) {
+        SAFE_FREE(buffer);
+        return;
+    }
+
+    size_t pos = 0;
+
+    memcpy(newBuffer + pos, content, contentLen);
+    pos += contentLen;
+
+    if (pos > 0 && newBuffer[pos - 1] != '\n')
+        newBuffer[pos++] = '\n';
+
+    memcpy(newBuffer + pos, operation, opLen);
+    pos += opLen;
+
+    newBuffer[pos] = '\0';
+
+    FILE *file = fopen(history_path, "w");
+    if (!file) {
+        printf("Error: could not open 'history.txt'\n");
+        SAFE_FREE(buffer);
+        SAFE_FREE(newBuffer);
+        return;
+    }
+
+    fprintf(file, "%s\n", newBuffer);
+
+    SAFE_FCLOSE(file);
+    SAFE_FREE(buffer);
+    SAFE_FREE(newBuffer);
+}
+
+uint16_t getHistSizeConfig(char *lswrc_path) {
+    uint16_t result = DEFAULT_HISTSIZE;
+
+    FILE *f = fopen(lswrc_path, "r");
+    if (!f) {
+        SAFE_FREE(lswrc_path);
+        return result;
+    }
+
+    char line[0x400];
+    while (fgets(line, sizeof(line), f)) {
+        line[strcspn(line, "\n")] = '\0';
+
+        removeComments(line);
+        trim(line);
+        trimEnd(line);
+        trimBetween(line);
+
+        if (!*line)
+            continue;
+
+        char *args;
+        char *cmd = extract_instruction(line, &args);
+
+        char *eq = strchr(cmd, '=');
+        if (!eq)
+            continue;
+
+        char *tmp = strdup(cmd);
+        if (!tmp)
+            continue;
+
+        char *save;
+        char *key = strtok_r(tmp, "=", &save);
+        char *val = strtok_r(NULL, "=", &save);
+
+        if (key && val && strcmp(key, "HISTSIZE") == 0) {
+            result = h_atof(val);
+            free(tmp);
+            break;
+        }
+
+        free(tmp);
+    }
+
+    SAFE_FCLOSE(f);
+    SAFE_FREE(lswrc_path);
+    return result + 1;
+}
+
+uint16_t getSavedHistSize(char *path) {
+    uint16_t lines = 1;
+    
+    FILE *f = fopen(path, "r");
+
+    if (!f)
+        return 0;
+
+    char buff[0x400];
+    while (fgets(buff, sizeof(buff), f))
+        lines++;
+
+    SAFE_FCLOSE(f);
+    return lines;
+}
+
 char **extract_args(char *args, uint16_t *argc, char *firstArg) {
     char **argv = malloc(sizeof(char*) * MAX_ARGS);
     if (!argv) return NULL;
 
     *argc = 1;
-    argv[0] = firstArg;
+    argv[0] = strdup(firstArg);
+
+    if (!argv[0]) {
+        SAFE_FREE(argv);
+        return NULL;
+    }
 
     uint16_t count = 0;
     if (args) {
@@ -596,22 +760,26 @@ char *find_andand_outside_quotes(char *s) {
     return NULL;
 }
 
-
 char **parseData(const char *str, uint16_t *count) {
-    char **list = malloc(32 * sizeof(char*));
-    *count = 0;
+    char **list = malloc(MAX_ARGS * sizeof(char*));
+    if (!list) return NULL;
 
+    *count = 0;
     uint16_t i = 0;
+
     while (str[i]) {
         while (isspace((unsigned char)str[i])) i++;
         if (!str[i]) break;
+
+        if (*count >= MAX_ARGS)
+            break;
 
         if (str[i] == '"') {
             i++;
             const char *start = &str[i];
             while (str[i] && str[i] != '"') i++;
-            int len = &str[i] - start;
 
+            size_t len = &str[i] - start;
             list[*count] = malloc(len + 1);
             memcpy(list[*count], start, len);
             list[*count][len] = '\0';
@@ -621,8 +789,8 @@ char **parseData(const char *str, uint16_t *count) {
         } else {
             const char *start = &str[i];
             while (str[i] && !isspace((unsigned char)str[i])) i++;
-            int16_t len = &str[i] - start;
 
+            size_t len = &str[i] - start;
             list[*count] = malloc(len + 1);
             memcpy(list[*count], start, len);
             list[*count][len] = '\0';
@@ -1457,7 +1625,7 @@ void echoHandler(char *str) {
     strcpy(str, out);
 }
 
-char *buildAliasPath(char *path) {
+char *buildLswRcPath(char *path) {
     uint16_t extra = strlen(path) + 1 + strlen(ALIAS_FILE);
     char *buffer = calloc(extra, sizeof(char));
     strcpy(buffer, path);
@@ -1566,7 +1734,7 @@ void createShortcut(char *instruction, char *path) {
         return;
     }
 
-    char *buffer = buildAliasPath(path);
+    char *buffer = buildLswRcPath(path);
 
     if (aliasExists(buffer, shortcutName)) {
         puts("Warning: duplicated alias found, note that only the first "
@@ -1603,7 +1771,7 @@ void removeComments(char *str) {
 }
 
 bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, char **address, char *history_path, char *data_folder, uint16_t isInsideBash) {
-    char *aliasPath = buildAliasPath(data_folder);
+    char *aliasPath = buildLswRcPath(data_folder);
     FILE *f = fopen(aliasPath, "r");
     SAFE_FREE(aliasPath);
 
@@ -1613,19 +1781,30 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
 
     while (fgets(line, MAX_CHAR, f)) {
         line[strcspn(line, "\n")] = '\0';
+        trim(line);
 
-        char *clean = strrm(line, "alias");
-        trim(clean);
-
-        char *eq = strchr(clean, '=');
-        if (!eq) {
-            SAFE_FREE(clean);
+        if (strncmp(line, "alias", 4) != 0)
             continue;
+
+        char *eq = findFirstEqualOutsideQuotes(line);
+
+        if (!eq) {
+            puts("Error: syntax error for 'alias', use \"man alias\" to check the manual");
+            SAFE_FREE(line);
+            return false;
         }
 
         *eq = '\0';
-        char *shortcutName = clean;
+        char *shortcutName = line;
         char *action = eq + 1;
+
+        shortcutName = strchr(shortcutName, ' ');
+
+        if (!shortcutName || !action) {
+            puts("Error: syntax error for 'alias', use \"man alias\" to check the manual");
+            SAFE_FREE(line);
+            return false;
+        }
 
         removeComments(action);
         trimEnd(action);
@@ -1634,11 +1813,13 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
         trim(shortcutName);
         trim(action);
 
-        action[0] = ' ';
-        action[strlen(action)-1] = ' ';
-
-        trim(action);
-        trimEnd(action);
+        if (action) {
+            action[0] = ' ';
+            action[strlen(action)-1] = ' ';
+    
+            trim(action);
+            trimEnd(action);
+        }
 
         if (isInsideBash && strncmp(action, "bash", 4) == 0 && strcmp(shortcutName, operation) == 0) { //* Just a simple fix
             char *option;
@@ -1669,7 +1850,6 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
                 SAFE_FREE(argv_bash);
             }
 
-            SAFE_FREE(clean);
             return true;
         }
 
@@ -1692,13 +1872,11 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
 
             processCommand(fullAction, NULL, cmds, cmdCount, address, history_path, data_folder, isInsideBash);
             SAFE_FREE(fullAction);
-            SAFE_FREE(clean);
             SAFE_FREE(line);
             SAFE_FCLOSE(f);
             return true;
         }
 
-        SAFE_FREE(clean);
     }
 
     SAFE_FREE(line);

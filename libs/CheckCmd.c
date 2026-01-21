@@ -1,8 +1,88 @@
+#define _GNU_SOURCE
 #include "utils.h"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
     #error "Operational system not recognized, terminating program!!"
 #endif
+
+void checkLswrcSyntax(char *data_folder) {
+    char *path = buildLswRcPath(data_folder);
+    
+    FILE *f = fopen(path, "r");
+
+    if (!f)
+        return;
+    
+    char line[0x400];
+    while (fgets(line, sizeof(line), f)) {
+        char *lineCpy = strdup(line);
+        line[strcspn(line, "\n")] = '\0';
+        removeComments(line);
+        trim(line);
+        trimEnd(line);
+        trimBetween(line);
+
+        char *args;
+        char *cmd = extract_instruction(line, &args);
+
+        if (strchr(cmd, '=')) {
+            char *save;
+            cmd = strtok_r(line, "=", &save);
+            args = strtok_r(NULL, "=", &save);
+        }
+
+        if (strcmp(cmd, "alias") == 0) {
+            char *eq = findFirstEqualOutsideQuotes(lineCpy);
+
+            if (!eq) {
+                fprintf(stderr, "alias: syntax error\n");
+                SAFE_FREE(lineCpy);
+                exit(EXIT_FAILURE);
+            }
+
+            *eq = '\0';
+            char *shortcutName = lineCpy;
+            char *action = eq + 1;
+
+            shortcutName = strchr(shortcutName, ' ');
+
+            if (!shortcutName) {
+                fprintf(stderr, "alias: missing shortcut name\n");
+                SAFE_FREE(lineCpy);
+                exit(EXIT_FAILURE);
+            }
+
+            if (!action) {
+                fprintf(stderr, "alias: missing action\n");
+                SAFE_FREE(lineCpy);
+                exit(EXIT_FAILURE);
+            }
+
+        } else if (strcmp(cmd, "HISTSIZE") == 0) {
+            SAFE_FREE(lineCpy);
+            if (!args) {
+                fprintf(stderr, "HISTFILE: missing arguments!\n");
+                exit(EXIT_FAILURE);
+            }
+            
+            double num = h_atof(args);
+
+            if (!isalldigit(args) || num != (int64_t)num) {
+                fprintf(stderr, "HISTFILE: arguments with invalid data type!\n");
+                exit(EXIT_FAILURE);
+            }
+            
+            if (num < 10 || num > 10000) {
+                fprintf(stderr, "HISTFILE: the argument must be between 10 and 10000 (inclusive)\n");
+                exit(EXIT_FAILURE);                
+            }
+        }
+        SAFE_FREE(lineCpy);
+    }
+
+    SAFE_FCLOSE(f);
+}
+
 
 double calc(double num1, char *operation, double num2) {
 

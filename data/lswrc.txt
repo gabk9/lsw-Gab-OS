@@ -3,9 +3,12 @@ alias dir='ls'
 alias flashfetch='neofetch'
 alias fastfetch='neofetch'
 alias quit='exit'
-alias PROGRAMACAO='cd /home/gabriel/Documentos/PROGRAMACAO'
+alias PROGRAMACAO='cd ~/Documentos/PROGRAMACAO'
 alias KINGSTON='cd /media/gabriel/KINGSTON'
 alias logs='updatehistory'
 alias printf='echo'
 alias tldr='man'
 alias chdir='cd'
+
+
+HISTSIZE=1000

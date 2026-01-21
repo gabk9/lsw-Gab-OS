@@ -42,10 +42,13 @@ int main(int argc, char **argv) {
 
     GetProjDir(program_root, 0x400, data_folder, 0x400, history_path, 0x4B0);
 
+    checkLswrcSyntax(data_folder);
+
     if (argc > 1) {
         uint16_t total_len = 0;
-        for (uint16_t i = 1; i < argc; i++)
+        for (uint16_t i = 1; i < argc; i++) {
             total_len += strlen(argv[i]) + 1;
+        }
 
         SAFE_FREE(input);
         input = calloc(total_len + 1, sizeof(char));
@@ -55,11 +58,8 @@ int main(int argc, char **argv) {
             if (i + 1 < argc) strcat(input, " ");
         }
         
-        FILE *f = fopen(history_path, "a");
-        if (f) {
-            if (input[0] != '-')
-                fprintf(f, "%s\n", input);
-            SAFE_FCLOSE(f);
+        if (*input != '-') {
+            saveHist(input, history_path, data_folder);
         }
 
         char *arguments = strchr(input, ' ');
@@ -128,12 +128,7 @@ int main(int argc, char **argv) {
         if (!strlen(input))
             continue;
 
-        FILE *f = fopen(history_path, "a");
-        if (f) {
-            fprintf(f, "%s\n", input);
-            SAFE_FCLOSE(f);
-            SAFE_FCLOSE(f);
-        }
+        saveHist(input, history_path, data_folder);
 
         processCommand(input, NULL, cmds, cmdCount, &address, history_path, data_folder, true);
     }

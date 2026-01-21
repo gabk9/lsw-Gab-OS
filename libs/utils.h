@@ -53,6 +53,8 @@
 
 #define LS_ALL 0b00000001
 
+#define DEFAULT_HISTSIZE 1000
+
 #define BASH_VERSION 0b00000001
 #define BASH_HELP    0b00000010
 #define BASH_ALL (BASH_VERSION | BASH_HELP)
@@ -72,10 +74,10 @@
     } \
 } while (false)
 
-#define SAFE_FCLOSE(file) do { \
-    if (file) { \
-        fclose(file); \
-        file = NULL; \
+#define SAFE_FCLOSE(stream) do { \
+    if (stream) { \
+        fclose(stream); \
+        stream = NULL; \
     } \
 } while (false)
 
@@ -119,13 +121,15 @@ char *get_default_address(void);
 int8_t isAppend(const char *str);
 void safe_lower_inplace(char *s);
 char *unameCmdWin(uint8_t flags);
-char *buildAliasPath(char *path);
+char *buildLswRcPath(char *path);
 char *tolowerstr(const char *str);
 int16_t move_to_trash(char *path);
 char *unameCmdLinux(uint8_t flags);
 void charRm(char *str, int8_t targ);
 char *handle_cd_dash(char *address);
 char* findStarOutsideQuotes(char *s);
+uint16_t getSavedHistSize(char *path);
+uint16_t getSavedHistSize(char *path);
 char *find_andand_outside_quotes(char *s);
 void update_last_directory(char *address);
 char *strrm(char *str, const char *substr);
@@ -140,6 +144,7 @@ uint8_t bsort(char **array, uint16_t count);
 uint8_t is_pi_or_e_expression(const char *s);
 int16_t rm_delete(char *path, uint8_t flags);
 int16_t strchar(const char *str, int8_t chr);
+uint16_t getHistSizeConfig(char *lswrc_path);
 int16_t strrchar(const char *str, int8_t chr);
 bool isValidFolderOrFileName(const char *name);
 bool isValidBcCommand(char *str, char *command);
@@ -165,6 +170,7 @@ void printInFileNTimes(FILE *stream, char *str, int64_t count);
 char **extract_args(char *args, uint16_t *argc, char *firstArg);
 uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
+void saveHist(char *operation, char *history_path, char *data_folder);
 void split_instruction_args(char *line, char **out_cmd, char **out_args);
 void printc(const char *str, color4_t initColor, color4_t resetColor, ...);
 uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t file);
