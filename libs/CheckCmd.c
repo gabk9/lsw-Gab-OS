@@ -22,6 +22,9 @@ void checkLswrcSyntax(char *data_folder) {
         trimEnd(line);
         trimBetween(line);
 
+        if (*line == '\0')
+            continue;
+
         char *args;
         char *cmd = extract_instruction(line, &args);
 
@@ -59,7 +62,6 @@ void checkLswrcSyntax(char *data_folder) {
             }
 
         } else if (strcmp(cmd, "HISTSIZE") == 0) {
-            SAFE_FREE(lineCpy);
             if (!args) {
                 fprintf(stderr, "HISTFILE: missing arguments!\n");
                 exit(EXIT_FAILURE);
@@ -76,6 +78,9 @@ void checkLswrcSyntax(char *data_folder) {
                 fprintf(stderr, "HISTFILE: the argument must be between 10 and 10000 (inclusive)\n");
                 exit(EXIT_FAILURE);                
             }
+        } else {
+            fprintf(stderr, "LSW: invalid key found in lswrc: '%s'\n", cmd);
+            exit(EXIT_FAILURE);
         }
         SAFE_FREE(lineCpy);
     }
