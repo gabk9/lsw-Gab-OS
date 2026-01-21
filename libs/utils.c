@@ -163,11 +163,11 @@ uint16_t getHistSizeConfig(char *lswrc_path) {
 
         if (key && val && strcmp(key, "HISTSIZE") == 0) {
             result = h_atof(val);
-            free(tmp);
+            SAFE_FREE(tmp);
             break;
         }
 
-        free(tmp);
+        SAFE_FREE(tmp);
     }
 
     SAFE_FCLOSE(f);
@@ -415,7 +415,7 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
         }
     }
 
-    if (f) fclose(f);
+    if (f) SAFE_FCLOSE(f);
 
     SAFE_FREE(work);
     SAFE_FREE(copy);
