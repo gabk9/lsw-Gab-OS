@@ -62,6 +62,7 @@ The project focuses on simplicity, clarity and educational value.
 - Own command system with custom logic
 - Command history system
 - Modular design for easy expansion
+- Dynamic command history (you can define a limit in lswrc.txt)
 
 ---
 
