@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.4.44"
+#define VERSION "r1.4.5"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1578,7 +1578,8 @@ void updatehistory(void) {
         "r1.4.17 - small changes\n\tEdited: shortcut.txt --> lswrc.txt, planning to make it work like .bashrc and .zshrc\n",
         "r1.4.21 - small changes\n\tEdited: a simple thing in neofetch function\n",
         "r1.4.30 - big changes\n\tAdded: now you can choose how many lines of command history you want to see\n",
-        "r1.4.44 - big changes\n\tAdded: HISTSIZE in lswrc\n\tEdited: the history.txt file is now dynamically edited when it reaches the HISTSIZE\n"
+        "r1.4.44 - big changes\n\tAdded: HISTSIZE in lswrc\n\tEdited: the history.txt file is now dynamically edited when it reaches the HISTSIZE\n",
+        "r1.4.5 - small changes\n\tEdited: improved the lswrc syntax analyzer\n",
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
