@@ -36,8 +36,9 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
     char *path = buildLswRcPath(data_folder);
     uint16_t lines = getSavedHistSize(history_path);
     uint16_t MaxLines = getHistSizeConfig(path);
+    MaxLines++;
 
-    if (lines <= MaxLines) {
+    if (lines < MaxLines) {
         FILE *file = fopen(history_path, "a");
         if (!file) {
             printf("Error: could not open 'history.txt'\n");
@@ -172,7 +173,7 @@ uint16_t getHistSizeConfig(char *lswrc_path) {
 
     SAFE_FCLOSE(f);
     SAFE_FREE(lswrc_path);
-    return result + 1;
+    return result;
 }
 
 uint16_t getSavedHistSize(char *path) {

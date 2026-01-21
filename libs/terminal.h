@@ -4,7 +4,6 @@
 #include <inttypes.h>
 
 void listDrives(void);
-void neofetchCmd(void);
 void updatehistory(void);
 void mkdirCmd(char *command);
 void revCmd(char *instruction);
@@ -15,6 +14,7 @@ void touchCmd(char *instruction);
 int32_t lcCmd(char *instruction);
 void sleepCmd(char *instruction);
 void renameCmd(char *instruction);
+void neofetchCmd(char *lswrc_path);
 char *randstrCmd(char *instruction);
 void clearHistoryCmd(const char *path);
 void rmCmd(uint16_t argc, char **argv);

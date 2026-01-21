@@ -670,8 +670,10 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     else if (strcmp(instruction, cmds[2]) == 0) //! echo
         echoCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[3]) == 0) //! neofetch
-        neofetchCmd();
+    else if (strcmp(instruction, cmds[3]) == 0) { //! neofetch
+        char *path = buildLswRcPath(data_folder);
+        neofetchCmd(path);
+    }
 
     else if (strcmp(instruction, cmds[4]) == 0) //! updatehistory
         updatehistory();

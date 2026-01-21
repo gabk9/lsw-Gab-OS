@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.4.5"
+#define VERSION "r1.4.56"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1580,6 +1580,7 @@ void updatehistory(void) {
         "r1.4.30 - big changes\n\tAdded: now you can choose how many lines of command history you want to see\n",
         "r1.4.44 - big changes\n\tAdded: HISTSIZE in lswrc\n\tEdited: the history.txt file is now dynamically edited when it reaches the HISTSIZE\n",
         "r1.4.5 - small changes\n\tEdited: improved the lswrc syntax analyzer\n",
+        "r1.4.56 - small changes\n\tAdded: neofetch now displays HISTSIZE\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1807,7 +1808,7 @@ void lsCmd(const char *option, const char *address) {
 #endif
 }
 
-void neofetchCmd(void) {
+void neofetchCmd(char *lswrc_path) {
     setup_console();
 
     const char *ascii_art[] = {
@@ -1896,11 +1897,15 @@ void neofetchCmd(void) {
 
     printc("───────────────────────────────────────────────────\n", title_color, WHITE);
 
-    printc("TERMINAL\n", title_color, WHITE);
+    printc("SHELL\n", title_color, WHITE);
+    
+    printc("HISTSIZE: ", label_color, WHITE);
+    printf("%u\n", getHistSizeConfig(lswrc_path));
 
+    
     printc("LANGUAGES USED: ", label_color, WHITE);
     puts("C");
-
+    
 
     printc("LINES OF CODE: ", label_color, WHITE);
     static char *linesNum; 
