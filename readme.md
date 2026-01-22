@@ -75,11 +75,12 @@ The project focuses on simplicity, clarity and educational value.
 
 ## Supported Platforms
 
-| Platform | Status |
-|---------|--------|
-| Windows | ✅ Fully supported |
-| Linux   | ✅ Fully supported |
-| macOS   | ⚠️ Untested |
+| Platform | Architecture | Status |
+|---------|--------|--------|
+| Windows | arm64 (aarch64) / amd64 (x86_64) | ✅ Fully supported |
+| Linux   | arm64 (aarch64) / amd64 (x86_64) | ✅ Fully supported |
+| Android | arm64 (aarch64) | ✅ Fully supported |
+| macOS   | arm64 (aarch64) / amd64 (x86_64) | ⚠️ Untested |
 
 ---
 
