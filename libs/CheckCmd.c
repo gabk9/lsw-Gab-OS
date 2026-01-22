@@ -270,7 +270,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'cmds' displays the list of commands available\n");
 
     else if (strcmp(instruction, cmds[6]) == 0) //! cd
-        printf("'cd' changes the working directory of the terminal\n");
+        printf("'cd' changes the working directory of the terminal\n\nUsage:\n\tcd [DIRECTORY]\n");
         
     else if (strcmp(instruction, cmds[7]) == 0) { //! ls
         printf("'ls' list directory contents\n\nUsage:\n\tls [OPTION]\n\nOptions:\n");
@@ -290,7 +290,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'pwd' displays the current working directory\n");                
 
     else if (strcmp(instruction, cmds[12]) ==  0) //! mkdir
-        printf("'mkdir' makes directories\n\nmkdir [FOLDER NAME...]\n");
+        printf("'mkdir' makes directories\n\nUsage:\n\tmkdir [FOLDER NAME...]\n");
 
     else if (strcmp(instruction, cmds[13]) ==  0) { //! rmdir
         printf("'rmdir' removes empty directories\n\nUsage:\n\trmdir [OPTION] [FOLDER NAME...]\n\n");
@@ -615,29 +615,25 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
     else if (strcmp(instruction, cmds[29]) ==  0) //! lc
         printf("'lc' displays the lines number of a file\n\nUsage:\n\tlc [FILE NAME...]\n");
-        
-    else if (strcmp(instruction, cmds[30]) == 0) //! yes
-        printf("'yes' output a string repeatedly until killed\n\nUsage:\n\tyes <-- print 'y' until killed\n"
-               "\tyes [STRING] <-- print string until killed\n");
 
-    else if (strcmp(instruction, cmds[31]) == 0) { //! sleep
-        printf("'sleep' delay for a specified amount of time\n\nUsage:\n\tsleep [double: TIME]\n\nSuffixes:\n");
+    else if (strcmp(instruction, cmds[30]) == 0) { //! sleep
+        printf("'sleep' delay for a specified amount of time\n\nUsage:\n\tsleep [double: TIME]\n\nSuffixes: (not case sensitive)\n");
         printf("\t's'   seconds (default)\n");
         printf("\t'm'   minutes\n");
         printf("\t'h'   hours\n");
         printf("\t'd'   days\n");
     }
 
-    else if (strcmp(instruction, cmds[32]) == 0) { //! randstr
+    else if (strcmp(instruction, cmds[31]) == 0) { //! randstr
         printf("'randstr' randomizes a random string, with 16bit max length\n\nUsage:\n\trandstr [OPTION]\n\nOptions:\n");
         printf("\t'-l', --len   use it to set the length [-l=(int: size) / --len=(int: size)]\n");
     }
 
-    else if (strcmp(instruction, cmds[33]) == 0) { //! rev
+    else if (strcmp(instruction, cmds[32]) == 0) { //! rev
         printf("'rev' reverse strings\n\nUsage:\n");
-        printf("\trev <-- reads from input\n");
-        printf("\trev [SOURCE] <-- print [SOURCE] content reversed\n");
-        printf("\trev [SOURCE FILE] > [DESTINATION FILE] <-- writes [SOURCE FILE] content reversed inside [DESTINATION FILE]\n");
+        printf("\trev                                      <-- reads from input\n");
+        printf("\trev [SOURCE]                             <-- print [SOURCE] content reversed\n");
+        printf("\trev [SOURCE FILE] > [DESTINATION FILE]   <-- writes [SOURCE FILE] content reversed inside [DESTINATION FILE]\n");
     }
 
     else
@@ -867,17 +863,10 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
             printf("%d\n", lineCount);
     }
 
-    else if (strcmp(instruction, cmds[30]) == 0) { //! yes
-        if (args)
-            echoHandler(args);
-        while (true)
-            puts(args ? args : "y"); 
-    }
-
-    else if (strcmp(instruction, cmds[31]) == 0) //! sleep
+    else if (strcmp(instruction, cmds[30]) == 0) //! sleep
         sleepCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[32]) == 0) { //! randstr
+    else if (strcmp(instruction, cmds[31]) == 0) { //! randstr
         char *str = randstrCmd(args ? args : "");
         if (str)
             puts(str);
@@ -885,7 +874,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         SAFE_FREE(str);
     }
 
-    else if (strcmp(instruction, cmds[33]) == 0) //! rev
+    else if (strcmp(instruction, cmds[32]) == 0) //! rev
         revCmd(args ? args : "");
 
     else if (!isalias(instruction, args ? args : "",

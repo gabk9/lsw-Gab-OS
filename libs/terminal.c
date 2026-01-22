@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.4.71"
+#define VERSION "r1.4.8"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1592,7 +1592,9 @@ void updatehistory(void) {
         "r1.4.5 - small changes\n\tEdited: improved the lswrc syntax analyzer\n",
         "r1.4.56 - small changes\n\tAdded: neofetch now displays HISTSIZE\n",
         "r1.4.67 - big changes\n\tAdded: support for system variables\n\tEdited: almost every manual\n",
-        "r1.4.71 - small changes\n\tFixed: fixed calc() garbage values\n"
+        "r1.4.71 - small changes\n\tFixed: fixed calc() garbage values\n",
+        "r1.4.76 - small changes\n\tEdited: manual structure\n",
+        "r1.4.8 - minor changes\n\tRemoved: yes command\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

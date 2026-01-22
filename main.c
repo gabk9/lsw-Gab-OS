@@ -22,8 +22,8 @@ int main(int argc, char **argv) {
         "cmds", "cd", "ls", "man", "whoami", "date", "pwd",
         "mkdir", "rmdir", "cat", "touch", "rm", "history", 
         "uname", "grep", "bc", "drives", "clearhistory", "rand",
-        "alias", "rename", "bash", "head", "tail", "lc", "yes",
-        "sleep", "randstr", "rev"
+        "alias", "rename", "bash", "head", "tail", "lc", "sleep",
+        "randstr", "rev"
     };
 
     uint16_t cmdCount = sizeof(cmds) / sizeof(cmds[0]);

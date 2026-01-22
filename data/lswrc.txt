@@ -11,4 +11,4 @@ alias tldr='man'
 alias chdir='cd'
 
 
-HISTSIZE=1000
+HISTSIZE=2000
