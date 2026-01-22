@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.4.8"
+#define VERSION "r1.4.93"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1594,7 +1594,10 @@ void updatehistory(void) {
         "r1.4.67 - big changes\n\tAdded: support for system variables\n\tEdited: almost every manual\n",
         "r1.4.71 - small changes\n\tFixed: fixed calc() garbage values\n",
         "r1.4.76 - small changes\n\tEdited: manual structure\n",
-        "r1.4.8 - minor changes\n\tRemoved: yes command\n"
+        "r1.4.8 - minor changes\n\tRemoved: yes command\n",
+        "r1.4.85 - small changes\n\tEdited: now instead of checking the syntax of lswrc only once, it checks every time\n",
+        "r1.4.9 - small changes\n\tFixed: getHistSizeConfig() function bug\n",
+        "r1.4.93 - minor changes\n\tEdited: renamed 'updatehistory' command to 'logs'\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

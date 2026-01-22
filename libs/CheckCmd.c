@@ -5,6 +5,92 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
+char *stringToVariable(const char *str, int32_t *changed) {
+    *changed = 0;
+
+    if (strcasecmp(str, "$path") == 0) {
+        *changed = 1;
+        return get_env_var("PATH");
+    }
+    if (strcasecmp(str, "$home") == 0) {
+        *changed = 1;
+        return get_env_var("HOME");
+    }
+    if (strcasecmp(str, "$username") == 0) {
+        *changed = 1;
+        const char *user = getenv("USER");
+        if (!user) user = getenv("USERNAME");
+        if (!user) user = "Unknown";
+        return strdup(user);
+    }
+    if (strcasecmp(str, "$temp") == 0) {
+        *changed = 1;
+        const char *tmp = getenv("TMP");
+        if (!tmp) tmp = getenv("TEMP");
+        if (!tmp) tmp = "/tmp";
+        return strdup(tmp);
+    }
+
+#ifndef _WIN32
+    if (strcasecmp(str, "$shell") == 0) {
+        *changed = 1;
+        return get_env_var("SHELL");
+    }
+    if (strcasecmp(str, "$lang") == 0) {
+        *changed = 1;
+        return get_env_var("LANG");
+    }
+    if (strcasecmp(str, "$pwd") == 0) {
+        *changed = 1;
+        return get_env_var("PWD");
+    }
+    if (strcasecmp(str, "$editor") == 0) {
+        *changed = 1;
+        return get_env_var("EDITOR");
+    }
+
+#else
+    if (strcasecmp(str, "$comspec") == 0) {
+        *changed = 1;
+        return get_env_var("COMSPEC");
+    }
+    if (strcasecmp(str, "$systemroot") == 0) {
+        *changed = 1;
+        return get_env_var("SystemRoot");
+    }
+    if (strcasecmp(str, "$appdata") == 0) {
+        *changed = 1;
+        return get_env_var("APPDATA");
+    }
+    if (strcasecmp(str, "$localappdata") == 0) {
+        *changed = 1;
+        return get_env_var("LOCALAPPDATA");
+    }
+    if (strcasecmp(str, "$programdata") == 0) {
+        *changed = 1;
+        return get_env_var("PROGRAMDATA");
+    }
+    if (strcasecmp(str, "$public") == 0) {
+        *changed = 1;
+        return get_env_var("PUBLIC");
+    }
+    if (strcasecmp(str, "$os") == 0) {
+        *changed = 1;
+        return get_env_var("OS");
+    }
+    if (strcasecmp(str, "$number_of_processors") == 0) {
+        *changed = 1;
+        return get_env_var("NUMBER_OF_PROCESSORS");
+    }
+    if (strcasecmp(str, "$processor_architecture") == 0) {
+        *changed = 1;
+        return get_env_var("PROCESSOR_ARCHITECTURE");
+    }
+#endif
+
+    return strdup(str);
+}
+
 void checkLswrcSyntax(char *data_folder) {
     char *path = buildLswRcPath(data_folder);
     
@@ -28,10 +114,12 @@ void checkLswrcSyntax(char *data_folder) {
         char *args;
         char *cmd = extract_instruction(line, &args);
 
+        char *secondCpy = strdup(lineCpy);
         if (strchr(cmd, '=')) {
             char *save;
-            cmd = strtok_r(line, "=", &save);
+            cmd = strtok_r(secondCpy, "=", &save);
             args = strtok_r(NULL, "=", &save);
+            args[strcspn(args, "\n")] = '\0';
         }
 
         if (strcmp(cmd, "alias") == 0) {
@@ -62,11 +150,18 @@ void checkLswrcSyntax(char *data_folder) {
             }
 
         } else if (strcmp(cmd, "HISTSIZE") == 0) {
+
             if (!args) {
                 fprintf(stderr, "HISTFILE: missing arguments!\n");
                 exit(EXIT_FAILURE);
             }
+            trim(args);
+            trimEnd(args);
             
+            if (args[0] == '=')
+            args[0] = ' ';
+            trim(args);
+                        
             double num = h_atof(args);
 
             if (!isalldigit(args) || num != (int64_t)num) {
@@ -83,6 +178,7 @@ void checkLswrcSyntax(char *data_folder) {
             exit(EXIT_FAILURE);
         }
         SAFE_FREE(lineCpy);
+        SAFE_FREE(secondCpy);
     }
 
     SAFE_FCLOSE(f);
@@ -264,7 +360,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'neofetch', a fast system info script\n");
 
     else if (strcmp(instruction, cmds[4]) == 0) //! updatehistory
-        printf("'updatehistory' displays the update history of the terminal\n");
+        printf("'logs' displays the update history of the terminal\n");
 
     else if (strcmp(instruction, cmds[5]) == 0) //! cmds
         printf("'cmds' displays the list of commands available\n");

@@ -3,6 +3,7 @@
 
 void checkLswrcSyntax(char *data_folder);
 double calc(double num1, char *operation, double num2);
+char *stringToVariable(const char *str, int32_t *changed);
 void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash);
 double CheckOperation(char *operation, char **functions, const char *uniOps, const char **multiOps, bool mathlib);
 

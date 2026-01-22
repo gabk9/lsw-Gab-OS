@@ -162,7 +162,6 @@ uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
 double parse_hex_pi_e_bin(const char *str, int16_t *ok);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
-char *stringToVariable(const char *str, int32_t *changed);
 
 __attribute__((unused))
 char **readHistory(const char *address, uint32_t *lineCount);

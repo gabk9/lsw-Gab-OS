@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 7200
-#define PROJ_SIZE_APPROX_BYTES 207000
+#define PROJ_SIZE_APPROX_BYTES 207500
 
 #define ALIAS_FILE "lswrc.txt"
 
@@ -36,92 +36,6 @@ char *get_env_var(const char *name) {
     const char *val = getenv(name);
     if (!val) val = "Unknown";
     return strdup(val);
-}
-
-char *stringToVariable(const char *str, int32_t *changed) {
-    *changed = 0;
-
-    if (strcasecmp(str, "$path") == 0) {
-        *changed = 1;
-        return get_env_var("PATH");
-    }
-    if (strcasecmp(str, "$home") == 0) {
-        *changed = 1;
-        return get_env_var("HOME");
-    }
-    if (strcasecmp(str, "$username") == 0) {
-        *changed = 1;
-        const char *user = getenv("USER");
-        if (!user) user = getenv("USERNAME");
-        if (!user) user = "Unknown";
-        return strdup(user);
-    }
-    if (strcasecmp(str, "$temp") == 0) {
-        *changed = 1;
-        const char *tmp = getenv("TMP");
-        if (!tmp) tmp = getenv("TEMP");
-        if (!tmp) tmp = "/tmp";
-        return strdup(tmp);
-    }
-
-#ifndef _WIN32
-    if (strcasecmp(str, "$shell") == 0) {
-        *changed = 1;
-        return get_env_var("SHELL");
-    }
-    if (strcasecmp(str, "$lang") == 0) {
-        *changed = 1;
-        return get_env_var("LANG");
-    }
-    if (strcasecmp(str, "$pwd") == 0) {
-        *changed = 1;
-        return get_env_var("PWD");
-    }
-    if (strcasecmp(str, "$editor") == 0) {
-        *changed = 1;
-        return get_env_var("EDITOR");
-    }
-
-#else
-    if (strcasecmp(str, "$comspec") == 0) {
-        *changed = 1;
-        return get_env_var("COMSPEC");
-    }
-    if (strcasecmp(str, "$systemroot") == 0) {
-        *changed = 1;
-        return get_env_var("SystemRoot");
-    }
-    if (strcasecmp(str, "$appdata") == 0) {
-        *changed = 1;
-        return get_env_var("APPDATA");
-    }
-    if (strcasecmp(str, "$localappdata") == 0) {
-        *changed = 1;
-        return get_env_var("LOCALAPPDATA");
-    }
-    if (strcasecmp(str, "$programdata") == 0) {
-        *changed = 1;
-        return get_env_var("PROGRAMDATA");
-    }
-    if (strcasecmp(str, "$public") == 0) {
-        *changed = 1;
-        return get_env_var("PUBLIC");
-    }
-    if (strcasecmp(str, "$os") == 0) {
-        *changed = 1;
-        return get_env_var("OS");
-    }
-    if (strcasecmp(str, "$number_of_processors") == 0) {
-        *changed = 1;
-        return get_env_var("NUMBER_OF_PROCESSORS");
-    }
-    if (strcasecmp(str, "$processor_architecture") == 0) {
-        *changed = 1;
-        return get_env_var("PROCESSOR_ARCHITECTURE");
-    }
-#endif
-
-    return strdup(str);
 }
 
 void saveHist(char *operation, char *history_path, char *data_folder) {
@@ -238,29 +152,36 @@ uint16_t getHistSizeConfig(char *lswrc_path) {
 
         if (!*line)
             continue;
-
-        char *args;
-        char *cmd = extract_instruction(line, &args);
-
-        char *eq = strchr(cmd, '=');
-        if (!eq)
-            continue;
-
-        char *tmp = strdup(cmd);
-        if (!tmp)
+            
+        char *lineCpy = strdup(line);
+        if (!lineCpy)
             continue;
 
         char *save;
-        char *key = strtok_r(tmp, "=", &save);
+        char *key = strtok_r(lineCpy, "=", &save);
         char *val = strtok_r(NULL, "=", &save);
+
+        if (key) {
+            trim(key);
+            trimEnd(key);
+        }
+
+        if (val) {
+            trim(val);
+            trimEnd(val);
+            
+            if (val[0] == '=')
+                val[0] = ' ';
+            trim(val);
+        }
 
         if (key && val && strcmp(key, "HISTSIZE") == 0) {
             result = h_atof(val);
-            SAFE_FREE(tmp);
+            SAFE_FREE(lineCpy);
             break;
         }
 
-        SAFE_FREE(tmp);
+        SAFE_FREE(lineCpy);
     }
 
     SAFE_FCLOSE(f);

@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     initRandom();
 
     const char *cmds[] = {
-        "clear", "exit", "echo", "neofetch", "updatehistory",
+        "clear", "exit", "echo", "neofetch", "logs",
         "cmds", "cd", "ls", "man", "whoami", "date", "pwd",
         "mkdir", "rmdir", "cat", "touch", "rm", "history", 
         "uname", "grep", "bc", "drives", "clearhistory", "rand",
@@ -42,9 +42,9 @@ int main(int argc, char **argv) {
 
     GetProjDir(program_root, 0x400, data_folder, 0x400, history_path, 0x4B0);
 
-    checkLswrcSyntax(data_folder);
-
+    
     if (argc > 1) {
+        checkLswrcSyntax(data_folder);
         uint16_t total_len = 0;
         for (uint16_t i = 1; i < argc; i++) {
             total_len += strlen(argv[i]) + 1;
@@ -99,6 +99,7 @@ int main(int argc, char **argv) {
     puts("Type 'cmds' to see the command list");
 
     while (true) {
+        checkLswrcSyntax(data_folder);
         char *wd = defaultAddressReplace(address);
 
     #ifdef _WIN32
