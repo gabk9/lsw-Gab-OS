@@ -805,7 +805,7 @@ void historyCmd(char *operation, const char *path) {
 
         double num = eval(operation, true);
         
-        if (isnan(num) || num == U64_NAN) {
+        if (isnan(num) || num == (double)U64_NAN) {
             SAFE_FCLOSE(f);
             return;
         }
