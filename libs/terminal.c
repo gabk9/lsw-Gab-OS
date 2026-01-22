@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.4.56"
+#define VERSION "r1.4.71"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -954,11 +954,16 @@ void touchCmd(char *instruction) {
             return;
         }
 
-        echoHandler(inFile);
+        int32_t changed = 0;
+        char *new = stringToVariable(inFile, &changed);
+
+        if (!(changed && strcasecmp(inFile, "$path") == 0)) {
+            new = echoHandler(new);
+        }
 
         FILE *f = fopen(filename, "w");
     
-        fprintf(f, "%s", inFile);
+        fprintf(f, "%s", new);
 
         SAFE_FCLOSE(f);
     } else {
@@ -1018,15 +1023,20 @@ void touchCmd(char *instruction) {
             }
         }
 
-        echoHandler(str);
+        int32_t changed = 0;
+        char *new = stringToVariable(str, &changed);
+
+        if (!(changed && strcasecmp(str, "$path") == 0)) {
+            new = echoHandler(new);
+        }
 
         FILE *f = fopen(filename, "w");
 
         if (QuoteAfterStar) {
             echoHandler(test);
-            fputs(test, f);
+            fputs(new, f);
         } else
-            printInFileNTimes(f, str, count);
+            printInFileNTimes(f, new, count);
 
         SAFE_FCLOSE(f);
 
@@ -1580,7 +1590,9 @@ void updatehistory(void) {
         "r1.4.30 - big changes\n\tAdded: now you can choose how many lines of command history you want to see\n",
         "r1.4.44 - big changes\n\tAdded: HISTSIZE in lswrc\n\tEdited: the history.txt file is now dynamically edited when it reaches the HISTSIZE\n",
         "r1.4.5 - small changes\n\tEdited: improved the lswrc syntax analyzer\n",
-        "r1.4.56 - small changes\n\tAdded: neofetch now displays HISTSIZE\n"
+        "r1.4.56 - small changes\n\tAdded: neofetch now displays HISTSIZE\n",
+        "r1.4.67 - big changes\n\tAdded: support for system variables\n\tEdited: almost every manual\n",
+        "r1.4.71 - small changes\n\tFixed: fixed calc() garbage values\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1676,7 +1688,10 @@ void echoCmd(char *instruction) {
     char *copy = strdup(instruction);
     char *save;
 
-    if (!copy) { perror("strdup"); return; }
+    if (!copy) {
+        perror("strdup");
+        return;
+    }
 
 
     if (reps != -1 && file == -1) {
@@ -1684,12 +1699,15 @@ void echoCmd(char *instruction) {
             return;
         }
     } else if (file == -1 && reps == -1) {
+        int32_t changed = 0;
+        char *new = stringToVariable(copy, &changed);
 
-        echoHandler(copy);
-        puts(copy);
+        if (!(changed && strcasecmp(copy, "$path") == 0)) {
+            new = echoHandler(new);
+        }
 
-        SAFE_FREE(copy);
-        return;
+        puts(new);
+        SAFE_FREE(new);
 
     } else if (reps == -1 && file != -1) {
 
@@ -1739,15 +1757,18 @@ void echoCmd(char *instruction) {
             return;
         }
 
-        echoHandler(inFile);
+        int32_t changed = 0;
+        char *new = stringToVariable(inFile, &changed);
+
+        if (!(changed && strcasecmp(inFile, "$path") == 0)) {
+            new = echoHandler(new);
+        }
 
         if (!isValidFolderOrFileName(filename)) {
             printf("Error: invalid file name\n");
             return;
         }
 
-        printf("File name: '%s'\n", filename);
-        printf("Mode: '%s'\n", mode);
         FILE *f = fopen(filename, mode);
         if (!f) {
             perror("fopen");
@@ -1755,7 +1776,7 @@ void echoCmd(char *instruction) {
             return;
         }
 
-        fprintf(f, "%s\n", inFile);
+        fprintf(f, "%s\n", new);
         SAFE_FCLOSE(f);
 
         SAFE_FREE(copy);

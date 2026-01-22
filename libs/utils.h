@@ -107,7 +107,7 @@ bool isHex(const char *str);
 bool isOct(const char *str);
 void trimBetween(char *str);
 char *myDirname(char *path);
-void echoHandler(char *str);
+char *echoHandler(char *str);
 void setColor(color4_t color);
 void enableAnsiIfNeeded(void);
 char *revStr(const char *str);
@@ -125,6 +125,7 @@ char *buildLswRcPath(char *path);
 char *tolowerstr(const char *str);
 int16_t move_to_trash(char *path);
 char *unameCmdLinux(uint8_t flags);
+char *get_env_var(const char *name);
 void charRm(char *str, int8_t targ);
 char *handle_cd_dash(char *address);
 char* findStarOutsideQuotes(char *s);
@@ -161,6 +162,7 @@ uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
 double parse_hex_pi_e_bin(const char *str, int16_t *ok);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
+char *stringToVariable(const char *str, int32_t *changed);
 
 __attribute__((unused))
 char **readHistory(const char *address, uint32_t *lineCount);

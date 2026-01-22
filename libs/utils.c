@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 7000
-#define PROJ_SIZE_APPROX_BYTES 200000
+#define PROJ_LINES_APPROX 7200
+#define PROJ_SIZE_APPROX_BYTES 207000
 
 #define ALIAS_FILE "lswrc.txt"
 
@@ -31,6 +31,98 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+char *get_env_var(const char *name) {
+    const char *val = getenv(name);
+    if (!val) val = "Unknown";
+    return strdup(val);
+}
+
+char *stringToVariable(const char *str, int32_t *changed) {
+    *changed = 0;
+
+    if (strcasecmp(str, "$path") == 0) {
+        *changed = 1;
+        return get_env_var("PATH");
+    }
+    if (strcasecmp(str, "$home") == 0) {
+        *changed = 1;
+        return get_env_var("HOME");
+    }
+    if (strcasecmp(str, "$username") == 0) {
+        *changed = 1;
+        const char *user = getenv("USER");
+        if (!user) user = getenv("USERNAME");
+        if (!user) user = "Unknown";
+        return strdup(user);
+    }
+    if (strcasecmp(str, "$temp") == 0) {
+        *changed = 1;
+        const char *tmp = getenv("TMP");
+        if (!tmp) tmp = getenv("TEMP");
+        if (!tmp) tmp = "/tmp";
+        return strdup(tmp);
+    }
+
+#ifndef _WIN32
+    if (strcasecmp(str, "$shell") == 0) {
+        *changed = 1;
+        return get_env_var("SHELL");
+    }
+    if (strcasecmp(str, "$lang") == 0) {
+        *changed = 1;
+        return get_env_var("LANG");
+    }
+    if (strcasecmp(str, "$pwd") == 0) {
+        *changed = 1;
+        return get_env_var("PWD");
+    }
+    if (strcasecmp(str, "$editor") == 0) {
+        *changed = 1;
+        return get_env_var("EDITOR");
+    }
+
+#else
+    if (strcasecmp(str, "$comspec") == 0) {
+        *changed = 1;
+        return get_env_var("COMSPEC");
+    }
+    if (strcasecmp(str, "$systemroot") == 0) {
+        *changed = 1;
+        return get_env_var("SystemRoot");
+    }
+    if (strcasecmp(str, "$appdata") == 0) {
+        *changed = 1;
+        return get_env_var("APPDATA");
+    }
+    if (strcasecmp(str, "$localappdata") == 0) {
+        *changed = 1;
+        return get_env_var("LOCALAPPDATA");
+    }
+    if (strcasecmp(str, "$programdata") == 0) {
+        *changed = 1;
+        return get_env_var("PROGRAMDATA");
+    }
+    if (strcasecmp(str, "$public") == 0) {
+        *changed = 1;
+        return get_env_var("PUBLIC");
+    }
+    if (strcasecmp(str, "$os") == 0) {
+        *changed = 1;
+        return get_env_var("OS");
+    }
+    if (strcasecmp(str, "$number_of_processors") == 0) {
+        *changed = 1;
+        return get_env_var("NUMBER_OF_PROCESSORS");
+    }
+    if (strcasecmp(str, "$processor_architecture") == 0) {
+        *changed = 1;
+        return get_env_var("PROCESSOR_ARCHITECTURE");
+    }
+#endif
+
+    return strdup(str);
+}
 
 void saveHist(char *operation, char *history_path, char *data_folder) {
     char *path = buildLswRcPath(data_folder);
@@ -261,10 +353,8 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
     char *save;
     
     char *str = strtok_r(copy, "*", &save);
-    char *num = strchr(instruction, '*');
+    char *num = strtok_r(NULL, "*", &save);
     
-    SAFE_FREE(copy);
-
     if (!str || !num || (num[0] == '*' && num[1] == '\0')){
         puts("Error: invalid syntax");
         return 1;
@@ -272,14 +362,13 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
     
     trim(str);
     trimEnd(str);
-
     bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
                             reps < strrchar(instruction, '\''));
 
     double count;
 
     if (!QuoteAfterStar) {
-        count = eval(num+1, true);
+        count = eval(num, true);
 
         if (count == (double)U64_NAN) {
             return 0;
@@ -298,15 +387,23 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
         }
     }
     
-    echoHandler(str);
+    int32_t changed = 0;
+    char *new = stringToVariable(str, &changed);
+
+    if (!(changed && strcasecmp(str, "$path") == 0))
+        new = echoHandler(new);
+
     
     if (QuoteAfterStar) {
         echoHandler(instruction);
         puts(instruction);
     } else 
         for (int32_t i = 0; i < count; i++)
-            puts(str);
+            puts(new);
 
+    SAFE_FREE(new);
+    SAFE_FREE(copy);
+    
     return 1;
 }
 
@@ -394,7 +491,12 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
         trimEnd(text);
     }
 
-    echoHandler(text);
+    int32_t changed = 0;
+    char *new = stringToVariable(text, &changed);
+
+    if (!(changed && strcasecmp(text, "$path") == 0))
+        new = echoHandler(new);
+
 
     FILE *f = NULL;
 
@@ -408,11 +510,11 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
 
     for (uint64_t i = 0; i < (uint64_t)count; i++) {
         if (f) {
-            fputs(text, f);
+            fputs(new, f);
             fputc('\n', f);
         }
         else {
-            puts(text);
+            puts(new);
         }
     }
 
@@ -1587,14 +1689,17 @@ uint16_t countIndex(const char *str, int8_t chr) {
     return count;
 }
 
-void echoHandler(char *str) {
-    char out[0x400];
-    int o = 0;
+char *echoHandler(char *str) {
+    size_t len = strlen(str);
+    char *out = malloc(len*2);
+    if (!out) return str;
+
+    size_t o = 0;
     int inQuotes = 0;
     char quoteChar = 0;
     int wroteSomething = 0;
 
-    for (int i = 0; str[i]; i++) {
+    for (size_t i = 0; i < len; i++) {
         char c = str[i];
 
         if ((c == '"' || c == '\'') && !inQuotes) {
@@ -1623,7 +1728,9 @@ void echoHandler(char *str) {
         o--;
 
     out[o] = '\0';
-    strcpy(str, out);
+
+    SAFE_FREE(str);
+    return out;
 }
 
 char *buildLswRcPath(char *path) {

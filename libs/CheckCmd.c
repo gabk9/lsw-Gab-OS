@@ -88,7 +88,6 @@ void checkLswrcSyntax(char *data_folder) {
     SAFE_FCLOSE(f);
 }
 
-
 double calc(double num1, char *operation, double num2) {
 
     double result;
@@ -143,28 +142,31 @@ double calc(double num1, char *operation, double num2) {
         result = num1 > num2;
 
     else if (strcmp(operation, "**") == 0) {
-        if (num1 < 0 && floor(num2) != num2)
+        if (num1 < 0 && floor(num2) != num2) {
             printf("Error: negative base with non-integer exponent\n\n");
+            return NAN;
+        }
         else
             result = pow(num1, num2);
     }
 
     else if (strcmp(operation, "^^") == 0) {
 
-        if (num2 != (int32_t)num2)
+        if (num2 != (int32_t)num2) {
             printf("Error: tetration height must be an integer\n\n");
-        else if (num2 < 0)
+            return NAN;
+        } else if (num2 < 0) {
             printf("Error: tetration height must be non-negative\n\n");
-        else if (num1 == 0.0 && num2 == 0.0)
+            return NAN;
+        } else if (num1 == 0.0 && num2 == 0.0) {
             printf("Error: 0^^0 is undefined\n\n");
-        else {
+            return NAN;
+        } else {
 
             result = tetration(num1, (int)num2);
 
             if (isnan(result))
                 printf("Error: invalid input for tetration\n\n");
-            else if (isinf(result))
-                printf("Error: result overflow (too large)\n\n");
         }
     }
 
@@ -197,8 +199,10 @@ double calc(double num1, char *operation, double num2) {
     else if (strcmp(operation, "==") == 0)
         result = num1 == num2;
 
-    else
+    else {
         printf("Error: Unknown operator '%s'\n\n", operation);
+        return NAN;
+    }
     
     if (isinf(result)) {
         printf("Error: result overflow (too large)\n\n");
@@ -226,10 +230,34 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("\nModes:\n");
         printf("\t'>'    write\n");
         printf("\t'>>'   append\n");
-        printf("\necho [STRING] <-- print [STRING]\n"
-               "\necho [STRING] [MODE] [FILE NAME] <-- print [STRING] inside [FILE NAME]\n"
-               "\necho [STRING] * [int: COUNT] <-- print [STRING] [COUNT] times\n"
-               "\necho [STRING] * [int: COUNT] [MODE] [FILE NAME] <-- print [STRING] [COUNT] times inside [FILE NAME]\n");
+        printf("\nUsage:\n");
+        printf("\techo [STRING]                                     <-- print [STRING]\n");
+        printf("\techo [STRING] [MODE] [FILE NAME]                  <-- print [STRING] inside [FILE NAME]\n");
+        printf("\techo [STRING] * [int: COUNT]                      <-- print [STRING] [COUNT] times\n");
+        printf("\techo [STRING] * [int: COUNT] [MODE] [FILE NAME]   <-- print [STRING] [COUNT] times inside [FILE NAME]\n");
+
+        printf("\nEnvironment variables recognized: (not case sensitive)\n");
+        printf("\t$PATH                     <-- system PATH\n");
+        printf("\t$HOME                     <-- home directory (Linux)\n");
+        printf("\t$USERNAME                 <-- username (Windows/Linux)\n");
+        printf("\t$TEMP                     <-- temporary folder\n");
+
+    #ifndef _WIN32
+        printf("\t$SHELL                    <-- default shell (Linux)\n");
+        printf("\t$LANG                     <-- system language/locale\n");
+        printf("\t$PWD                      <-- current directory\n");
+        printf("\t$EDITOR                   <-- default editor\n");
+    #else
+        printf("\t$COMSPEC                  <-- command interpreter (cmd.exe)\n");
+        printf("\t$SystemRoot               <-- Windows directory\n");
+        printf("\t$APPDATA                  <-- user app data\n");
+        printf("\t$LOCALAPPDATA             <-- user local app data\n");
+        printf("\t$PROGRAMDATA              <-- system app data\n");
+        printf("\t$PUBLIC                   <-- public folder\n");
+        printf("\t$OS                       <-- always Windows_NT\n");
+        printf("\t$NUMBER_OF_PROCESSORS     <-- CPU count\n");
+        printf("\t$PROCESSOR_ARCHITECTURE   <-- CPU architecture\n");
+    #endif
     }
 
     else if (strcmp(instruction, cmds[3]) == 0) //! neofetch
@@ -245,12 +273,12 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'cd' changes the working directory of the terminal\n");
         
     else if (strcmp(instruction, cmds[7]) == 0) { //! ls
-        printf("'ls' list directory contents\n\nls [OPTION]\n\nOptions:\n");
+        printf("'ls' list directory contents\n\nUsage:\n\tls [OPTION]\n\nOptions:\n");
         printf("\t'-a', '--all'   show hidden files or folders\n");
     }
 
     else if (strcmp(instruction, cmds[8]) == 0) //! man
-        printf("'man' a interface to the system reference manuals\n\nman [COMMAND NAME...]\n");
+        printf("'man' a interface to the system reference manuals\n\nUsage:\n\tman [COMMAND NAME...]\n");
 
     else if (strcmp(instruction, cmds[9]) == 0) //! whoami
         printf("'whoami' displays the user that you are currently logged-in\n");
@@ -265,31 +293,55 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'mkdir' makes directories\n\nmkdir [FOLDER NAME...]\n");
 
     else if (strcmp(instruction, cmds[13]) ==  0) { //! rmdir
-        printf("'rmdir' removes empty directories\n\nrmdir [OPTION] [FOLDER NAME...]\n\n");
+        printf("'rmdir' removes empty directories\n\nUsage:\n\trmdir [OPTION] [FOLDER NAME...]\n\n");
         printf("Options:\n\t'-b', '--recycle-bin'   moves to recycle bin\n");
     }
     
     else if (strcmp(instruction, cmds[14]) ==  0) //! cat
-        printf("'cat' displays the file content\n\ncat [FILE NAME...]\n");
+        printf("'cat' displays the file content\n\nUsage:\n\tcat [FILE NAME...]\n");
 
     else if (strcmp(instruction, cmds[15]) ==  0) { //! touch
-        printf("'touch' displays a line of text in the terminal or in a file\n\ntouch [FILE NAME] <-- creates [FILE NAME]\n");
-        printf("\ntouch [FILE NAME] < [STRING] <-- print the string into [FILE]\n"
-               "\ntouch [FILE NAME] < [STRING] * [int: COUNT] <-- print the string in file [COUNT] times\n");
+        printf("'touch' displays a line of text in the terminal or in a file\n\nUsage:\n");
+        printf("\ttouch [FILE NAME]                             <-- creates [FILE NAME]\n"
+               "\ttouch [FILE NAME] < [STRING]                  <-- print the string into [FILE]\n"
+               "\ttouch [FILE NAME] < [STRING] * [int: COUNT]   <-- print the string in file [COUNT] times\n");
+        
+        printf("\nEnvironment variables recognized: (not case sensitive)\n");
+        printf("\t$PATH                     <-- system PATH\n");
+        printf("\t$HOME                     <-- home directory (Linux)\n");
+        printf("\t$USERNAME                 <-- username (Windows/Linux)\n");
+        printf("\t$TEMP                     <-- temporary folder\n");
+
+    #ifndef _WIN32
+        printf("\t$SHELL                    <-- default shell (Linux)\n");
+        printf("\t$LANG                     <-- system language/locale\n");
+        printf("\t$PWD                      <-- current directory\n");
+        printf("\t$EDITOR                   <-- default editor\n");
+    #else
+        printf("\t$COMSPEC                  <-- command interpreter (cmd.exe)\n");
+        printf("\t$SystemRoot               <-- Windows directory\n");
+        printf("\t$APPDATA                  <-- user app data\n");
+        printf("\t$LOCALAPPDATA             <-- user local app data\n");
+        printf("\t$PROGRAMDATA              <-- system app data\n");
+        printf("\t$PUBLIC                   <-- public folder\n");
+        printf("\t$OS                       <-- always Windows_NT\n");
+        printf("\t$NUMBER_OF_PROCESSORS     <-- CPU count\n");
+        printf("\t$PROCESSOR_ARCHITECTURE   <-- CPU architecture\n");
+    #endif
     }
 
     else if (strcmp(instruction, cmds[16]) ==  0) { //! rm
-        printf("'rm' removes files or empty folders\n\nrm [OPTION...] [FILE/FOLDER NAME...]\n\nOptions:\n");
+        printf("'rm' removes files or empty folders\n\nUsage:\n\trm [OPTION...] [FILE/FOLDER NAME...]\n\nOptions:\n");
         printf("\t'-f', '--force'         removes without prompt\n");
         printf("\t'-i', '--interactive'   prompt before deletion (default)\n");
         printf("\t'-b', '--recycle-bin'   moves to recycle bin\n");
     }
 
     else if (strcmp(instruction, cmds[17]) ==  0) //! history
-        printf("'history' displays the history of commands you used\n\nhistory [int: lines]\n");
+        printf("'history' displays the history of commands you used\n\nUsage:\n\thistory [int: lines]\n");
 
     else if (strcmp(instruction, cmds[18]) ==  0) { //! uname
-        printf("'uname' displays system information\n\nuname [OPTION...]\n\nOptions:\n");
+        printf("'uname' displays system information\n\nUsage:\n\tuname [OPTION...]\n\nOptions:\n");
         printf("\t'-a', '--all'                print all the information, in the following order\n");
         printf("\t'-s', '--kernel-name'        print the kernel name (default)\n");
         printf("\t'-n', '--nodename'           print the network node hostname\n");
@@ -302,13 +354,13 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
    else if (strcmp(instruction, cmds[19]) == 0) //! grep
         printf(
             "'grep' search for patterns in files\n\n"
-            "grep [OPTION] [PATTERN] [FILE]\n\n"
+            "Usage:\n\tgrep [OPTION] [PATTERN] [FILE]\n\n"
             "Options:\n"
             "\t'-i', '--ignore-case'   ignore case distinctions when matching\n"
         );              
 
     else if (strcmp(instruction, cmds[20]) == 0) { //! bc
-        printf("'bc' a simple calculator on the terminal, so far it only works with 2 numbers.\n\nbc [OPTION...]\n\nOptions:\n");
+        printf("'bc' a simple calculator on the terminal, so far it only works with 2 numbers.\n\nUsage:\n\tbc [OPTION...]\n\nOptions:\n");
         printf("\t'-q', '--quiet'     will not print the initial text\n");
         printf("\t'-l', '--mathlib'   includes the mathlib header\n");
         printf(
@@ -542,33 +594,34 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
     else if (strcmp(instruction, cmds[24]) ==  0) { //! alias
         printf("'alias' creates shortcuts for the terminal\n\n");
-        printf("alias [SHORTCUT NAME]='[COMMAND]'\n");
+        printf("Usage:\n\talias [SHORTCUT NAME]='[COMMAND]'\n");
     }
 
     else if (strcmp(instruction, cmds[25]) ==  0) //! rename
-        printf("'rename' renames folders or files\n\nrename [OLD NAME] [NEW NAME]\n");
+        printf("'rename' renames folders or files\n\nUsage:\n\trename [OLD NAME] [NEW NAME]\n");
 
     else if (strcmp(instruction, cmds[26]) ==  0 && isInsideBash) { //! bash
-        printf("'bash' shows the shell information\n\nbash [OPTION...]\n\nOptions:\n");
+        printf("'bash' shows the shell information\n\nUsage:\n\tbash [OPTION...]\n\nOptions:\n");
         printf("\t'-v', '--version'   show version information\n"
                "\t'-h', '--help'      display manual\n"
                "\t'-a', '--all'       displays everything\n");
     }
 
     else if (strcmp(instruction, cmds[27]) ==  0) //! head
-        printf("'head' print the first 10 lines of a file\n\nhead [FILE NAME]\n");
+        printf("'head' print the first 10 lines of a file\n\nUsage:\n\thead [FILE NAME]\n");
 
     else if (strcmp(instruction, cmds[28]) ==  0) //! tail
-        printf("'tail' print the first 10 lines of a file starting from the bottom\n\ntail [FILE NAME]\n");
+        printf("'tail' print the first 10 lines of a file starting from the bottom\n\nUsage:\n\ttail [FILE NAME]\n");
 
     else if (strcmp(instruction, cmds[29]) ==  0) //! lc
-        printf("'lc' displays the lines number of a file\n\nlc [FILE NAME...]\n");
+        printf("'lc' displays the lines number of a file\n\nUsage:\n\tlc [FILE NAME...]\n");
         
     else if (strcmp(instruction, cmds[30]) == 0) //! yes
-        printf("'yes' output a string repeatedly until killed\n\nyes <-- print 'y' until killed\n\nyes [STRING] <-- print string until killed\n");
+        printf("'yes' output a string repeatedly until killed\n\nUsage:\n\tyes <-- print 'y' until killed\n"
+               "\tyes [STRING] <-- print string until killed\n");
 
     else if (strcmp(instruction, cmds[31]) == 0) { //! sleep
-        printf("'sleep' delay for a specified amount of time\n\nsleep [double: TIME]\n\nSuffixes:\n");
+        printf("'sleep' delay for a specified amount of time\n\nUsage:\n\tsleep [double: TIME]\n\nSuffixes:\n");
         printf("\t's'   seconds (default)\n");
         printf("\t'm'   minutes\n");
         printf("\t'h'   hours\n");
@@ -576,15 +629,15 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
     }
 
     else if (strcmp(instruction, cmds[32]) == 0) { //! randstr
-        printf("'randstr' randomizes a random string, with 16bit max length\n\nrandstr [OPTION]\nOptions:\n");
+        printf("'randstr' randomizes a random string, with 16bit max length\n\nUsage:\n\trandstr [OPTION]\n\nOptions:\n");
         printf("\t'-l', --len   use it to set the length [-l=(int: size) / --len=(int: size)]\n");
     }
 
     else if (strcmp(instruction, cmds[33]) == 0) { //! rev
-        printf("'rev' reverse strings\n\n");
-        printf("rev <-- reads from input\n\n");
-        printf("rev [SOURCE] <-- print [SOURCE] content reversed\n\n");
-        printf("rev [SOURCE FILE] > [DESTINATION FILE] <-- writes [SOURCE FILE] content reversed inside [DESTINATION FILE]\n");
+        printf("'rev' reverse strings\n\nUsage:\n");
+        printf("\trev <-- reads from input\n");
+        printf("\trev [SOURCE] <-- print [SOURCE] content reversed\n");
+        printf("\trev [SOURCE FILE] > [DESTINATION FILE] <-- writes [SOURCE FILE] content reversed inside [DESTINATION FILE]\n");
     }
 
     else
