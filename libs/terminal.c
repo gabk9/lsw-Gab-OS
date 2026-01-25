@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.5.23"
+#define VERSION "r1.5.34"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -17,7 +17,7 @@
 
 void revCmd(char *instruction) {
     
-    if (*instruction == '\0') {
+    if (!*instruction) {
         char *string = calloc(MAX_CHAR, sizeof(char));
 
         if (!string) {
@@ -38,7 +38,7 @@ void revCmd(char *instruction) {
             fgets(string, MAX_CHAR, stdin);
             string[strcspn(string, "\n")] = '\0';
             
-            if (*string == '\0') {
+            if (!*string) {
                 printf("Error: insert a string!\n\n");
                 continue;
             }
@@ -229,7 +229,7 @@ char *randstrCmd(char *instruction) {
 
 void sleepCmd(char *instruction) {
 
-    if (*instruction == '\0') {
+    if (!*instruction) {
         puts("sleep: missing operand\nUse \"man sleep\" to check the manual");
         return;
     }
@@ -395,7 +395,7 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
 }
 
 void renameCmd(char *instruction) {
-    if (*instruction == '\0') {
+    if (!*instruction) {
         puts("rename: missing operand\nUse \"man rename\" to check the manual");
         return;
     }
@@ -404,7 +404,7 @@ void renameCmd(char *instruction) {
     trimEnd(instruction);
     
     char *oldName = extractPath(&instruction);
-    if (!oldName || *oldName == '\0') {
+    if (!oldName || !*oldName) {
         puts("rename: missing operand\nUse \"man rename\" to check the manual");
         return;
     }
@@ -413,7 +413,7 @@ void renameCmd(char *instruction) {
     trimEnd(instruction);
 
     char *newName = extractPath(&instruction);
-    if (!newName || *newName == '\0') {
+    if (!newName || !*newName) {
         puts("rename: missing operand\nUse \"man rename\" to check the manual");
         return;
     }
@@ -477,7 +477,7 @@ void clearHistoryCmd(const char *path) {
     safe_lower_inplace(answer);
     removeComments(answer);
 
-    if (answer[0] == 'y' && (answer[1] == '\0' || answer[1] == ' ')) {
+    if (answer[0] == 'y' && (!answer[1] || answer[1] == ' ')) {
 
         FILE *f = fopen(path, "w");
 
@@ -568,7 +568,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         
         removeComments(operation);
 
-        if (*operation == '\0') {
+        if (!*operation) {
             puts("Error: insert an operation\n");
             continue;
         }
@@ -722,7 +722,7 @@ void grepCmd(char *instruction) {
         }
     }
 
-    if (!file || *file == '\0') {
+    if (!file || !*file) {
         puts("grep: missing file operand\nUse \"man grep\" to check the manual");
         return;
     }
@@ -786,7 +786,7 @@ void historyCmd(char *operation, const char *path) {
     // SAFE_FREE(lines);
 
 
-    if (*operation == '\0') {
+    if (!*operation) {
         fseek(f, 0, SEEK_END);
         long size = ftell(f);
         fseek(f, 0, SEEK_SET);
@@ -831,7 +831,7 @@ void historyCmd(char *operation, const char *path) {
                 break;
 
             buff[strcspn(buff, "\n")] = '\0';
-            if (*buff == '\0') 
+            if (!*buff) 
                 continue;
         
             printf("%5u  %s\n", i, buff);
@@ -914,7 +914,7 @@ void rmCmd(uint16_t argc, char **argv) {
 
 void touchCmd(char *instruction) {
 
-    if (*instruction == '\0') {
+    if (!*instruction) {
         puts("touch: missing operand\nUse \"man touch\" to check the manual");
         return;
     }
@@ -1048,7 +1048,7 @@ void touchCmd(char *instruction) {
 
 void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
 
-    if (*instruction == '\0') {
+    if (!*instruction) {
         printf("%s: missing operand\nUse \"man %s\" to check the manual\n", cmdName, cmdName);
         return;
     }
@@ -1110,7 +1110,7 @@ void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
 
 void tailCmd(char *instruction, uint32_t max_lines) {
 
-    if (!instruction || *instruction == '\0') {
+    if (!instruction || !*instruction) {
         puts("tail: missing operand\nUse \"man tail\" to check the manual");
         return;
     }
@@ -1211,7 +1211,7 @@ void rmdirCmd(char *instruction) {
 
     char *rest = buffer;
 
-    if (*rest == '\0') {
+    if (!*rest) {
         puts("rmdir: missing operand\nUse \"man rmdir\" to check the manual");
         return;
     }
@@ -1254,7 +1254,7 @@ void mkdirCmd(char *command) {
 
     char *rest = buffer;
 
-    if (rest[0] == '\0') {
+    if (!*rest) {
         puts("mkdir: missing operand\nUse \"man mkdir\" to check the manual");
         return;
     }
@@ -1600,7 +1600,8 @@ void updatehistory(void) {
         "r1.5.04 - big changes\n\tAdded: strlen() function to the calculator\n\tEdited: functions error messages and now eval() no longer remove spaces\n",
         "r1.5.08 - minor changes\n\tEdited: optimized stringToVariable() function and the environment variables\n",
         "r1.5.16 - small changes\n\tEdited: improved the alias syntax analyzer\n",
-        "r1.5.23 - small changes\n\tEdited: improved stringToVariable() function\n"
+        "r1.5.23 - small changes\n\tEdited: improved stringToVariable() function\n",
+        "r1.5.34 - big changes\n\tFixed: forgotten frees and fcloses in some functions\n\tAdded: now the checkLswrcSyntax() function checks for duplicated keys\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
@@ -1685,7 +1686,7 @@ char *unameCmd(uint16_t argc, char **argv) {
 
 void echoCmd(char *instruction) {
 
-    if (*instruction == '\0') {
+    if (!*instruction) {
         putchar('\n');
         return;
     }

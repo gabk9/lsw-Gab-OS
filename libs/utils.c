@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 7400
-#define PROJ_SIZE_APPROX_BYTES 216000
+#define PROJ_LINES_APPROX 7500
+#define PROJ_SIZE_APPROX_BYTES 218500
 
 #define ALIAS_FILE "lswrc.txt"
 
@@ -31,6 +31,65 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+bool isKeyRepeated(char *data_folder, const char *key_name) {
+    char *path = buildLswRcPath(data_folder);
+    
+    bool foundKey = false;
+
+    FILE *f = fopen(path, "r");
+
+    if (!f)
+        return false;
+
+    char buffer[0x400];
+    while (fgets(buffer, sizeof(buffer), f)) {
+        buffer[strcspn(buffer, "\n")] = '\0';
+        removeComments(buffer);
+
+        trim(buffer); trimEnd(buffer);
+
+        if (!*buffer)
+            continue;
+
+        char *lineCpy = strdup(buffer);
+
+        char *save;
+        char *cmd = strtok_r(buffer, "=", &save);
+        char *arg = strtok_r(NULL, "=", &save);
+
+        trim(cmd); trimEnd(cmd);
+        trim(arg); trimEnd(arg);
+
+        bool isEqual = strcmp(cmd, key_name) == 0;
+
+        if (isEqual && !foundKey)
+            foundKey = true;
+        else if (isEqual && foundKey) {
+            SAFE_FCLOSE(f);
+            SAFE_FREE(path);
+            return true;
+        }
+
+    }
+
+    SAFE_FCLOSE(f);
+    SAFE_FREE(path);
+    return false;
+}
+
+char *extractCommandOrKey(char *src, char **arg) {
+    char *strCpy = strdup(src);
+    
+    char *cmd = extract_instruction(src, arg);
+    if (strchr(cmd, '=')) {
+        char *save;
+        cmd = strtok_r(strCpy, "=", &save);
+        *arg = strtok_r(NULL, "=", &save);
+    }
+
+    return cmd;
+}
 
 char *get_env_var(const char *name) {
     const char *val = getenv(name);
@@ -1911,7 +1970,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
             char *save;
             strtok_r(action, " ", &save); 
 
-            if (*args == '\0')
+            if (!*args)
                 args = strtok_r(NULL, " ", &save);
 
             processCommand(fullAction, NULL, cmds, cmdCount, address, history_path, data_folder, isInsideBash);
@@ -2405,7 +2464,7 @@ bool isalldigit(const char *s) {
         }
     }
 
-    if (*p == '\0')
+    if (!*p)
         return true;
 
     if (!hasExponent && p[1] == '\0' && strchr(validSuffixes, tolower(*p)))

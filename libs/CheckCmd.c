@@ -116,15 +116,9 @@ void checkLswrcSyntax(char *data_folder) {
             continue;
 
         char *args;
-        char *cmd = extract_instruction(line, &args);
+        char *cmd = extractCommandOrKey(line, &args);
 
         char *secondCpy = strdup(lineCpy);
-        if (strchr(cmd, '=')) {
-            char *save;
-            cmd = strtok_r(secondCpy, "=", &save);
-            args = strtok_r(NULL, "=", &save);
-            args[strcspn(args, "\n")] = '\0';
-        }
 
         if (strcmp(cmd, "alias") == 0) {
             char *eq = findFirstEqualOutsideQuotes(lineCpy);
@@ -132,6 +126,9 @@ void checkLswrcSyntax(char *data_folder) {
             if (!eq) {
                 fprintf(stderr, "alias: syntax error\n");
                 SAFE_FREE(lineCpy);
+                SAFE_FREE(secondCpy);
+                SAFE_FREE(path);
+                SAFE_FCLOSE(f);
                 exit(EXIT_FAILURE);
             }
 
@@ -147,18 +144,27 @@ void checkLswrcSyntax(char *data_folder) {
             if (!shortcutName) {
                 fprintf(stderr, "alias: missing shortcut name\n");
                 SAFE_FREE(lineCpy);
+                SAFE_FREE(secondCpy);
+                SAFE_FREE(path);
+                SAFE_FCLOSE(f);
                 exit(EXIT_FAILURE);
             }
 
             if (!action) {
                 fprintf(stderr, "alias: missing action\n");
                 SAFE_FREE(lineCpy);
+                SAFE_FREE(secondCpy);
+                SAFE_FREE(path);
+                SAFE_FCLOSE(f);
                 exit(EXIT_FAILURE);
             }
 
             if (!isValidAction(action)) {
                 fprintf(stderr, "alias: the action should be between quotes, and it must be equal\n");
                 SAFE_FREE(lineCpy);
+                SAFE_FREE(secondCpy);
+                SAFE_FREE(path);
+                SAFE_FCLOSE(f);
                 exit(EXIT_FAILURE);
             }
 
@@ -166,6 +172,10 @@ void checkLswrcSyntax(char *data_folder) {
 
             if (!args) {
                 fprintf(stderr, "HISTFILE: missing arguments!\n");
+                SAFE_FREE(lineCpy);
+                SAFE_FREE(secondCpy);
+                SAFE_FREE(path);
+                SAFE_FCLOSE(f);
                 exit(EXIT_FAILURE);
             }
             trim(args);
@@ -179,21 +189,44 @@ void checkLswrcSyntax(char *data_folder) {
 
             if (!isalldigit(args) || num != (int64_t)num) {
                 fprintf(stderr, "HISTFILE: arguments with invalid data type!\n");
+                SAFE_FREE(lineCpy);
+                SAFE_FREE(secondCpy);
+                SAFE_FREE(path);
+                SAFE_FCLOSE(f);
                 exit(EXIT_FAILURE);
             }
             
             if (num < 10 || num > 10000) {
                 fprintf(stderr, "HISTFILE: the argument must be between 10 and 10000 (inclusive)\n");
+                SAFE_FREE(lineCpy);
+                SAFE_FREE(secondCpy);
+                SAFE_FREE(path);
+                SAFE_FCLOSE(f);
                 exit(EXIT_FAILURE);                
             }
+
+            if (isKeyRepeated(data_folder, "HISTSIZE")) {
+                fprintf(stderr, "HISTFILE: double key found, it should work but remove the extra one\n");
+                SAFE_FREE(lineCpy);
+                SAFE_FREE(secondCpy);
+                SAFE_FREE(path);
+                SAFE_FCLOSE(f);
+                exit(EXIT_FAILURE);
+            }
+
         } else {
             fprintf(stderr, "LSW: invalid key found in lswrc: '%s'\n", cmd);
+            SAFE_FREE(lineCpy);
+            SAFE_FREE(secondCpy);
+            SAFE_FREE(path);
+            SAFE_FCLOSE(f);
             exit(EXIT_FAILURE);
         }
         SAFE_FREE(lineCpy);
         SAFE_FREE(secondCpy);
     }
 
+    SAFE_FREE(path);
     SAFE_FCLOSE(f);
 }
 

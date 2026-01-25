@@ -150,6 +150,7 @@ uint16_t getHistSizeConfig(char *lswrc_path);
 int16_t strrchar(const char *str, int8_t chr);
 bool isValidFolderOrFileName(const char *name);
 bool isValidBcCommand(char *str, char *command);
+char *extractCommandOrKey(char *src, char **arg);
 char *defaultAddressReplace(const char *address);
 uint16_t countIndex(const char *str, int8_t chr);
 char* findCharOutsideQuotes(char *s, char target);
@@ -163,6 +164,7 @@ uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
 double parse_hex_pi_e_bin(const char *str, int16_t *ok);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
+bool isKeyRepeated(char *data_folder, const char *key_name);
 
 __attribute__((unused))
 char **readHistory(const char *address, uint32_t *lineCount);
