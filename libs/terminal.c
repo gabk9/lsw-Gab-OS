@@ -1856,10 +1856,10 @@ void neofetchCmd(char *lswrc_path) {
 
     uint8_t lines = sizeof(ascii_art) / sizeof(ascii_art[0]);
     
-    color4_t title_color = YELLOW;
-    color4_t label_color = LIGHT_CYAN;
-    color4_t art_color = GREEN;
-    color4_t art_bg_color = LIGHT_GREEN;
+    enum color4_t title_color = YELLOW;
+    enum color4_t label_color = LIGHT_CYAN;
+    enum color4_t art_color = GREEN;
+    enum color4_t art_bg_color = LIGHT_GREEN;
 
     for (uint8_t i = 0; i < lines; i++) {
         for (size_t j = 0; ascii_art[i][j]; j++) {
