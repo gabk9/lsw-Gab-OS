@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 7300
-#define PROJ_SIZE_APPROX_BYTES 214500
+#define PROJ_LINES_APPROX 7400
+#define PROJ_SIZE_APPROX_BYTES 216000
 
 #define ALIAS_FILE "lswrc.txt"
 
@@ -1720,6 +1720,15 @@ char *findFirstEqualOutsideQuotes(char *s) {
     return NULL;
 }
 
+bool isValidAction(char *action) {
+    size_t len = strlen(action);
+    if ((action[0] != '\'' || action[len-1] != '\'') &&
+        (action[0] != '\"' || action[len-1] != '\"'))
+        return 0;
+
+    return 1;
+}
+
 void createShortcut(char *instruction, char *path) {    
     char *alias = strdup(instruction);
     
@@ -1744,8 +1753,14 @@ void createShortcut(char *instruction, char *path) {
     char *shortcutName = alias;
     char *action = eq + 1;
 
-    if (!shortcutName || !action) {
-        puts("Error: syntax error for 'alias', use \"man alias\" to check the manual");
+    if (!shortcutName) {
+        puts("Error: missing shortcut name, use \"man alias\" to check the manual");
+        SAFE_FREE(alias);
+        return;
+    }
+
+    if (!action) {
+        puts("Error: missing action, use \"man alias\" to check the manual");
         SAFE_FREE(alias);
         return;
     }
@@ -1757,9 +1772,8 @@ void createShortcut(char *instruction, char *path) {
 
     size_t len = strlen(action);
     
-    if (!((action[0] == '\'' && action[len-1] == '\'') ||
-        (action[0] == '\"' && action[len-1] == '\"'))) {
-        puts("Error: syntax error for 'alias', use \"man alias\" to check the manual");
+    if (!isValidAction(action)) {
+        puts("Error: the action should be between quotes, and it must be equal, use \"man alias\" to check the manual");
         SAFE_FREE(alias);
         return;
     }

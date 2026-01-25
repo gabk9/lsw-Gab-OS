@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.5.04"
+#define VERSION "r1.5.23"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1597,7 +1597,10 @@ void updatehistory(void) {
         "r1.4.85 - small changes\n\tEdited: now instead of checking the syntax of lswrc only once, it checks every time\n",
         "r1.4.9 - small changes\n\tFixed: getHistSizeConfig() function bug\n",
         "r1.4.93 - minor changes\n\tEdited: renamed 'updatehistory' command to 'logs'\n",
-        "r1.5.04 - big changes\n\tAdded: strlen() function to the calculator\n\tEdited: functions error messages and now eval() no longer remove spaces\n"
+        "r1.5.04 - big changes\n\tAdded: strlen() function to the calculator\n\tEdited: functions error messages and now eval() no longer remove spaces\n",
+        "r1.5.08 - minor changes\n\tEdited: optimized stringToVariable() function and the environment variables\n",
+        "r1.5.16 - small changes\n\tEdited: improved the alias syntax analyzer\n",
+        "r1.5.23 - small changes\n\tEdited: improved stringToVariable() function\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

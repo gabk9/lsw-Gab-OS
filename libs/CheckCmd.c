@@ -12,18 +12,18 @@ char *stringToVariable(const char *str, int32_t *changed) {
         *changed = 1;
         return get_env_var("PATH");
     }
-    if (strcasecmp(str, "$home") == 0) {
+    else if (strcasecmp(str, "$home") == 0) {
         *changed = 1;
         return get_env_var("HOME");
     }
-    if (strcasecmp(str, "$username") == 0) {
+    else if (strcasecmp(str, "$username") == 0 || strcasecmp(str, "$user") == 0) {
         *changed = 1;
         const char *user = getenv("USER");
         if (!user) user = getenv("USERNAME");
         if (!user) user = "Unknown";
         return strdup(user);
     }
-    if (strcasecmp(str, "$temp") == 0) {
+    else if (strcasecmp(str, "$temp") == 0) {
         *changed = 1;
         const char *tmp = getenv("TMP");
         if (!tmp) tmp = getenv("TEMP");
@@ -32,61 +32,65 @@ char *stringToVariable(const char *str, int32_t *changed) {
     }
 
 #ifndef _WIN32
-    if (strcasecmp(str, "$shell") == 0) {
+    else if (strcasecmp(str, "$shell") == 0) {
         *changed = 1;
         return get_env_var("SHELL");
     }
-    if (strcasecmp(str, "$lang") == 0) {
+    else if (strcasecmp(str, "$lang") == 0) {
         *changed = 1;
         return get_env_var("LANG");
     }
-    if (strcasecmp(str, "$pwd") == 0) {
+    else if (strcasecmp(str, "$pwd") == 0) {
         *changed = 1;
         return get_env_var("PWD");
     }
-    if (strcasecmp(str, "$editor") == 0) {
+    else if (strcasecmp(str, "$editor") == 0) {
         *changed = 1;
         return get_env_var("EDITOR");
     }
 
 #else
-    if (strcasecmp(str, "$comspec") == 0) {
+    else if (strcasecmp(str, "$comspec") == 0) {
         *changed = 1;
         return get_env_var("COMSPEC");
     }
-    if (strcasecmp(str, "$systemroot") == 0) {
+    else if (strcasecmp(str, "$systemroot") == 0) {
         *changed = 1;
         return get_env_var("SystemRoot");
     }
-    if (strcasecmp(str, "$appdata") == 0) {
+    else if (strcasecmp(str, "$appdata") == 0) {
         *changed = 1;
         return get_env_var("APPDATA");
     }
-    if (strcasecmp(str, "$localappdata") == 0) {
+    else if (strcasecmp(str, "$localappdata") == 0) {
         *changed = 1;
         return get_env_var("LOCALAPPDATA");
     }
-    if (strcasecmp(str, "$programdata") == 0) {
+    else if (strcasecmp(str, "$programdata") == 0) {
         *changed = 1;
         return get_env_var("PROGRAMDATA");
     }
-    if (strcasecmp(str, "$public") == 0) {
+    else if (strcasecmp(str, "$public") == 0) {
         *changed = 1;
         return get_env_var("PUBLIC");
     }
-    if (strcasecmp(str, "$os") == 0) {
+    else if (strcasecmp(str, "$os") == 0) {
         *changed = 1;
         return get_env_var("OS");
     }
-    if (strcasecmp(str, "$number_of_processors") == 0) {
+    else if (strcasecmp(str, "$number_of_processors") == 0) {
         *changed = 1;
         return get_env_var("NUMBER_OF_PROCESSORS");
     }
-    if (strcasecmp(str, "$processor_architecture") == 0) {
+    else if (strcasecmp(str, "$processor_architecture") == 0) {
         *changed = 1;
         return get_env_var("PROCESSOR_ARCHITECTURE");
     }
 #endif
+    else if (str[0] == '$' && str[1] != '\0' && str[1] != ' ') {
+        *changed = 1;
+        return strdup("\n");
+    }
 
     return strdup(str);
 }
@@ -101,8 +105,8 @@ void checkLswrcSyntax(char *data_folder) {
     
     char line[0x400];
     while (fgets(line, sizeof(line), f)) {
-        char *lineCpy = strdup(line);
         line[strcspn(line, "\n")] = '\0';
+        char *lineCpy = strdup(line);
         removeComments(line);
         trim(line);
         trimEnd(line);
@@ -136,7 +140,10 @@ void checkLswrcSyntax(char *data_folder) {
             char *action = eq + 1;
 
             shortcutName = strchr(shortcutName, ' ');
-
+            
+            trim(action); trimEnd(action);
+            trim(shortcutName); trimEnd(shortcutName);
+            
             if (!shortcutName) {
                 fprintf(stderr, "alias: missing shortcut name\n");
                 SAFE_FREE(lineCpy);
@@ -145,6 +152,12 @@ void checkLswrcSyntax(char *data_folder) {
 
             if (!action) {
                 fprintf(stderr, "alias: missing action\n");
+                SAFE_FREE(lineCpy);
+                exit(EXIT_FAILURE);
+            }
+
+            if (!isValidAction(action)) {
+                fprintf(stderr, "alias: the action should be between quotes, and it must be equal\n");
                 SAFE_FREE(lineCpy);
                 exit(EXIT_FAILURE);
             }
@@ -335,7 +348,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("\nEnvironment variables recognized: (not case sensitive)\n");
         printf("\t$PATH                     <-- system PATH\n");
         printf("\t$HOME                     <-- home directory (Linux)\n");
-        printf("\t$USERNAME                 <-- username (Windows/Linux)\n");
+        printf("\t$USERNAME / $USER         <-- username (Windows/Linux)\n");
         printf("\t$TEMP                     <-- temporary folder\n");
 
     #ifndef _WIN32
@@ -405,7 +418,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("\nEnvironment variables recognized: (not case sensitive)\n");
         printf("\t$PATH                     <-- system PATH\n");
         printf("\t$HOME                     <-- home directory (Linux)\n");
-        printf("\t$USERNAME                 <-- username (Windows/Linux)\n");
+        printf("\t$USERNAME / $USER         <-- username (Windows/Linux)\n");
         printf("\t$TEMP                     <-- temporary folder\n");
 
     #ifndef _WIN32

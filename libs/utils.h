@@ -121,6 +121,7 @@ char *get_default_address(void);
 int8_t isAppend(const char *str);
 void safe_lower_inplace(char *s);
 char *unameCmdWin(uint8_t flags);
+bool isValidAction(char *action);
 char *buildLswRcPath(char *path);
 char *tolowerstr(const char *str);
 int16_t move_to_trash(char *path);
