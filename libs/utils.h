@@ -81,7 +81,7 @@
     } \
 } while (false)
 
-enum color4_t {
+enum color4 {
     BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, YELLOW,
     WHITE, GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN,
     LIGHT_RED, LIGHT_MAGENTA, LIGHT_YELLOW, BRIGHT_WHITE
@@ -121,10 +121,10 @@ int8_t isAppend(const char *str);
 void safe_lower_inplace(char *s);
 char *unameCmdWin(uint8_t flags);
 bool isValidAction(char *action);
+void setColor(enum color4 color);
 char *buildLswRcPath(char *path);
 char *tolowerstr(const char *str);
 int16_t move_to_trash(char *path);
-void setColor(enum color4_t color);
 char *unameCmdLinux(uint8_t flags);
 char *get_env_var(const char *name);
 void charRm(char *str, int8_t targ);
@@ -176,10 +176,10 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
 void saveHist(char *operation, char *history_path, char *data_folder);
 void split_instruction_args(char *line, char **out_cmd, char **out_args);
+void printc(const char *str, enum color4 initColor, enum color4 resetColor, ...);
 uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t file);
-void printc(const char *str, enum color4_t initColor, enum color4_t resetColor, ...);
 bool has_top_level_operator(const char *s, const char *uniOps, const char **multiOps);
-void printTarg(const char *str, const char *targ, enum color4_t markColor, int8_t ignoreCase);
+void printTarg(const char *str, const char *targ, enum color4 markColor, int8_t ignoreCase);
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp);
 void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint16_t data_size, char *history_path, uint16_t hist_size);
 bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, char **address, char *history_path, char *data_folder, uint16_t isInsideBash);

@@ -1514,7 +1514,7 @@ void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint1
 #endif
 }
 
-void setColor(enum color4_t color) {
+void setColor(enum color4 color) {
 #ifdef _WIN32
     SetConsoleTextAttribute(hConsole, color);
 #else
@@ -2032,7 +2032,7 @@ const char *strcasestr_ptr(const char *haystack, const char *needle) {
     return NULL;
 }
 
-void printTarg(const char *str, const char *targ, enum color4_t markColor, int8_t ignoreCase) {
+void printTarg(const char *str, const char *targ, enum color4 markColor, int8_t ignoreCase) {
     const char *p = str;
     uint16_t targLen = strlen(targ);
 
@@ -2506,7 +2506,7 @@ char *get_default_address(void) {
     return strdup(".");
 }
 
-void printc(const char *str, enum color4_t initColor, enum color4_t resetColor, ...) {
+void printc(const char *str, enum color4 initColor, enum color4 resetColor, ...) {
     setColor(initColor);
 
     va_list args;
