@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 7200
-#define PROJ_SIZE_APPROX_BYTES 207500
+#define PROJ_LINES_APPROX 7300
+#define PROJ_SIZE_APPROX_BYTES 214500
 
 #define ALIAS_FILE "lswrc.txt"
 
@@ -539,6 +539,7 @@ void printInFileNTimes(FILE *stream, char *str, int64_t count) {
     }
 }
 
+//! unused
 char **readHistory(const char *address, uint32_t *lineCount) {
     *lineCount = 0;
 
@@ -2160,9 +2161,8 @@ double eval(char *operation, bool mathlib) {
         "log10", "log2", "log", "floor", "ceil", "round",
         "fact", "sign", "sum", "rad", "deg", "trunc", "randf",
         "fah", "cel", "root", "rand", "mi", "km", "lb", "kg",
-        "oct", "hex", "bin", "abs", "fabs"
+        "oct", "hex", "bin", "abs", "fabs", "strlen"
     };
-
 
     const char uniOps[] = "+-/*^%%&|<>";
     const char *multiOps[] = {
@@ -2171,36 +2171,43 @@ double eval(char *operation, bool mathlib) {
         NULL
     };
 
-    charRm(operation, ' ');
     operation = tolowerstr(operation);
+
+    char *tmp = strdup(operation);
+    charRm(tmp, ' ');
 
     if (!mathlib) {
         for (uint16_t i = 0; operation[i]; i++) {
-            if (isalpha((unsigned char)operation[i])) {
+            if (isalpha((unsigned char)operation[i]) && operation[i] != ' ') {
                 printf("Error: Invalid expression\n\n");
                 return NAN;
             }
         }
     }
 
-    if (strcmp(operation, "pi") == 0) return PI;
-    if (strcmp(operation, "-pi") == 0) return -PI;
-    if (strcmp(operation, "e") == 0) return E;
-    if (strcmp(operation, "-e") == 0) return -E;
+    if (strcmp(tmp, "pi") == 0) return PI;
+    if (strcmp(tmp, "-pi") == 0) return -PI;
+    if (strcmp(tmp, "e") == 0) return E;
+    if (strcmp(tmp, "-e") == 0) return -E;
 
     
-    if (isHex(operation))
-        return h_atof(operation);
-
-    else if (isOct(operation))
-        return h_atof(operation);
-
+    if (isHex(tmp) || isOct(tmp)) {
+        double val = h_atof(tmp);
+        SAFE_FREE(tmp);
+        return val;
+    }
+    
     int16_t ok = 0;
-    double val = parse_hex_pi_e_bin(operation, &ok);
+    double val = parse_hex_pi_e_bin(tmp, &ok);
     if (ok) return val;
 
-    if (isalldigit(operation) || is_pi_or_e_expression(operation))
-        return h_atof(operation);
+    if (isalldigit(tmp) || is_pi_or_e_expression(tmp)) {
+        val = h_atof(tmp);
+        SAFE_FREE(tmp);
+        return val;
+    }
+
+    SAFE_FREE(tmp);
 
     return CheckOperation(operation, functions, uniOps, multiOps, mathlib);
 }

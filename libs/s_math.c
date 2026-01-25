@@ -45,7 +45,7 @@ static uint8_t isnull(int32_t count, ...) {
 }
 
 bool parentheses_balanced(const char *s) {
-    int level = 0;
+    int32_t level = 0;
     for (; *s; s++) {
         if (*s == '(') level++;
         else if (*s == ')') {
@@ -56,6 +56,7 @@ bool parentheses_balanced(const char *s) {
     return level == 0;
 }
 
+//! unused
 char *find_top_level_comma(char *s) {
     int16_t level = 0;
 
@@ -203,6 +204,87 @@ int64_t parseBinToInt(const char *str) {
     return n;
 }
 
+static uint8_t validPtrFuncArgs(char *arg) {
+    size_t len = strlen(arg);
+
+    if (!len)
+        return 1;
+
+    if (arg[0] != '"' || arg[len-1] != '"') {
+
+        if (arg[len-1] == '\'' && arg[0] == '\'') {
+            printf("Error: must be a char pointer\n\n");
+            return 0;
+        }
+
+        if (arg[len-1] != '"' && arg[0] == '"') {
+            printf("Error: missing closing quote\n\n");
+            return 0;
+        }
+
+        if (arg[len-1] == '"' && arg[0] != '"') {
+            char *tmp = strdup(arg);
+            tmp[len-1] = '\0';
+            printf("Error: undefined identifier: '%s'\n\n", tmp);
+            SAFE_FREE(tmp);
+            return 0;
+        }
+
+        if (isdigit(arg[0])) {
+
+            uint8_t digit = isalldigit(arg);
+
+            if (isOct(arg) || isHex(arg) || isBin(arg) || digit) {
+                printf("Error: must be a char pointer\n\n");
+                return 0;
+            }
+    
+            if (!digit) {
+                printf("Error: invalid identifier: '%s'\n\n", arg);
+                return 0;
+
+            }
+
+        }
+    
+
+        printf("Error: undefined identifier: '%s'\n\n", arg);
+        return 0;
+    }
+
+    return 1;
+}
+
+double bc_strlen(char *operation) {
+    char *test = functionHandler(operation, "strlen");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    trim(test);
+    trimEnd(test);
+
+    if (!validPtrFuncArgs(test)) {
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    double len = strlen(test);
+
+    if (!len || countIndex(test, ',') != 0) {
+        printf("Error: strlen() requires exactly 1 argument\n\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    test[(size_t)len-1] = '\0';
+    len--;
+    memmove(test, test + 1, (size_t)len);
+    len--;
+
+    SAFE_FREE(test);
+
+    return len;
+}
+
 double s_fabs_or_abs(char *operation, bool enable_single_point) {
     char *function = enable_single_point ? "fabs" : "abs"; 
     char *test = functionHandler(operation, function);
@@ -218,7 +300,7 @@ double s_fabs_or_abs(char *operation, bool enable_single_point) {
 
     if (!enable_single_point) {
         if (value != (int64_t)value) {
-            printf("Error: must be integer\n\n");
+            printf("Error: abs() requires an integer\n\n");
             return NAN;
         }
     }
@@ -330,7 +412,7 @@ char *s_oct(char *operation) {
     }
 
     if (ceil(num) != num) {
-        printf("Error: must be integer\n\n");
+        printf("Error: oct() requires an integer!\n\n");
         return NULL;
     }
 
@@ -362,7 +444,7 @@ char *s_hex(char *operation) {
     }
 
     if (ceil(val) != val) {
-        printf("Error: must be integer!\n\n");
+        printf("Error: hex() requires an integer!\n\n");
         return NULL;
     }
 
@@ -398,7 +480,7 @@ char *s_bin(char *operation) {
     }
 
     if (ceil(val) != val) {
-        printf("Error: must be integer!\n\n");
+        printf("Bin: bin() requires an integer!\n\n");
         return NULL;
     }
 
@@ -488,7 +570,7 @@ double s_sqrt(char *operation) {
     }
 
     if (num < 0) {
-        puts("Error: can't be negative!\n");
+        puts("Error: sqrt() requires a non negative!\n");
         return NAN;
     }
 
@@ -698,12 +780,12 @@ double s_root(char *operation) {
     bool invert = false;
 
     if (index == 0) {
-        printf("Error: the index can't be 0\n\n");
+        printf("Error: root() requires an index that is not 0\n\n");
         return NAN;
     }
 
     if (floor(index) != index) {
-        printf("Error: the index must be an integer\n\n");
+        printf("Error: troot() requires an integer index\n\n");
         return NAN;
     }
 
@@ -713,7 +795,7 @@ double s_root(char *operation) {
     }
 
     if (rooting < 0 && ((int)index % 2 == 0)) {
-        printf("Error: even index root of a negative number\n\n");
+        printf("Error: root() requires an odd index when there is a negative number\n\n");
         return NAN;
     }
 
@@ -891,7 +973,7 @@ double s_randInt(char *operation) {
     SAFE_FREE(test);
 
     if (ceil(minInt) != minInt || ceil(maxInt) != maxInt) {
-        printf("Error: it must be integer!\n\n");
+        printf("Error: rand() requires an integer!\n\n");
         return NAN;
     }
 
@@ -962,7 +1044,7 @@ double tetration(double base, int32_t height) {
 
 uint64_t fact(int64_t num) {
     if (num < 0) {
-        printf("Error: cant factorial negative numbers with fact function\n\n");
+        printf("Error: cant factorial negative numbers with fact()\n\n");
         return U64_NAN;
     } else if (num == 0)
         return 1;
@@ -986,7 +1068,7 @@ double s_fact(char *operation) {
     }   
 
     if (ceil(num) != num) {
-        printf("Error: must be integer\n\n");
+        printf("Error: fact() requires an integer!\n\n");
         return NAN;
     }
 
@@ -1019,12 +1101,6 @@ double s_sum(char *operation) {
     SAFE_FREE(raw);
     if (!test)
         return NAN;
-
-    if (!parentheses_balanced(test)) {
-        printf("Error: unbalanced parentheses\n\n");
-        SAFE_FREE(test);
-        return NAN;
-    }
 
     uint16_t commaCount = count_top_level_commas(test);
 
