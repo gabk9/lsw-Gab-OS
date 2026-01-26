@@ -1138,6 +1138,11 @@ op_found:
         trim(num1); trimEnd(num1);
         trim(num2); trimEnd(num2);
 
+        if (isBcVariable(num1) || isBcVariable(num2)) {
+            printf("Warning: variables are currently unsupported\n\n");
+            return NAN;
+        }
+
         double num1_int;
         if (*num1 == '~') {
             memmove(num1, num1+1, strlen(num1) + 1);            

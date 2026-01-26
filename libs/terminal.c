@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.5.53"
+#define VERSION "r1.5.59"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1593,10 +1593,11 @@ void updatehistory(void) {
         "r1.5.08 - minor changes\n\tEdited: optimized stringToVariable() function and the environment variables\n",
         "r1.5.16 - small changes\n\tEdited: improved the alias syntax analyzer\n",
         "r1.5.23 - small changes\n\tEdited: improved stringToVariable() function\n",
-        "r1.5.34 - big changes\n\tFixed: forgotten frees and fcloses in some functions\n\tAdded: now the checkLswrcSyntax() function checks for duplicated keys\n",
+        "r1.5.34 - big changes\n\tFixed: forgot to free and fclose in some functions\n\tAdded: now the checkLswrcSyntax() function checks for duplicated keys\n",
         "r1.5.38 - small changes\n\tEdited: improved strlen() calculator function\n",
         "r1.5.46 - small changes\n\tEdited: improved eval()\n",
-        "r1.5.53 - small changes\n\tEdited: improved calculator strlen() once again\n"
+        "r1.5.53 - small changes\n\tEdited: improved calculator strlen() once again\n",
+        "r1.5.59 - minor changes\n\tFixed: forgot to add variable checking in some places\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

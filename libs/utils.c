@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 7600
-#define PROJ_SIZE_APPROX_BYTES 221500
+#define PROJ_SIZE_APPROX_BYTES 222000
 
 #define ALIAS_FILE "lswrc.txt"
 

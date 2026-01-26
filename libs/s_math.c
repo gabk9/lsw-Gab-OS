@@ -122,6 +122,14 @@ double h_atof(const char *str) {
     trimEnd(buf);
     tolowerstr(buf);
 
+    if (isBcVariable(buf)) {
+        printf("Warning: variables are currently unsupported\n\n");
+        return NAN;
+    }
+    
+    if (!isalldigit(buf))
+        return 0;
+
     bool isUnaryNot = false;
 
     if (*buf == '~') {
@@ -317,7 +325,7 @@ static uint16_t countCommaOutsideQuotesAndParenthesis(const char *str, uint8_t q
     return count;
 }
 
-//! unused
+__attribute__((unused))
 static uint16_t countCommaOutsideQuotes(const char *str, uint8_t quoteType) {
     uint16_t count = 0;
     bool insideQuotes = false;
@@ -338,7 +346,7 @@ static uint16_t countCommaOutsideQuotes(const char *str, uint8_t quoteType) {
     return count;
 }
 
-//! unused
+__attribute__((unused))
 static uint16_t countCommaOutsideParenthesis(const char *str) {
     uint16_t count = 0;
     int32_t parenLevel = 0;
