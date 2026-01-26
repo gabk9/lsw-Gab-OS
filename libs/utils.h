@@ -108,6 +108,7 @@ bool isOct(const char *str);
 void trimBetween(char *str);
 char *myDirname(char *path);
 char *echoHandler(char *str);
+bool isBcVariable(char *str);
 void enableAnsiIfNeeded(void);
 char *revStr(const char *str);
 char *extractPath(char **str);

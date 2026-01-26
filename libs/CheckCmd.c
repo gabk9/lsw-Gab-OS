@@ -1104,21 +1104,6 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
             return bc_strlen(operation);
     }    
     uint16_t op_pos = 0;
-    if (operation[0] == '~') {
-        double v = eval(operation + 1, mathlib);
-
-        if (v != (int64_t)v) {
-            printf("Error: to use the not(~) operator the number must be integer\n\n");
-            return NAN;
-        }
-
-        if (v < MIN_SAFE_INT64_D || v > MAX_SAFE_INT64_D) {
-            printf("Error: integer overflow\n\n");
-            return NAN;
-        }
-
-        return (double)(~(int64_t)v);
-    }
 
     for (uint16_t i = 0; operation[i]; i++) {
         for (uint16_t j = 0; multiOps[j]; j++) {
@@ -1138,8 +1123,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
         }
     }
 
-    printf("Error: Invalid expression\n");
-    return (double)U64_NAN;
+    return h_atof(operation);
 
 op_found:
     {
@@ -1151,35 +1135,58 @@ op_found:
         char *num1 = buffer;
         char *num2 = buffer + op_pos + strlen(op);
 
+        trim(num1); trimEnd(num1);
+        trim(num2); trimEnd(num2);
+
         double num1_int;
-        if (num1[0] == '~') {
-            num1_int = eval(num1+1, mathlib); 
+        if (*num1 == '~') {
+            memmove(num1, num1+1, strlen(num1) + 1);            
+
+            if (!*num1)
+                return 0.0;
+
+            if (isBcVariable(num1)) {
+                printf("Warning: variables are currently unsupported\n\n");
+                return NAN;
+            }
+
+            num1_int = eval(num1, mathlib); 
+            
+            if (num1_int < MIN_SAFE_INT64_D || num1_int > MAX_SAFE_INT64_D) {
+                printf("Error: integer overflow\n\n");
+                return NAN;
+            }
             
             if (num1_int != (int64_t)num1_int) {
                 printf("Error: to use the not(~) operator the number must be integer\n\n");
                 return NAN;
             }
-
-            if (num1_int < MIN_SAFE_INT64_D || num1_int > MAX_SAFE_INT64_D) {
-                printf("Error: integer overflow\n\n");
-                return NAN;
-            }
-
+            
             num1_int = ~(int64_t)num1_int;
         } else
             num1_int = eval(num1, mathlib);
 
         double num2_int;
-        if (num2[0] == '~') {
-            num2_int = eval(num2+1, mathlib); 
+        if (*num2 == '~') {
+            memmove(num2, num2+1, strlen(num2) + 1);
 
-            if (num2_int != (int64_t)num2_int) {
-                printf("Error: to use the not(~) operator the number must be integer\n\n");
+            if (!*num2)
+                return 0.0;
+
+            if (isBcVariable(num2)) {
+                printf("Warning: variables are currently unsupported\n\n");
                 return NAN;
             }
 
+            num2_int = eval(num2, mathlib); 
+            
             if (num2_int < MIN_SAFE_INT64_D || num2_int > MAX_SAFE_INT64_D) {
                 printf("Error: integer overflow\n\n");
+                return NAN;
+            }
+
+            if (num2_int != (int64_t)num2_int) {
+                printf("Error: to use the not(~) operator the number must be integer\n\n");
                 return NAN;
             }
 

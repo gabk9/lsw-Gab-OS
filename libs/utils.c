@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 7500
-#define PROJ_SIZE_APPROX_BYTES 218500
+#define PROJ_LINES_APPROX 7600
+#define PROJ_SIZE_APPROX_BYTES 221500
 
 #define ALIAS_FILE "lswrc.txt"
 
@@ -31,6 +31,18 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+bool isBcVariable(char *str) {
+    for (size_t i = 0; str[i]; i++) {
+        if (str[i] == '$') {
+            if (i > 0 && isdigit((unsigned char)str[i-1]))
+                continue;
+            if (isalpha((unsigned char)str[i+1]) || str[i+1] == '_')
+                return true;
+        }
+    }
+    return false;
+}
 
 bool isKeyRepeated(char *data_folder, const char *key_name) {
     char *path = buildLswRcPath(data_folder);
@@ -343,26 +355,20 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
     trim(str);
     trimEnd(str);
     bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
-                            reps < strrchar(instruction, '\''));
+                           reps < strrchar(instruction, '\''));
 
     double count;
 
     if (!QuoteAfterStar) {
         count = eval(num, true);
 
-        if (count == (double)U64_NAN) {
+        if (count != (int64_t)count) {
+            printf("Error: the multiplier must be an integer\n");
             return 0;
         }
 
         if (count <= 0) {
-            errno = EINVAL;
-            perror("Error");
-            return 0;
-        }
-
-        
-        if (ceil(count) != count) {
-            printf("Error: must be integer\n");
+            printf("Error: the multiplier must be greater than 0\n");
             return 0;
         }
     }
@@ -461,8 +467,13 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
 
         count = eval(star, true);
 
-        if (count == (double)U64_NAN || count <= 0 || ceil(count) != count) {
-            puts("Error: invalid repetition count");
+        if (count != (int64_t)count) {
+            puts("Error: the multiplier must be an integer");
+            goto fail;
+        }
+
+        if (count <= 0) {
+            puts("Error: the multiplier must be greater than 0");
             goto fail;
         }
     }
@@ -2251,10 +2262,8 @@ double eval(char *operation, bool mathlib) {
 
     if (!mathlib) {
         for (uint16_t i = 0; operation[i]; i++) {
-            if (isalpha((unsigned char)operation[i]) && operation[i] != ' ') {
-                printf("Error: Invalid expression\n\n");
-                return NAN;
-            }
+            if (isalpha((unsigned char)operation[i]) && operation[i] != ' ')
+                return 0.0;
         }
     }
 

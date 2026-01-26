@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.5.34"
+#define VERSION "r1.5.53"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1000,27 +1000,19 @@ void touchCmd(char *instruction) {
         if (!QuoteAfterStar) {
             count = eval(num+1, true);
     
-            if (count == (double)U64_NAN) {
+            if (count != (int64_t)count) {
+                printf("Error: the multiplier must be an integer\n");
                 SAFE_FREE(copy);
                 SAFE_FREE(test);
                 return;
             }
     
             if (count <= 0) {
-                errno = EINVAL;
-                perror("Error");
+                printf("Error: the multiplier must be greater than 0\n");
                 SAFE_FREE(copy);
                 SAFE_FREE(test);
                 return;
-            }
-    
-            
-            if (ceil(count) != count) {
-                printf("Error: must be integer\n");
-                SAFE_FREE(copy);
-                SAFE_FREE(test);
-                return;
-            }
+            }    
         }
 
         int32_t changed = 0;
@@ -1601,7 +1593,10 @@ void updatehistory(void) {
         "r1.5.08 - minor changes\n\tEdited: optimized stringToVariable() function and the environment variables\n",
         "r1.5.16 - small changes\n\tEdited: improved the alias syntax analyzer\n",
         "r1.5.23 - small changes\n\tEdited: improved stringToVariable() function\n",
-        "r1.5.34 - big changes\n\tFixed: forgotten frees and fcloses in some functions\n\tAdded: now the checkLswrcSyntax() function checks for duplicated keys\n"
+        "r1.5.34 - big changes\n\tFixed: forgotten frees and fcloses in some functions\n\tAdded: now the checkLswrcSyntax() function checks for duplicated keys\n",
+        "r1.5.38 - small changes\n\tEdited: improved strlen() calculator function\n",
+        "r1.5.46 - small changes\n\tEdited: improved eval()\n",
+        "r1.5.53 - small changes\n\tEdited: improved calculator strlen() once again\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

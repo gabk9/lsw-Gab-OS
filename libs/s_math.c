@@ -100,7 +100,15 @@ char *functionHandler(char *operation, const char *function) {
 
     copy[0] = ' ';
     copy[strlen(copy) - 1] = '\0';
+
     trim(copy);
+    trimEnd(copy);
+
+    if (isBcVariable(copy)) {
+        printf("Warning: variables are currently unsupported\n\n");
+        SAFE_FREE(copy);
+        return BC_ERROR;
+    }
 
     return copy;
 }
@@ -113,6 +121,33 @@ double h_atof(const char *str) {
     trim(buf);
     trimEnd(buf);
     tolowerstr(buf);
+
+    bool isUnaryNot = false;
+
+    if (*buf == '~') {
+        memmove(buf, buf+1, strlen(buf)+1);
+        trim(buf);
+        
+        isUnaryNot = true;
+    }
+
+    if (isUnaryNot) {
+        double num = h_atof(buf);
+
+        if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
+            printf("Error: integer overflow\n\n");
+            return NAN;
+        }
+        
+        if (num != (int64_t)num) {
+            printf("Error: to use the not(~) operator the number must be integer\n\n");
+            return NAN;
+        }
+
+        int64_t value = (int64_t)num;
+        value = ~value;
+        return (double)value;
+    }
 
     int16_t ok = 0;
     double hex_pi_e = parse_hex_pi_e_bin(buf, &ok);
@@ -225,7 +260,7 @@ static uint8_t validPtrFuncArgs(char *arg) {
         if (arg[len-1] == '"' && arg[0] != '"') {
             char *tmp = strdup(arg);
             tmp[len-1] = '\0';
-            printf("Error: undefined identifier: '%s'\n\n", tmp);
+            printf("Error: invalid argument: '%s'\n\n", tmp);
             SAFE_FREE(tmp);
             return 0;
         }
@@ -234,25 +269,97 @@ static uint8_t validPtrFuncArgs(char *arg) {
 
             uint8_t digit = isalldigit(arg);
 
-            if (isOct(arg) || isHex(arg) || isBin(arg) || digit) {
+            if (isOct(arg) || isHex(arg) || isBin(arg)) {
                 printf("Error: must be a char pointer\n\n");
                 return 0;
             }
     
             if (!digit) {
-                printf("Error: invalid identifier: '%s'\n\n", arg);
+                printf("Error: invalid argument: '%s'\n\n", arg);
                 return 0;
-
             }
-
         }
-    
 
         printf("Error: undefined identifier: '%s'\n\n", arg);
         return 0;
     }
 
     return 1;
+}
+
+static uint16_t countCommaOutsideQuotesAndParenthesis(const char *str, uint8_t quoteType) {
+    uint16_t count = 0;
+    bool insideQuotes = false;
+    int32_t parenLevel = 0;
+
+    if (!str) {
+        return 0;
+    }
+
+    while (*str) {
+        if (*str == (char)quoteType && parenLevel == 0) {
+            insideQuotes = !insideQuotes;
+        }
+        else if (*str == '(' && !insideQuotes) {
+            parenLevel++;
+        }
+        else if (*str == ')' && !insideQuotes) {
+            if (parenLevel > 0)
+                parenLevel--;
+        }
+        else if (*str == ',' && !insideQuotes && parenLevel == 0) {
+            count++;
+        }
+
+        str++;
+    }
+
+    return count;
+}
+
+//! unused
+static uint16_t countCommaOutsideQuotes(const char *str, uint8_t quoteType) {
+    uint16_t count = 0;
+    bool insideQuotes = false;
+    
+    if (str == NULL) {
+        return 0;
+    }
+    
+    while (*str) {
+        if (*str == (char)quoteType) {
+            insideQuotes = !insideQuotes;
+        } else if (*str == ',' && !insideQuotes) {
+            count++;
+        }
+        str++;
+    }
+    
+    return count;
+}
+
+//! unused
+static uint16_t countCommaOutsideParenthesis(const char *str) {
+    uint16_t count = 0;
+    int32_t parenLevel = 0;
+
+    if (!str) {
+        return 0;
+    }
+
+    while (*str) {
+        if (*str == '(') {
+            parenLevel++;
+        } else if (*str == ')') {
+            if (parenLevel > 0)
+                parenLevel--;
+        } else if (*str == ',' && parenLevel == 0) {
+            count++;
+        }
+        str++;
+    }
+
+    return count;
 }
 
 double bc_strlen(char *operation) {
@@ -262,15 +369,15 @@ double bc_strlen(char *operation) {
     trim(test);
     trimEnd(test);
 
-    if (!validPtrFuncArgs(test)) {
+    double len = strlen(test);
+
+    if (!len || countCommaOutsideQuotesAndParenthesis(test, '"') != 0) {
+        printf("Error: strlen() requires exactly 1 argument\n\n");
         SAFE_FREE(test);
         return NAN;
     }
 
-    double len = strlen(test);
-
-    if (!len || countIndex(test, ',') != 0) {
-        printf("Error: strlen() requires exactly 1 argument\n\n");
+    if (!validPtrFuncArgs(test)) {
         SAFE_FREE(test);
         return NAN;
     }
@@ -617,9 +724,6 @@ double s_sin(char *operation) {
     char *test = functionHandler(operation, "sin");
     if (strcmp(test, BC_ERROR) == 0) return NAN;
 
-    trim(test);
-    trimEnd(test);
-
     double num = eval(test, true);
 
     SAFE_FREE(test);
@@ -639,9 +743,6 @@ double s_sin(char *operation) {
 double s_cos(char *operation) {
     char *test = functionHandler(operation, "cos");
     if (strcmp(test, BC_ERROR) == 0) return NAN;
-
-    trim(test);
-    trimEnd(test);
 
     double num = eval(test, true);
 
@@ -663,9 +764,6 @@ double s_tan(char *operation) {
     char *test = functionHandler(operation, "tan");
     if (strcmp(test, BC_ERROR) == 0)
         return NAN;
-
-    trim(test);
-    trimEnd(test);
 
     double angle = eval(test, true);
 
