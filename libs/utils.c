@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 7600
-#define PROJ_SIZE_APPROX_BYTES 222000
+#define PROJ_SIZE_APPROX_BYTES 222500
 
 #define ALIAS_FILE "lswrc.txt"
 
@@ -54,7 +54,7 @@ bool isKeyRepeated(char *data_folder, const char *key_name) {
     if (!f)
         return false;
 
-    char buffer[0x400];
+    char buffer[MAX_CHAR];
     while (fgets(buffer, sizeof(buffer), f)) {
         buffer[strcspn(buffer, "\n")] = '\0';
         removeComments(buffer);

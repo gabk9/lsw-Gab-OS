@@ -103,7 +103,7 @@ void checkLswrcSyntax(char *data_folder) {
     if (!f)
         return;
     
-    char line[0x400];
+    char line[MAX_CHAR];
     while (fgets(line, sizeof(line), f)) {
         line[strcspn(line, "\n")] = '\0';
         char *lineCpy = strdup(line);
@@ -722,7 +722,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         "\n"
         "\tOctal: (prefix: '0o')         base 8 numbers e.g. 0o2000 = 1024\n"
         "\n"
-        "\tHexadecimal: (prefix: '0x')   base 16 numbers e.g. 0x400 = 1024\n"
+        "\tHexadecimal: (prefix: '0x')   base 16 numbers e.g. MAX_CHAR = 1024\n"
         );
 
 

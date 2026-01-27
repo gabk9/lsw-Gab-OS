@@ -14,6 +14,9 @@
 #define KM_TO_MI_FACTOR 0.62137
 #define MI_TO_KM_FACTOR 1.609344
 
+#define DEG_TO_RAD_FACTOR 0.01745329251
+#define RAD_TO_DEG_FACTOR 57.2957795131
+
 #define BC_ERROR "__LSW__CALC__ERROR__"
 
 #ifdef _WIN32
@@ -66,8 +69,8 @@ uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
 double s_fabs_or_abs(char *operation, bool enable_single_point)__attribute__((nonnull));
 char *functionHandler(char *operation, const char *function)__attribute__((warn_unused_result));
 
-#define DEG_TO_RAD(x) ((x) * (PI) / 180.0) 
-#define RAD_TO_DEG(x) ((x) * 180.0 / (PI))
+#define DEG_TO_RAD(x) ((x) * DEG_TO_RAD_FACTOR) 
+#define RAD_TO_DEG(x) ((x) * RAD_TO_DEG_FACTOR)
 
 #define KM_TO_MI(x) ((x) * KM_TO_MI_FACTOR)
 #define MI_TO_KM(x) ((x) * MI_TO_KM_FACTOR)

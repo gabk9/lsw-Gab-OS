@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.5.7"
+#define VERSION "r1.5.73"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -109,7 +109,7 @@ void revCmd(char *instruction) {
             }
 
 
-            char line[0x400];
+            char line[MAX_CHAR];
 
             FILE *dest = fopen(destFile, "w");
             if (!dest) {
@@ -152,7 +152,7 @@ void revCmd(char *instruction) {
                 return;
             }
 
-            char line[0x400];
+            char line[MAX_CHAR];
 
             while (fgets(line, MAX_CHAR, source)) {
                 trim(line);
@@ -278,7 +278,7 @@ void sleepCmd(char *instruction) {
 }
 
 int32_t lcCmd(char *instruction) {
-    char buffer[0x400];
+    char buffer[MAX_CHAR];
     strncpy(buffer, instruction, sizeof(buffer));
     buffer[sizeof(buffer)-1] = '\0';
 
@@ -429,7 +429,7 @@ void renameCmd(char *instruction) {
 }
 
 void manCmdMulti(char *instruction, const char **cmds, uint8_t isInsideBash) {
-    char buffer[0x400];
+    char buffer[MAX_CHAR];
     strncpy(buffer, instruction, sizeof(buffer));
     buffer[sizeof(buffer)-1] = '\0';
 
@@ -649,7 +649,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
 void grepCmd(char *instruction) {
 
-    char buffer[0x400];
+    char buffer[MAX_CHAR];
     strncpy(buffer, instruction, sizeof(buffer));
     buffer[sizeof(buffer)-1] = '\0';
 
@@ -824,7 +824,7 @@ void historyCmd(char *operation, const char *path) {
 
         uint16_t i = 1;
 
-        char buff[0x400];
+        char buff[MAX_CHAR];
 
         while (i <= num) {
             if (!fgets(buff, sizeof(buff), f)) 
@@ -1107,7 +1107,7 @@ void tailCmd(char *instruction, uint32_t max_lines) {
         return;
     }
 
-    char path[0x400];
+    char path[MAX_CHAR];
     strncpy(path, instruction, sizeof(path) - 1);
     path[sizeof(path) - 1] = '\0';
 
@@ -1197,7 +1197,7 @@ void rmdirCmd(char *instruction) {
         while (*args == ' ') args++;
     }
 
-    char buffer[0x400];
+    char buffer[MAX_CHAR];
     strncpy(buffer, args, sizeof(buffer));
     buffer[sizeof(buffer)-1] = '\0';
 
@@ -1240,7 +1240,7 @@ void rmdirCmd(char *instruction) {
 
 void mkdirCmd(char *command) {
     
-    char buffer[0x400];
+    char buffer[MAX_CHAR];
     strncpy(buffer, command, sizeof(buffer));
     buffer[sizeof(buffer)-1] = '\0';
 
@@ -1598,7 +1598,8 @@ void updatehistory(void) {
         "r1.5.46 - small changes\n\tEdited: improved eval()\n",
         "r1.5.53 - small changes\n\tEdited: improved calculator strlen() once again\n",
         "r1.5.59 - minor changes\n\tFixed: forgot to add variable checking in some places\n",
-        "r1.5.7 - big changes\n\tAdded: now apparently the calculator works with more than 2 numbers, but without operand precedence\n"
+        "r1.5.7 - big changes\n\tAdded: now apparently the calculator works with more than 2 numbers, but without operand precedence\n",
+        "r1.5.73 - minor changes\n\tEdited: just a few optimizations\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
