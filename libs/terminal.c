@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.5.73"
+#define VERSION "r1.5.76"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1599,7 +1599,8 @@ void updatehistory(void) {
         "r1.5.53 - small changes\n\tEdited: improved calculator strlen() once again\n",
         "r1.5.59 - minor changes\n\tFixed: forgot to add variable checking in some places\n",
         "r1.5.7 - big changes\n\tAdded: now apparently the calculator works with more than 2 numbers, but without operand precedence\n",
-        "r1.5.73 - minor changes\n\tEdited: just a few optimizations\n"
+        "r1.5.73 - minor changes\n\tEdited: just a few optimizations\n",
+        "r1.5.76 - small changes\n\tAdded: function attribute to printc()\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

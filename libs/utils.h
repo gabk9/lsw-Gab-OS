@@ -177,7 +177,10 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
 void saveHist(char *operation, char *history_path, char *data_folder);
 void split_instruction_args(char *line, char **out_cmd, char **out_args);
+
+__attribute__((format(printf, 1, 4)))
 void printc(const char *str, enum color4 initColor, enum color4 resetColor, ...);
+
 uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t file);
 bool has_top_level_operator(const char *s, const char *uniOps, const char **multiOps);
 void printTarg(const char *str, const char *targ, enum color4 markColor, int8_t ignoreCase);
