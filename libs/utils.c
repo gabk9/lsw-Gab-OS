@@ -46,7 +46,7 @@ bool isBcVariable(char *str) {
 
 bool isKeyRepeated(char *data_folder, const char *key_name) {
     char *path = buildLswRcPath(data_folder);
-    
+
     bool foundKey = false;
 
     FILE *f = fopen(path, "r");
@@ -262,7 +262,7 @@ uint16_t getHistSizeConfig(char *lswrc_path) {
 
 uint16_t getSavedHistSize(char *path) {
     uint16_t lines = 1;
-    
+
     FILE *f = fopen(path, "r");
 
     if (!f)
@@ -343,19 +343,19 @@ int8_t isAppend(const char *str) {
 uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
 
     char *save;
-    
+
     char *str = strtok_r(copy, "*", &save);
     char *num = strtok_r(NULL, "*", &save);
-    
+
     if (!str || !num || (num[0] == '*' && num[1] == '\0')){
         puts("Error: invalid syntax");
         return 1;
     }
-    
+
     trim(str);
     trimEnd(str);
     bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
-                           reps < strrchar(instruction, '\''));
+                        reps < strrchar(instruction, '\''));
 
     double count;
 
@@ -372,14 +372,14 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
             return 0;
         }
     }
-    
+
     int32_t changed = 0;
     char *new = stringToVariable(str, &changed);
 
     if (!(changed && strcasecmp(str, "$path") == 0))
         new = echoHandler(new);
 
-    
+
     if (QuoteAfterStar) {
         echoHandler(instruction);
         puts(instruction);
@@ -389,7 +389,7 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
 
     SAFE_FREE(new);
     SAFE_FREE(copy);
-    
+
     return 1;
 }
 
@@ -528,7 +528,7 @@ char *extract_instruction(char *str, char **args) {
         return NULL;
     }
 
-    
+
     char *p = str;
 
     while (*p == ' ') p++;
@@ -588,8 +588,8 @@ int16_t move_to_trash(char *path) {
 #else
     char dest[0x400];
     snprintf(dest, sizeof(dest),
-             "%s/.local/share/Trash/files/%s",
-             getenv("HOME"), path);
+            "%s/.local/share/Trash/files/%s",
+            getenv("HOME"), path);
 
     return rename(path, dest) == 0;
 #endif
@@ -704,7 +704,7 @@ void sleepF(double seconds) {
 }
 
 bool isValidFolderOrFileName(const char *name) {
-  if (!name || !*name) return false;
+    if (!name || !*name) return false;
 
 #ifdef _WIN32
     const char *invalid = "<>:\"/\\|?*";
@@ -1270,7 +1270,7 @@ char *unameCmdWin(uint8_t flags) {
     static char result[0x400];
     char buffer[0x100];
     result[0] = '\0';
-    
+
     OSVERSIONINFOEX ver;
     SYSTEM_INFO sysInfo;
 
@@ -1281,7 +1281,7 @@ char *unameCmdWin(uint8_t flags) {
         strcpy(result, "Windows");
         return result;
     }
-    
+
     GetSystemInfo(&sysInfo);
 
     if (flags & U_KERN_NAME)
@@ -1360,7 +1360,7 @@ char *unameCmdWin(uint8_t flags) {
                 case 0: os_name = "Windows 2000"; break;
             }
         }
-        
+
         sprintf(buffer, "%s ", os_name);
         strcat(result, buffer);
     }
@@ -1370,7 +1370,7 @@ char *unameCmdWin(uint8_t flags) {
     } else {
         trimEnd(result);
     }
-    
+
     return result;
 #else
     return NULL;
@@ -1382,7 +1382,7 @@ char *unameCmdLinux(uint8_t flags) {
     static char result[0x400];
     char buffer[0x100];
     result[0] = '\0';
-    
+
     struct utsname pc;
 
     if (uname(&pc) == -1) {
@@ -1394,27 +1394,27 @@ char *unameCmdLinux(uint8_t flags) {
         sprintf(buffer, "%s ", pc.sysname);
         strcat(result, buffer);
     }
-    
+
     if (flags & U_HOST_NAME) {
         sprintf(buffer, "%s ", pc.nodename);
         strcat(result, buffer);
     }
-    
+
     if (flags & U_KERN_RELEASE) {
         sprintf(buffer, "%s ", pc.release);
         strcat(result, buffer);
     }
-    
+
     if (flags & U_KERN_VERSION) {
         sprintf(buffer, "%s ", pc.version);
         strcat(result, buffer);
     }
-    
+
     if (flags & U_MACHINE) {
         sprintf(buffer, "%s ", pc.machine);
         strcat(result, buffer);
     }
-    
+
     if (flags & U_OPERATING_SYSTEM) {
 
     #if defined(__ANDROID__)
@@ -1454,7 +1454,7 @@ char *unameCmdLinux(uint8_t flags) {
     } else {
         trimEnd(result);
     }
-    
+
     return result;
 #else
     return NULL;
@@ -1801,13 +1801,13 @@ bool isValidAction(char *action) {
 
 void createShortcut(char *instruction, char *path) {    
     char *alias = strdup(instruction);
-    
+
     if (alias[0] == '\0') {
         puts("alias: missing operand\nUse \"man alias\" to check the manual");
         SAFE_FREE(alias);
         return;
     }
-    
+
     trim(alias);
     trimEnd(alias);
 
@@ -1852,7 +1852,7 @@ void createShortcut(char *instruction, char *path) {
 
     if (aliasExists(buffer, shortcutName)) {
         puts("Warning: duplicated alias found, note that only the first "
-               "occurrence of this shortcut will work!");
+            "occurrence of this shortcut will work!");
     }
     
     char quote = action[0];
@@ -1949,7 +1949,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
                 else {
                     option = strrchr(action, ' ');
                 }
-                
+
             }
             trim(option);
 
@@ -2039,7 +2039,7 @@ const char *strcasestr_ptr(const char *haystack, const char *needle) {
             return haystack + i;
         }
     }
-    
+
     return NULL;
 }
 
@@ -2172,7 +2172,7 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
         temp[0] = '0';
         temp[1] = 'b';
         temp[2] = '\0';
-        
+
         strcat(temp, buf);
 
         value = parseBinToInt(temp);
@@ -2272,13 +2272,13 @@ double eval(char *operation, bool mathlib) {
     if (strcmp(tmp, "e") == 0) return E;
     if (strcmp(tmp, "-e") == 0) return -E;
 
-    
+
     if (isHex(tmp) || isOct(tmp)) {
         double val = h_atof(tmp);
         SAFE_FREE(tmp);
         return val;
     }
-    
+
     int16_t ok = 0;
     double val = parse_hex_pi_e_bin(tmp, &ok);
     if (ok) return val;
@@ -2299,9 +2299,9 @@ char *handle_cd_dash(char *address) {
         printf("cd: no previous directory\n");
         return strdup(address);
     }
-    
+
     printf("%s\n", last_directory);
-    
+
     if (chdir(last_directory) != 0) {
         perror("cd");
         return "";
@@ -2314,7 +2314,7 @@ char *handle_cd_dash(char *address) {
         SAFE_FREE(temp);
         return strdup(new_cwd);
     }
-    
+
     return strdup(address);
 }
 
@@ -2533,8 +2533,8 @@ char* get_cpu_model(void) {
     DWORD size = sizeof(cpu);
 
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
-                      "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
-                      0, KEY_READ, &hKey) != ERROR_SUCCESS)
+                    "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+                    0, KEY_READ, &hKey) != ERROR_SUCCESS)
         return "Unknown";
 
     if (RegGetValueA(hKey, NULL, "ProcessorNameString", RRF_RT_REG_SZ, NULL, cpu, &size) != ERROR_SUCCESS) {

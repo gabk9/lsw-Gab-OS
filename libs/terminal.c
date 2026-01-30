@@ -37,22 +37,22 @@ void revCmd(char *instruction) {
 
             fgets(string, MAX_CHAR, stdin);
             string[strcspn(string, "\n")] = '\0';
-            
+
             if (!*string) {
                 printf("Error: insert a string!\n\n");
                 continue;
             }
-            
+
             trim(string);
             trimEnd(string);
 
             char *copy = revStr(string);
             uint8_t stop  = (isValidBcCommand(string, "exit") ||
-                             isValidBcCommand(string, "quit"));
+                            isValidBcCommand(string, "quit"));
 
             uint8_t clean = (isValidBcCommand(string, "clear") ||
-                             isValidBcCommand(string, "cls"));
-            
+                            isValidBcCommand(string, "cls"));
+
             char lastChr = (clean || stop) ? '\0' : '\n';
 
             printf("%s\n%c", copy, lastChr);
@@ -88,7 +88,7 @@ void revCmd(char *instruction) {
             trimEnd(sourceFile);
 
             uint8_t isPath = (strchar(destFile, '/') != -1 || strchar(sourceFile, '/') != -1 ||
-                              strchar(destFile, '\\') != -1 || strchar(sourceFile, '\\') != -1);
+                            strchar(destFile, '\\') != -1 || strchar(sourceFile, '\\') != -1);
 
             if (isPath) {
                 printf("Error: currently it does not support paths\n");
@@ -268,7 +268,7 @@ void sleepCmd(char *instruction) {
         return;
 
     time *= unit;
-        
+
     if (time < 0) {
         puts("Error: must be greater than 0");
         return;
@@ -369,8 +369,8 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
         printf("You can run commands using 'lsw [COMMAND...]', or you can use options with 'lsw [OPTION...]'\n");
         printf("\nOptions:\n");
         printf("\t'-v', '--version'   show version information\n"
-               "\t'-h', '--help'      display manual\n"
-               "\t'-a', '--all'       displays everything\n\n");
+            "\t'-h', '--help'      display manual\n"
+            "\t'-a', '--all'       displays everything\n\n");
         printf("Commands:\n");
 
         char **copy = NULL;
@@ -387,7 +387,7 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
 
         for (uint16_t i = 0; i < cmdCount; i++)
             printf("\t%s\n", copy[i]);
-            
+
         for (uint16_t i = 0; i < cmdCount; i++)
             SAFE_FREE(copy[i]);
         SAFE_FREE(copy);
@@ -455,7 +455,7 @@ void manCmdMulti(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
     for (int i = 0; i < cmdCount; i++) {
         manCmd(commands[i], cmds, isInsideBash);
-        
+
         if (i < cmdCount - 1) {
             puts("\n────────────────────────────────────────────────────────────────────────\n");
         }
@@ -535,7 +535,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
     initRandom();
 
     char *operation = calloc(MAX_CHAR, sizeof(char));
-    
+
     if (!operation) {
         puts("Error: Allocation error!!");
         return;
@@ -549,8 +549,8 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                 printf("type 'quit' or 'exit' to exit, 'man' to check the manual inside the calculator, otherwise use 'man bc'\n");
                 printf("it no longer supports comma instead of dots and type 'clear' or 'cls' to clear the screen and scrollback buffer");
                 printf("\nPS: mathlib is off by default, type 'mathlib' to turn it on/off "
-                       "if you're inside the terminal, otherwise use 'bc -l' or 'bc --mathlib', it enables functions and "
-                       "the other numeric systems\n");
+                    "if you're inside the terminal, otherwise use 'bc -l' or 'bc --mathlib', it enables functions and "
+                    "the other numeric systems\n");
             }
             printf("Mathlib status: ");
             if (mathlib)
@@ -562,10 +562,10 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
         appear = 1;
         result = NAN;
-        
+
         fgets(operation, MAX_CHAR, stdin);
         operation[strcspn(operation, "\n")] = '\0';
-        
+
         removeComments(operation);
 
         if (!*operation) {
@@ -597,11 +597,11 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
         } else if (isValidBcCommand(operation, "man")) {
             puts("\n────────────────────────────────────────────────────────────────────────────────\n");
-        
+
             manCmdMulti("bc", cmds, true);
-            
+
             puts("\n────────────────────────────────────────────────────────────────────────────────\n");
-        
+
             continue;
         }
         else if (strncmp(operation, "hex", 3) == 0 && mathlib) {
@@ -804,7 +804,7 @@ void historyCmd(char *operation, const char *path) {
     } else {
 
         double num = eval(operation, true);
-        
+
         if (isnan(num) || num == (double)U64_NAN) {
             SAFE_FCLOSE(f);
             return;
@@ -941,10 +941,10 @@ void touchCmd(char *instruction) {
     } else if (string != -1 && reps ==  -1){
         char *filename = strtok_r(instruction, "<", &save);
         char *inFile = strtok_r(NULL, ">", &save);
-    
+
         trim(inFile);
         trimEnd(inFile);
-    
+
         trim(filename);
         trimEnd(filename);
 
@@ -962,7 +962,7 @@ void touchCmd(char *instruction) {
         }
 
         FILE *f = fopen(filename, "w");
-    
+
         fprintf(f, "%s", new);
 
         SAFE_FCLOSE(f);
@@ -993,7 +993,7 @@ void touchCmd(char *instruction) {
         }
 
         bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
-                               reps < strrchar(instruction, '\''));
+                            reps < strrchar(instruction, '\''));
 
         double count;
 
@@ -1006,7 +1006,7 @@ void touchCmd(char *instruction) {
                 SAFE_FREE(test);
                 return;
             }
-    
+
             if (count <= 0) {
                 printf("Error: the multiplier must be greater than 0\n");
                 SAFE_FREE(copy);
@@ -1049,13 +1049,13 @@ void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
 
     char *rest = strdup(instruction);
 
-    
+
     char line[0x1000];
     uint32_t lines = 0;
-    
+
     uint16_t fileCount = 0;
     char **files = parseData(rest, &fileCount);
-    
+
     for (uint16_t i = 0; i < fileCount; i++) {
         
         FILE *f = fopen(files[i], "rb");
@@ -1066,26 +1066,26 @@ void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
             SAFE_FREE(files);
             return;
         }
-    
+
         while (fgets(line, sizeof(line), f)) {
-    
+
             if (max_lines > 0 && lines >= max_lines)
                 break;
-    
+
             size_t len = strlen(line);
             if (len && line[len - 1] == '\n')
                 line[len - 1] = '\0';
-    
+
             for (size_t i = 0; line[i]; i++) {
                 unsigned char c = (unsigned char)line[i];
-    
+
                 if (isprint(c) || c == '\t' || c == '\r') {
                     putchar(c);
                 } else {
                     printf("\\x%02X", c);
                 }
             }
-    
+
             putchar('\n');
             lines++;
         }
@@ -1300,11 +1300,11 @@ char *cdCmd(const char *instruction, char *address) {
     char *raw = strdup(instruction);
     char *path = raw;
     while (*path == ' ') path++;
-    
+
 #ifdef _WIN32
     charReplace(path, '\\', '/');
 #endif
-    
+
     if (strcmp(path, "-") == 0) {
         SAFE_FREE(raw);
         return handle_cd_dash(address);
@@ -1731,9 +1731,9 @@ void echoCmd(char *instruction) {
         trim(inFile); trimEnd(inFile);
         trim(filename); trimEnd(filename);
 
-                                       
+
         bool QuoteAfterAbracket = (file < strrchar(instruction, '\"') ||
-                                   file < strrchar(instruction, '\''));
+                                file < strrchar(instruction, '\''));
 
         int8_t append = isAppend(instruction);
         char *mode = NULL;
@@ -1877,11 +1877,11 @@ void neofetchCmd(char *lswrc_path) {
         }
         putchar('\n');
     }
-    
+
     printc("═══════════════════════════════════════════════════\n", title_color, WHITE);
-    
+
     printc("SYSTEM\n", title_color, WHITE);
-    
+
     printc("OS: ", label_color, 7);
 #ifdef _WIN32
     puts(unameCmdWin(U_KERN_NAME | U_MACHINE));
@@ -1896,13 +1896,13 @@ void neofetchCmd(char *lswrc_path) {
 #else
     puts(unameCmdLinux(U_KERN_RELEASE));
 #endif
-    
+
 
     printc("───────────────────────────────────────────────────\n", title_color, WHITE);
-    
+
     printc("INFO", title_color, WHITE);
     putchar('\n');
-    
+
     printc("USER: ", label_color, WHITE);
     static char *userName;
     userName = get_user();
@@ -1920,43 +1920,43 @@ void neofetchCmd(char *lswrc_path) {
     printc("DATE: ", label_color, WHITE);
     static char *today;
     today = get_time(TIME_FMT);
-    
+
     puts(today);
 
 
     printc("───────────────────────────────────────────────────\n", title_color, WHITE);
 
     printc("SHELL\n", title_color, WHITE);
-    
+
     printc("HISTSIZE: ", label_color, WHITE);
     printf("%u\n", getHistSizeConfig(lswrc_path));
 
-    
+
     printc("LANGUAGES USED: ", label_color, WHITE);
     puts("C");
-    
+
 
     printc("LINES OF CODE: ", label_color, WHITE);
     static char *linesNum; 
     linesNum =  linesNumber();
 
     puts(linesNum);
-    
+
 
     printc("SIZE: ", label_color, WHITE);
     static char *size;
     size = charNumber();
-    
+
     puts(size);
 
-    
+
     printc("VERSION: ", label_color, WHITE);
     printf("LSW - Gab-OS  %s\n", VERSION);
 
 
     printc("CREATION DATE: ", label_color, WHITE);
     puts("10/18/2025");
-    
+
 
     printc("AUTHOR: ", label_color, WHITE);
     printf("Gabriel Oliveira Miranda\n");
@@ -1975,7 +1975,7 @@ void neofetchCmd(char *lswrc_path) {
     printc("Memory: ", label_color, WHITE);
     static uint64_t memTotal;
     memTotal = get_total_ram_mb();
-    
+
     printf("%"PRIu64"Mib\n", memTotal);
 
     printc("═══════════════════════════════════════════════════\n", title_color, WHITE);

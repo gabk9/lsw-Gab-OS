@@ -28,7 +28,7 @@ static uint8_t isnull(int32_t count, ...) {
         fprintf(stderr, "invalid count for <count>\n");
         exit(EXIT_FAILURE);
     }
-    
+
     va_list args;
     va_start(args, count);
 
@@ -39,7 +39,7 @@ static uint8_t isnull(int32_t count, ...) {
         if (!ptr)
             nullCount++;
     }
-    
+
     va_end(args);
     return nullCount;
 }
@@ -84,7 +84,7 @@ uint16_t count_top_level_commas(const char *s) {
 char *functionHandler(char *operation, const char *function) {
     operation = strrm(operation, function);    
     trim(operation);
-    
+
     size_t end = strlen(operation) - 1;
     if (operation[0] != '(' || operation[end] != ')') {
         char missing1 = (operation[0] != '(') ? '(' : '\0';
@@ -135,7 +135,7 @@ double h_atof(const char *str) {
     if (*buf == '~') {
         memmove(buf, buf+1, strlen(buf)+1);
         trim(buf);
-        
+
         isUnaryNot = true;
     }
 
@@ -146,7 +146,7 @@ double h_atof(const char *str) {
             printf("Error: integer overflow\n\n");
             return NAN;
         }
-        
+
         if (num != (int64_t)num) {
             printf("Error: to use the not(~) operator the number must be integer\n\n");
             return NAN;
@@ -281,7 +281,7 @@ static uint8_t validPtrFuncArgs(char *arg) {
                 printf("Error: must be a char pointer\n\n");
                 return 0;
             }
-    
+
             if (!digit) {
                 printf("Error: invalid argument: '%s'\n\n", arg);
                 return 0;
@@ -458,7 +458,7 @@ double s_pounds(char *operation) {
     if (strcmp(test, BC_ERROR) == 0) return NAN;
 
     double kg = eval(test, true);
-    
+
     SAFE_FREE(test);
     if (kg == (double)U64_NAN) {
         putchar('\n');
@@ -473,7 +473,7 @@ double s_kg(char *operation) {
     if (strcmp(test, BC_ERROR) == 0) return NAN;
 
     double lbs = eval(test, true);
-    
+
     SAFE_FREE(test);
     if (lbs == (double)U64_NAN) {
         putchar('\n');
@@ -488,7 +488,7 @@ double s_fah(char *operation) {
     if (strcmp(test, BC_ERROR) == 0) return NAN;
 
     double cel = eval(test, true);
-    
+
     SAFE_FREE(test);
     if (cel == (double)U64_NAN) {
         putchar('\n');
@@ -503,7 +503,7 @@ double s_cel(char *operation) {
     if (strcmp(test, BC_ERROR) == 0) return NAN;
 
     double fah = eval(test, true);
-    
+
     SAFE_FREE(test);
     if (fah == (double)U64_NAN) {
         putchar('\n');
@@ -520,7 +520,7 @@ char *s_oct(char *operation) {
     double num = eval(test, true);
 
     SAFE_FREE(test);
-    
+
     if (num == (double)U64_NAN) {
         putchar('\n');
         return NULL;
@@ -1065,12 +1065,12 @@ double s_randInt(char *operation) {
         putchar('\n');
         return NAN;
     }  
-    
+
     if (strcasecmp(str_min, "rand_max") == 0)
         minInt = (double)RAND_MAX;
     else 
         minInt = eval(str_min, true);
-    
+
     if (minInt == (double)U64_NAN) {
         putchar('\n');
         return NAN;
@@ -1091,7 +1091,7 @@ double s_floor(char *operation) {
     if (strcmp(test, BC_ERROR) == 0) return NAN;
 
     double num = eval(test, true);
-    
+
     SAFE_FREE(test);
     if (num == (double)U64_NAN) {
         putchar('\n');

@@ -184,7 +184,7 @@ void checkLswrcSyntax(char *data_folder) {
             if (args[0] == '=')
             args[0] = ' ';
             trim(args);
-                        
+
             double num = h_atof(args);
 
             if (!isalldigit(args) || num != (int64_t)num) {
@@ -345,12 +345,12 @@ double calc(double num1, char *operation, double num2) {
         printf("Error: Unknown operator '%s'\n\n", operation);
         return NAN;
     }
-    
+
     if (isinf(result)) {
         printf("Error: result overflow (too large)\n\n");
         return NAN;
     }
-        
+
     return result;
 }
 
@@ -413,7 +413,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
     else if (strcmp(instruction, cmds[6]) == 0) //! cd
         printf("'cd' changes the working directory of the terminal\n\nUsage:\n\tcd [DIRECTORY]\n");
-        
+
     else if (strcmp(instruction, cmds[7]) == 0) { //! ls
         printf("'ls' list directory contents\n\nUsage:\n\tls [OPTION]\n\nOptions:\n");
         printf("\t'-a', '--all'   show hidden files or folders\n");
@@ -438,15 +438,15 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'rmdir' removes empty directories\n\nUsage:\n\trmdir [OPTION] [FOLDER NAME...]\n\n");
         printf("Options:\n\t'-b', '--recycle-bin'   moves to recycle bin\n");
     }
-    
+
     else if (strcmp(instruction, cmds[14]) ==  0) //! cat
         printf("'cat' displays the file content\n\nUsage:\n\tcat [FILE NAME...]\n");
 
     else if (strcmp(instruction, cmds[15]) ==  0) { //! touch
         printf("'touch' displays a line of text in the terminal or in a file\n\nUsage:\n");
         printf("\ttouch [FILE NAME]                             <-- creates [FILE NAME]\n"
-               "\ttouch [FILE NAME] < [STRING]                  <-- print the string into [FILE]\n"
-               "\ttouch [FILE NAME] < [STRING] * [int: COUNT]   <-- print the string in file [COUNT] times\n");
+            "\ttouch [FILE NAME] < [STRING]                  <-- print the string into [FILE]\n"
+            "\ttouch [FILE NAME] < [STRING] * [int: COUNT]   <-- print the string in file [COUNT] times\n");
         
         printf("\nEnvironment variables recognized: (not case sensitive)\n");
         printf("\t$PATH                     <-- system PATH\n");
@@ -505,225 +505,224 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'bc' a simple calculator on the terminal, so far it only works with 2 numbers.\n\nUsage:\n\tbc [OPTION...]\n\nOptions:\n");
         printf("\t'-q', '--quiet'     will not print the initial text\n");
         printf("\t'-l', '--mathlib'   includes the mathlib header\n");
-        printf(
-        "\nOperations:\n"
-        "\t'+'    : Addition\n"
-        "\t         Example: 2 + 3 = 5\n"
-        "\n"
-        "\t'-'    : Subtraction\n"
-        "\t         Example: 10 - 4 = 6\n"
-        "\n"
-        "\t'*'    : Multiplication\n"
-        "\t         Example: 6 * 7 = 42\n"
-        "\n"
-        "\t'/'    : Division\n"
-        "\t         Example: 8 / 2 = 4\n"
-        "\n"
-        "\t'%%'    : Modulus (remainder of division)\n"
-        "\t         Example: 10 %% 3 = 1\n"
-        "\t         Note: it also works with single point precision numbers\n"
-        "\n"
-        "\t'**'   : Power (num1 raised to num2)\n"
-        "\t         Example: 2 ** 5 = 32\n"
-        "\n"
-        "\t'^^'   : Tetration (num1 raised to itself num2 times)\n"
-        "\t         Example: 2 ^^ 3 = 16\n"
-        "\t         Explanation: 2^(2^2) = 16\n"
-        "\n"
-        "\t'^'    : Bitwise XOR\n"
-        "\t         Example: 5 ^ 3 = 6\n"
-        "\t         Explanation: Operates on individual bits\n"
-        "\t         Explanation: Each bit is compared. Result bit is 1 if the bits are different\n"
-        "\n"
-        "\t'&'    : Bitwise AND\n"
-        "\t         Example: 5 & 3 = 1\n"
-        "\t         Explanation: Each bit is compared. Result bit is 1 only if both bits are 1\n"
-        "\n"
-        "\t'|'    : Bitwise OR\n"
-        "\t         Example: 5 | 2 = 7\n"
-        "\t         Explanation: Each bit is compared. Result bit is 1 if at least one bit is 1\n"
-        "\n"
-        "\t'~'    : Bitwise NOT\n"
-        "\t         Example: ~2 = -3 and 100 ^ ~100 = -1\n"
-        "\t         Explanation: Inverts every bit of the number\n"
-        "\n"
-        "\t'<<'   : Bitwise left shift\n"
-        "\t         Example: 1 << 3 = 8\n"
-        "\t         Explanation: 0b00001 << 3 = 0b01000\n"
-        "\n"
-        "\t'>>'   : Bitwise right shift\n"
-        "\t         Example: 8 >> 2 = 2\n"
-        "\t         Explanation: 0b01000 >> 2 = 0b00010\n"  
-        "\n"
-        "\t'&&'   : Logical AND\n"
-        "\t         Example: 5 && 0 = 0\n"
-        "\t         Note: Any non-zero value is treated as true\n"
-        "\t         Explanation: Result is true(1) only if both operands are true(1), otherwise returns false(0)\n"
-        "\n"
-        "\t'||'   : Logical OR\n"
-        "\t         Example: 0 || 5 = 1\n"
-        "\t         Explanation: Result is true(1) if at least one operand is true(1), otherwise returns false(0)\n"
-        "\n"
-        "\t'<'    : Less than\n"
-        "\t         Example: 2 < 5 = 1\n"
-        "\t         Explanation: returns 1 if the number is less than the other, otherwise returns 0\n"
-        "\n"
-        "\t'<='   : Less than or equal\n"
-        "\t         Example: 5 <= 5 = 1\n"
-        "\t         Explanation: returns 1 if the number is less or equal than the other, otherwise returns 0\n"
-        "\n"
-        "\t'>'    : Greater than\n"
-        "\t         Example: 8 > 3 = 1\n"
-        "\t         Explanation: returns 1 if the number is greater than the other, otherwise returns 0\n"
-        "\n"
-        "\t'>='   : Greater than or equal\n"
-        "\t         Example: 4 >= 4 = 1\n"
-        "\t         Explanation: returns 1 if the number is greater or equal than the other, otherwise returns 0\n"
-        "\n"
-        "\t'=='   : Equal to\n"
-        "\t         Example: 6 == 6 = 1\n"
-        "\t         Explanation: returns 1 if the number is equal to the other, otherwise returns 0\n"
-        "\n"
-        "\t'!='   : Not equal to\n"
-        "\t         Example: 6 != 5 = 1\n"
-        "\t         Explanation: returns 1 if the number is different to the other, otherwise returns 0\n"
+        printf("\nOperations:\n"
+            "\t'+'    : Addition\n"
+            "\t         Example: 2 + 3 = 5\n"
+            "\n"
+            "\t'-'    : Subtraction\n"
+            "\t         Example: 10 - 4 = 6\n"
+            "\n"
+            "\t'*'    : Multiplication\n"
+            "\t         Example: 6 * 7 = 42\n"
+            "\n"
+            "\t'/'    : Division\n"
+            "\t         Example: 8 / 2 = 4\n"
+            "\n"
+            "\t'%%'    : Modulus (remainder of division)\n"
+            "\t         Example: 10 %% 3 = 1\n"
+            "\t         Note: it also works with single point precision numbers\n"
+            "\n"
+            "\t'**'   : Power (num1 raised to num2)\n"
+            "\t         Example: 2 ** 5 = 32\n"
+            "\n"
+            "\t'^^'   : Tetration (num1 raised to itself num2 times)\n"
+            "\t         Example: 2 ^^ 3 = 16\n"
+            "\t         Explanation: 2^(2^2) = 16\n"
+            "\n"
+            "\t'^'    : Bitwise XOR\n"
+            "\t         Example: 5 ^ 3 = 6\n"
+            "\t         Explanation: Operates on individual bits\n"
+            "\t         Explanation: Each bit is compared. Result bit is 1 if the bits are different\n"
+            "\n"
+            "\t'&'    : Bitwise AND\n"
+            "\t         Example: 5 & 3 = 1\n"
+            "\t         Explanation: Each bit is compared. Result bit is 1 only if both bits are 1\n"
+            "\n"
+            "\t'|'    : Bitwise OR\n"
+            "\t         Example: 5 | 2 = 7\n"
+            "\t         Explanation: Each bit is compared. Result bit is 1 if at least one bit is 1\n"
+            "\n"
+            "\t'~'    : Bitwise NOT\n"
+            "\t         Example: ~2 = -3 and 100 ^ ~100 = -1\n"
+            "\t         Explanation: Inverts every bit of the number\n"
+            "\n"
+            "\t'<<'   : Bitwise left shift\n"
+            "\t         Example: 1 << 3 = 8\n"
+            "\t         Explanation: 0b00001 << 3 = 0b01000\n"
+            "\n"
+            "\t'>>'   : Bitwise right shift\n"
+            "\t         Example: 8 >> 2 = 2\n"
+            "\t         Explanation: 0b01000 >> 2 = 0b00010\n"  
+            "\n"
+            "\t'&&'   : Logical AND\n"
+            "\t         Example: 5 && 0 = 0\n"
+            "\t         Note: Any non-zero value is treated as true\n"
+            "\t         Explanation: Result is true(1) only if both operands are true(1), otherwise returns false(0)\n"
+            "\n"
+            "\t'||'   : Logical OR\n"
+            "\t         Example: 0 || 5 = 1\n"
+            "\t         Explanation: Result is true(1) if at least one operand is true(1), otherwise returns false(0)\n"
+            "\n"
+            "\t'<'    : Less than\n"
+            "\t         Example: 2 < 5 = 1\n"
+            "\t         Explanation: returns 1 if the number is less than the other, otherwise returns 0\n"
+            "\n"
+            "\t'<='   : Less than or equal\n"
+            "\t         Example: 5 <= 5 = 1\n"
+            "\t         Explanation: returns 1 if the number is less or equal than the other, otherwise returns 0\n"
+            "\n"
+            "\t'>'    : Greater than\n"
+            "\t         Example: 8 > 3 = 1\n"
+            "\t         Explanation: returns 1 if the number is greater than the other, otherwise returns 0\n"
+            "\n"
+            "\t'>='   : Greater than or equal\n"
+            "\t         Example: 4 >= 4 = 1\n"
+            "\t         Explanation: returns 1 if the number is greater or equal than the other, otherwise returns 0\n"
+            "\n"
+            "\t'=='   : Equal to\n"
+            "\t         Example: 6 == 6 = 1\n"
+            "\t         Explanation: returns 1 if the number is equal to the other, otherwise returns 0\n"
+            "\n"
+            "\t'!='   : Not equal to\n"
+            "\t         Example: 6 != 5 = 1\n"
+            "\t         Explanation: returns 1 if the number is different to the other, otherwise returns 0\n"
 
 
-        "\nFunctions: (only works if mathlib is turned on)\n"
-        "\tclear, cls     : Clears the calculator scrollback\n"
-        "\n"
-        "\tmathlib        : Toggles mathlib\n"
-        "\t                 Explanation: turns on/off functions and other numeric systems\n"
-        "\n"
-        "\tscale(X)       : Sets decimal precision\n"
-        "\t                 Example: scale(3.1415) = 4\n"
-        "\t                 Explanation: Number of digits after decimal point\n"
-        "\n"
-        "\tsqrt(X)        : Square root\n"
-        "\t                 Example: sqrt(16) = 4\n"
-        "\n"
-        "\troot(X, Y)     : Y-th root of X\n"
-        "\t                 Example: root(27, 3) = 3\n"
-        "\n"
-        "\tsin(X)         : Sine of X\n"
-        "\t                 Example: sin(90) = 1\n"
-        "\t                 Note: X is in degrees\n"
-        "\n"
-        "\tcos(X)         : Cosine of X\n"
-        "\t                 Example: cos(0) = 1\n"
-        "\n"
-        "\ttan(X)         : Tangent of X\n"
-        "\t                 Example: tan(45) = 1\n"
-        "\n"
-        "\trad(X)         : Radians to degrees\n"
-        "\t                 Example: rad(3.1415) = 180\n"
-        "\n"
-        "\tdeg(X)         : Degrees to radians\n"
-        "\t                 Example: deg(180) = 3.1415\n"
-        "\n"
-        "\tln(X)          : Natural logarithm\n"
-        "\t                 Example: ln(E) = 1\n"
-        "\n"
-        "\tlog10(X)       : Base-10 logarithm\n"
-        "\t                 Example: log10(1000) = 3\n"
-        "\n"
-        "\tlog2(X)        : Base-2 logarithm\n"
-        "\t                 Example: log2(8) = 3\n"
-        "\n"
-        "\tlog(X, Y)      : Logarithm of Y in base X\n"
-        "\t                 Example: log(2, 32) = 5\n"
-        "\n"
-        "\tfloor(X)       : Rounds down\n"
-        "\t                 Example: floor(3.7) = 3\n"
-        "\n"
-        "\tceil(X)        : Rounds up\n"
-        "\t                 Example: ceil(3.2) = 4\n"
-        "\n"
-        "\tround(X)       : Rounds to nearest integer\n"
-        "\t                 Example: round(3.5) = 4\n"
-        "\n"
-        "\tfact(X)        : Factorial\n"
-        "\t                 Example: fact(5) = 120\n"
-        "\t                 Note: Only defined for non-negative integers\n"
-        "\n"
-        "\tsum(X, Y, Z)   : Sum from X to Y with step Z\n"
-        "\t                 Example: sum(1, 10, 2) = 25\n"
-        "\t                 Note: If Z is omitted, step defaults to 1\n"
-        "\n"
-        "\ttrunc(X)       : Integer part of X\n"
-        "\t                 Example: trunc(3.9) = 3\n"
-        "\n"
-        "\trand(X, Y)     : Random integer between X and Y\n"
-        "\t                 Example: rand(1, 10)\n"
-        "\n"
-        "\trandf(X, Y)    : Random float between X and Y\n"
-        "\t                 Example: randf(0, 1)\n"
-        "\n"
-        "\thex(X)         : Convert X to hexadecimal\n"
-        "\t                 Example: hex(255) = 0x0FF\n"
-        "\n"
-        "\toct(X)         : Convert X to octal\n"
-        "\t                 Example: oct(8) = 0o10\n"
-        "\n"
-        "\tbin(X)         : Convert X to binary\n"
-        "\t                 Example: bin(5) = 0b0101\n"
-        "\n"
-        "\tfah(X)         : Celsius to Fahrenheit\n"
-        "\t                 Example: fah(0) = 32\n"
-        "\n"
-        "\tcel(X)         : Fahrenheit to Celsius\n"
-        "\t                 Example: cel(32) = 0\n"
-        "\n"
-        "\tmi(X)          : Kilometers to miles\n"
-        "\t                 Example: mi(1) = 0.621\n"
-        "\n"
-        "\tkm(X)          : Miles to kilometers\n"
-        "\t                 Example: km(1) = 1.609\n"
-        "\n"
-        "\tlb(X)          : Kilograms to pounds\n"
-        "\t                 Example: lb(1) = 2.2046\n"
-        "\n"
-        "\tkg(X)          : Pounds to kilograms\n"
-        "\t                 Example: kg(1) = 0.4535\n"
-        "\n"
-        "\tfabs(X)        : Absolute value (float)\n"
-        "\t                 Example: fabs(-3.5) = 3.5\n"
-        "\n"
-        "\tabs(X)         : Absolute value (integer)\n"
-        "\t                 Example: abs(-7) = 7\n"
-        "\n"
-        "\tstrlen(str)    : Returns the length of a string\n"
-        "\t                 Example: strlen(\"string\") = 6\n"
+            "\nFunctions: (only works if mathlib is turned on)\n"
+            "\tclear, cls     : Clears the calculator scrollback\n"
+            "\n"
+            "\tmathlib        : Toggles mathlib\n"
+            "\t                 Explanation: turns on/off functions and other numeric systems\n"
+            "\n"
+            "\tscale(X)       : Sets decimal precision\n"
+            "\t                 Example: scale(3.1415) = 4\n"
+            "\t                 Explanation: Number of digits after decimal point\n"
+            "\n"
+            "\tsqrt(X)        : Square root\n"
+            "\t                 Example: sqrt(16) = 4\n"
+            "\n"
+            "\troot(X, Y)     : Y-th root of X\n"
+            "\t                 Example: root(27, 3) = 3\n"
+            "\n"
+            "\tsin(X)         : Sine of X\n"
+            "\t                 Example: sin(90) = 1\n"
+            "\t                 Note: X is in degrees\n"
+            "\n"
+            "\tcos(X)         : Cosine of X\n"
+            "\t                 Example: cos(0) = 1\n"
+            "\n"
+            "\ttan(X)         : Tangent of X\n"
+            "\t                 Example: tan(45) = 1\n"
+            "\n"
+            "\trad(X)         : Radians to degrees\n"
+            "\t                 Example: rad(3.1415) = 180\n"
+            "\n"
+            "\tdeg(X)         : Degrees to radians\n"
+            "\t                 Example: deg(180) = 3.1415\n"
+            "\n"
+            "\tln(X)          : Natural logarithm\n"
+            "\t                 Example: ln(E) = 1\n"
+            "\n"
+            "\tlog10(X)       : Base-10 logarithm\n"
+            "\t                 Example: log10(1000) = 3\n"
+            "\n"
+            "\tlog2(X)        : Base-2 logarithm\n"
+            "\t                 Example: log2(8) = 3\n"
+            "\n"
+            "\tlog(X, Y)      : Logarithm of Y in base X\n"
+            "\t                 Example: log(2, 32) = 5\n"
+            "\n"
+            "\tfloor(X)       : Rounds down\n"
+            "\t                 Example: floor(3.7) = 3\n"
+            "\n"
+            "\tceil(X)        : Rounds up\n"
+            "\t                 Example: ceil(3.2) = 4\n"
+            "\n"
+            "\tround(X)       : Rounds to nearest integer\n"
+            "\t                 Example: round(3.5) = 4\n"
+            "\n"
+            "\tfact(X)        : Factorial\n"
+            "\t                 Example: fact(5) = 120\n"
+            "\t                 Note: Only defined for non-negative integers\n"
+            "\n"
+            "\tsum(X, Y, Z)   : Sum from X to Y with step Z\n"
+            "\t                 Example: sum(1, 10, 2) = 25\n"
+            "\t                 Note: If Z is omitted, step defaults to 1\n"
+            "\n"
+            "\ttrunc(X)       : Integer part of X\n"
+            "\t                 Example: trunc(3.9) = 3\n"
+            "\n"
+            "\trand(X, Y)     : Random integer between X and Y\n"
+            "\t                 Example: rand(1, 10)\n"
+            "\n"
+            "\trandf(X, Y)    : Random float between X and Y\n"
+            "\t                 Example: randf(0, 1)\n"
+            "\n"
+            "\thex(X)         : Convert X to hexadecimal\n"
+            "\t                 Example: hex(255) = 0x0FF\n"
+            "\n"
+            "\toct(X)         : Convert X to octal\n"
+            "\t                 Example: oct(8) = 0o10\n"
+            "\n"
+            "\tbin(X)         : Convert X to binary\n"
+            "\t                 Example: bin(5) = 0b0101\n"
+            "\n"
+            "\tfah(X)         : Celsius to Fahrenheit\n"
+            "\t                 Example: fah(0) = 32\n"
+            "\n"
+            "\tcel(X)         : Fahrenheit to Celsius\n"
+            "\t                 Example: cel(32) = 0\n"
+            "\n"
+            "\tmi(X)          : Kilometers to miles\n"
+            "\t                 Example: mi(1) = 0.621\n"
+            "\n"
+            "\tkm(X)          : Miles to kilometers\n"
+            "\t                 Example: km(1) = 1.609\n"
+            "\n"
+            "\tlb(X)          : Kilograms to pounds\n"
+            "\t                 Example: lb(1) = 2.2046\n"
+            "\n"
+            "\tkg(X)          : Pounds to kilograms\n"
+            "\t                 Example: kg(1) = 0.4535\n"
+            "\n"
+            "\tfabs(X)        : Absolute value (float)\n"
+            "\t                 Example: fabs(-3.5) = 3.5\n"
+            "\n"
+            "\tabs(X)         : Absolute value (integer)\n"
+            "\t                 Example: abs(-7) = 7\n"
+            "\n"
+            "\tstrlen(str)    : Returns the length of a string\n"
+            "\t                 Example: strlen(\"string\") = 6\n"
 
-        "\nConstants:\n"
-        "\tPI   : 3.141592...\n"
-        "\t       Example: sin(PI / 2) = 1\n"
-        "\n"
-        "\tE    : 2.718281...\n"
-        "\t       Example: ln(E) = 1\n"
+            "\nConstants:\n"
+            "\tPI   : 3.141592...\n"
+            "\t       Example: sin(PI / 2) = 1\n"
+            "\n"
+            "\tE    : 2.718281...\n"
+            "\t       Example: ln(E) = 1\n"
 
-        "\nSuffixes: (not case sensitive and only works for non hexadecimals)\n"
-        "\tK   : 1.000               (1e+3)\n"
-        "\t      Example: 5K = 5.000\n"
-        "\n"
-        "\tM   : 1.000.000           (1e+6)\n"
-        "\t      Example: 3M = 3.000.000\n"
-        "\n"
-        "\tB   : 1.000.000.000       (1e+9)\n"
-        "\t      Example: 2B = 2.000.000.000\n"
-        "\n"
-        "\tT   : 1.000.000.000.000   (1e+12)\n"
-        "\t      Example: 1T = 1.000.000.000.000\n"
+            "\nSuffixes: (not case sensitive and only works for non hexadecimals)\n"
+            "\tK   : 1.000               (1e+3)\n"
+            "\t      Example: 5K = 5.000\n"
+            "\n"
+            "\tM   : 1.000.000           (1e+6)\n"
+            "\t      Example: 3M = 3.000.000\n"
+            "\n"
+            "\tB   : 1.000.000.000       (1e+9)\n"
+            "\t      Example: 2B = 2.000.000.000\n"
+            "\n"
+            "\tT   : 1.000.000.000.000   (1e+12)\n"
+            "\t      Example: 1T = 1.000.000.000.000\n"
 
-        "\nNumeric systems:\n"
-        "\tBinary: (prefix: '0b')        base 2 numbers e.g. 0b010000000000 = 1024\n"
-        "\n"
-        "\tDecimal: (default):           base 10 numbers e.g. 1024\n"
-        "\n"
-        "\tOctal: (prefix: '0o')         base 8 numbers e.g. 0o2000 = 1024\n"
-        "\n"
-        "\tHexadecimal: (prefix: '0x')   base 16 numbers e.g. MAX_CHAR = 1024\n"
-        );
+            "\nNumeric systems:\n"
+            "\tBinary: (prefix: '0b')        base 2 numbers e.g. 0b010000000000 = 1024\n"
+            "\n"
+            "\tDecimal: (default):           base 10 numbers e.g. 1024\n"
+            "\n"
+            "\tOctal: (prefix: '0o')         base 8 numbers e.g. 0o2000 = 1024\n"
+            "\n"
+            "\tHexadecimal: (prefix: '0x')   base 16 numbers e.g. MAX_CHAR = 1024\n"
+            );
 
 
     }
@@ -748,8 +747,8 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
     else if (strcmp(instruction, cmds[26]) ==  0 && isInsideBash) { //! bash
         printf("'bash' shows the shell information\n\nUsage:\n\tbash [OPTION...]\n\nOptions:\n");
         printf("\t'-v', '--version'   show version information\n"
-               "\t'-h', '--help'      display manual\n"
-               "\t'-a', '--all'       displays everything\n");
+            "\t'-h', '--help'      display manual\n"
+            "\t'-a', '--all'       displays everything\n");
     }
 
     else if (strcmp(instruction, cmds[27]) ==  0) //! head
@@ -952,7 +951,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
             SAFE_FREE(argv_uname);
         }   
     }
-    
+
     else if (strcmp(instruction, cmds[19]) == 0) //! grep
         grepCmd(args ? args : "");
 
@@ -967,7 +966,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
             SAFE_FREE(argv_bc);
         }   
     }
-    
+
     else if (strcmp(instruction, cmds[21]) == 0) //! drives
         listDrives();
 
@@ -988,7 +987,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         char **argv_bash = extract_args(args, &argc_bash, "bash");
 
         bashCmd(argc_bash, argv_bash, cmds, cmdCount, true);
-        
+
         if (args) {
             for (uint16_t i = 1; i < argc_bash; i++)
                 SAFE_FREE(argv_bash[i]);
@@ -998,7 +997,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
 
     else if (strcmp(instruction, cmds[27]) == 0) //! head
         catCmd(args ? args : "", 10, cmds[27]);
-        
+
     else if (strcmp(instruction, cmds[28]) == 0) //! tail
         tailCmd(args ? args : "", 10);
 
@@ -1166,7 +1165,7 @@ op_found:
                 printf("Error: to use the not(~) operator the number must be integer\n\n");
                 return NAN;
             }
-            
+
             num1_int = ~(int64_t)num1_int;
         } else
             num1_int = eval(num1, mathlib);
@@ -1184,7 +1183,7 @@ op_found:
             }
 
             num2_int = eval(num2, mathlib); 
-            
+
             if (num2_int < MIN_SAFE_INT64_D || num2_int > MAX_SAFE_INT64_D) {
                 printf("Error: integer overflow\n\n");
                 return NAN;
