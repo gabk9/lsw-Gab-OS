@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.5.76"
+#define VERSION "r1.5.84"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -262,7 +262,12 @@ void sleepCmd(char *instruction) {
         }
     }
 
-    double time = eval(instruction, true);
+    double time;
+    if (isBcVariable(instruction)) {
+        printf("Warning: variables are currently unsupported\n");
+        time = 0;
+    } else 
+        time = eval(instruction, true);
 
     if (isnan(time) || time == (double)U64_NAN)
         return;
@@ -802,8 +807,13 @@ void historyCmd(char *operation, const char *path) {
         }
         SAFE_FREE(fileBuffer);
     } else {
+        double num;
+        if (isBcVariable(operation)) {
+            printf("Warning: variables are currently unsupported\n");
+            num = 0;
+        } else 
+            num = eval(operation, true);
 
-        double num = eval(operation, true);
 
         if (isnan(num) || num == (double)U64_NAN) {
             SAFE_FCLOSE(f);
@@ -998,7 +1008,12 @@ void touchCmd(char *instruction) {
         double count;
 
         if (!QuoteAfterStar) {
-            count = eval(num+1, true);
+            if (isBcVariable(num)) {
+                printf("Warning: variables are currently unsupported\n");
+                count = 0;
+            } else 
+                count = eval(num, true);
+
     
             if (count != (int64_t)count) {
                 printf("Error: the multiplier must be an integer\n");
@@ -1600,7 +1615,9 @@ void updatehistory(void) {
         "r1.5.59 - minor changes\n\tFixed: forgot to add variable checking in some places\n",
         "r1.5.7 - big changes\n\tAdded: now apparently the calculator works with more than 2 numbers, but without operand precedence\n",
         "r1.5.73 - minor changes\n\tEdited: just a few optimizations\n",
-        "r1.5.76 - small changes\n\tAdded: function attribute to printc()\n"
+        "r1.5.76 - small changes\n\tAdded: function attribute to printc()\n",
+        "r1.5.8 - small changes\n\tEdited: improved isBcVariable()\n",
+        "r1.5.84 - minor changes\n\tEdited: the variable warning when used with other commands now appears without the extra '\\n'\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

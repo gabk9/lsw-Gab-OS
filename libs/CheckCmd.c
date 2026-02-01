@@ -159,7 +159,7 @@ void checkLswrcSyntax(char *data_folder) {
                 exit(EXIT_FAILURE);
             }
 
-            if (!isValidAction(action)) {
+            if (!isBetweenQuotes(action)) {
                 fprintf(stderr, "alias: the action should be between quotes, and it must be equal\n");
                 SAFE_FREE(lineCpy);
                 SAFE_FREE(secondCpy);
@@ -721,7 +721,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\n"
             "\tOctal: (prefix: '0o')         base 8 numbers e.g. 0o2000 = 1024\n"
             "\n"
-            "\tHexadecimal: (prefix: '0x')   base 16 numbers e.g. MAX_CHAR = 1024\n"
+            "\tHexadecimal: (prefix: '0x')   base 16 numbers e.g. 0x400 = 1024\n"
             );
 
 

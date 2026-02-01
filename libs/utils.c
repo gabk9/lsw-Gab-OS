@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 7600
-#define PROJ_SIZE_APPROX_BYTES 222500
+#define PROJ_SIZE_APPROX_BYTES 224000
 
 #define ALIAS_FILE "lswrc.txt"
 
@@ -33,6 +33,10 @@ LONG handler(EXCEPTION_POINTERS *e) {
 #endif
 
 bool isBcVariable(char *str) {
+
+    if (isBetweenQuotes(str))
+        return false;
+
     for (size_t i = 0; str[i]; i++) {
         if (str[i] == '$') {
             if (i > 0 && isdigit((unsigned char)str[i-1]))
@@ -358,10 +362,14 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
                         reps < strrchar(instruction, '\''));
 
     double count;
-
+    
     if (!QuoteAfterStar) {
-        count = eval(num, true);
-
+        if (isBcVariable(num)) {
+            printf("Warning: variables are currently unsupported\n");
+            count = 0;
+        } else 
+            count = eval(num, true);
+        
         if (count != (int64_t)count) {
             printf("Error: the multiplier must be an integer\n");
             return 0;
@@ -455,7 +463,7 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
 
     char *star = findCharOutsideQuotes(work, '*');
     char *text = work;
-    double count = 1;
+    double count = 0;
 
     if (star) {
         *star = '\0';
@@ -465,7 +473,11 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
         trim(text);
         trimEnd(text);
 
-        count = eval(star, true);
+        if (isBcVariable(star)) {
+            printf("Warning: variables are currently unsupported\n");
+            count = 0;
+        } else 
+            count = eval(star, true);
 
         if (count != (int64_t)count) {
             puts("Error: the multiplier must be an integer");
@@ -1790,7 +1802,7 @@ char *findFirstEqualOutsideQuotes(char *s) {
     return NULL;
 }
 
-bool isValidAction(char *action) {
+bool isBetweenQuotes(char *action) {
     size_t len = strlen(action);
     if ((action[0] != '\'' || action[len-1] != '\'') &&
         (action[0] != '\"' || action[len-1] != '\"'))
@@ -1842,7 +1854,7 @@ void createShortcut(char *instruction, char *path) {
 
     size_t len = strlen(action);
     
-    if (!isValidAction(action)) {
+    if (!isBetweenQuotes(action)) {
         puts("Error: the action should be between quotes, and it must be equal, use \"man alias\" to check the manual");
         SAFE_FREE(alias);
         return;
