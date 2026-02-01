@@ -32,7 +32,7 @@ LONG handler(EXCEPTION_POINTERS *e) {
 }
 #endif
 
-bool isBcVariable(char *str) {
+bool isBcVariable(const char *str) {
 
     if (isBetweenQuotes(str))
         return false;
