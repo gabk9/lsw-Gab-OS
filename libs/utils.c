@@ -1802,7 +1802,7 @@ char *findFirstEqualOutsideQuotes(char *s) {
     return NULL;
 }
 
-bool isBetweenQuotes(char *action) {
+bool isBetweenQuotes(const char *action) {
     size_t len = strlen(action);
     if ((action[0] != '\'' || action[len-1] != '\'') &&
         (action[0] != '\"' || action[len-1] != '\"'))
