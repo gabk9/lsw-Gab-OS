@@ -2257,7 +2257,7 @@ double eval(char *operation, bool mathlib) {
         "log10", "log2", "log", "floor", "ceil", "round",
         "fact", "sign", "sum", "rad", "deg", "trunc", "randf",
         "fah", "cel", "root", "rand", "mi", "km", "lb", "kg",
-        "oct", "hex", "bin", "abs", "fabs", "strlen"
+        "oct", "hex", "bin", "abs", "fabs", "len"
     };
 
     const char uniOps[] = "+-/*^%%&|<>";

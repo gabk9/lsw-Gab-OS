@@ -691,7 +691,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tabs(X)         : Absolute value (integer)\n"
             "\t                 Example: abs(-7) = 7\n"
             "\n"
-            "\tstrlen(str)    : Returns the length of a string\n"
+            "\tlen(str)       : Returns the length of a string\n"
             "\t                 Example: strlen(\"string\") = 6\n"
 
             "\nConstants:\n"
@@ -1099,8 +1099,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
             return s_fabs_or_abs(operation, false);
         else if (strncmp(operation, functions[31], 4) == 0) //! fabs()
             return s_fabs_or_abs(operation, true);
-        else if (strncmp(operation, functions[32], 6) == 0) //! strlen()
-            return bc_strlen(operation);
+        else if (strncmp(operation, functions[32], 3) == 0) //! len()
+            return bc_len(operation);
     }    
     uint16_t op_pos = 0;
 

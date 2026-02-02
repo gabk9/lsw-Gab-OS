@@ -4,7 +4,7 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
-double parse_double(char *str, char *funcName) {
+double parse_double(char *str, char *funcName) {    
     char *test;
     uint8_t heap = 0;
     if (funcName) {
@@ -273,22 +273,15 @@ static uint8_t validPtrFuncArgs(char *arg) {
             return 0;
         }
 
-        if (isdigit(arg[0])) {
-
-            uint8_t digit = isalldigit(arg);
+        if (isdigit((uint8_t)arg[0])) {
 
             if (isOct(arg) || isHex(arg) || isBin(arg)) {
                 printf("Error: must be a char pointer\n\n");
                 return 0;
             }
-
-            if (!digit) {
-                printf("Error: invalid argument: '%s'\n\n", arg);
-                return 0;
-            }
         }
 
-        printf("Error: undefined identifier: '%s'\n\n", arg);
+        printf("Error: invalid argument: '%s'\n\n", arg);
         return 0;
     }
 
@@ -370,8 +363,8 @@ static uint16_t countCommaOutsideParenthesis(const char *str) {
     return count;
 }
 
-double bc_strlen(char *operation) {
-    char *test = functionHandler(operation, "strlen");
+double bc_len(char *operation) {
+    char *test = functionHandler(operation, "len");
     if (strcmp(test, BC_ERROR) == 0) return NAN;
 
     trim(test);
