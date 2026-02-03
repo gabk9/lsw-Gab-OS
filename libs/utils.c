@@ -356,8 +356,8 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
         return 1;
     }
 
-    trim(str);
-    trimEnd(str);
+    trim(num); trimEnd(num);
+    trim(str); trimEnd(str);
     bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
                         reps < strrchar(instruction, '\''));
 
@@ -367,9 +367,10 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
         if (isBcVariable(num)) {
             printf("Warning: variables are currently unsupported\n");
             count = 0;
-        } else 
+        } else {
             count = eval(num, true);
-        
+        }
+
         if (count != (int64_t)count) {
             printf("Error: the multiplier must be an integer\n");
             return 0;

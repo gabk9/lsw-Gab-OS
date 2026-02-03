@@ -502,7 +502,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         );              
 
     else if (strcmp(instruction, cmds[20]) == 0) { //! bc
-        printf("'bc' a simple calculator on the terminal, so far it only works with 2 numbers.\n\nUsage:\n\tbc [OPTION...]\n\nOptions:\n");
+        printf("'bc' a simple calculator on the terminal, apparently it works with more than 2 numbers, but without operand precedence\n\nUsage:\n\tbc [OPTION...]\n\nOptions:\n");
         printf("\t'-q', '--quiet'     will not print the initial text\n");
         printf("\t'-l', '--mathlib'   includes the mathlib header\n");
         printf("\nOperations:\n"
