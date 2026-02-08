@@ -1,10 +1,10 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 7600
-#define PROJ_SIZE_APPROX_BYTES 224000
+#define PROJ_LINES_APPROX 7700
+#define PROJ_SIZE_APPROX_BYTES 227000
 
-#define ALIAS_FILE "lswrc.txt"
+#define RC_FILE "lswrc.txt"
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -1739,7 +1739,7 @@ char *echoHandler(char *str) {
 }
 
 char *buildLswRcPath(char *path) {
-    uint16_t extra = strlen(path) + 1 + strlen(ALIAS_FILE);
+    uint16_t extra = strlen(path) + 1 + strlen(RC_FILE);
     char *buffer = calloc(extra, sizeof(char));
     strcpy(buffer, path);
 
@@ -1749,7 +1749,7 @@ char *buildLswRcPath(char *path) {
     strcat(buffer, "/");    
 #endif
 
-    strcat(buffer, ALIAS_FILE);
+    strcat(buffer, RC_FILE);
 
     return buffer;
 }
@@ -2258,7 +2258,8 @@ double eval(char *operation, bool mathlib) {
         "log10", "log2", "log", "floor", "ceil", "round",
         "fact", "sign", "sum", "rad", "deg", "trunc", "randf",
         "fah", "cel", "root", "rand", "mi", "km", "lb", "kg",
-        "oct", "hex", "bin", "abs", "fabs", "len"
+        "oct", "hex", "bin", "abs", "fabs", "len", "bmi", "feet",
+        "meter"
     };
 
     const char uniOps[] = "+-/*^%%&|<>";

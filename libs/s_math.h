@@ -17,6 +17,9 @@
 #define DEG_TO_RAD_FACTOR 0.01745329251
 #define RAD_TO_DEG_FACTOR 57.2957795131
 
+#define METERS_TO_FEET_FACTOR 3.28084
+#define FEET_TO_METERS_FACTOR 0.3048
+
 #define BC_ERROR "__LSW__CALC__ERROR__"
 
 #ifdef _WIN32
@@ -37,6 +40,7 @@ double s_fah(char *operation)__attribute__((nonnull));
 double s_cel(char *operation)__attribute__((nonnull));
 double s_log(char *operation)__attribute__((nonnull));
 double s_tan(char *operation)__attribute__((nonnull));
+double s_bmi(char *operation)__attribute__((nonnull));
 double s_cos(char *operation)__attribute__((nonnull));
 double s_sin(char *operation)__attribute__((nonnull));
 double s_sum(char *operation)__attribute__((nonnull));
@@ -50,6 +54,8 @@ double s_log2(char *operation)__attribute__((nonnull));
 double s_sqrt(char *operation)__attribute__((nonnull));
 double s_fact(char *operation)__attribute__((nonnull));
 double bc_len(char *operation)__attribute__((nonnull));
+double s_feet(char *operation)__attribute__((nonnull));
+double s_meter(char *operation)__attribute__((nonnull));
 double s_miles(char *operation)__attribute__((nonnull));
 double s_trunc(char *operation)__attribute__((nonnull));
 double s_floor(char *operation)__attribute__((nonnull));
@@ -81,6 +87,10 @@ char *functionHandler(char *operation, const char *function)__attribute__((warn_
 #define C_TO_F(x) ((x) * 1.8 + (32.0))
 #define F_TO_C(x) (((x) - 32.0) * 1.8)
 
+#define M_TO_FT(meters) (meters * METERS_TO_FEET_FACTOR)
+#define FT_TO_M(feet) (feet * FEET_TO_METERS_FACTOR)
+
+#define BMI(weight, height) ((weight) / ((height) * (height)))
 
 __attribute__((always_inline))
 static inline uint32_t better_rand32(void) {

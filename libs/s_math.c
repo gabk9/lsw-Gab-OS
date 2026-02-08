@@ -476,6 +476,36 @@ double s_kg(char *operation) {
     return LB_TO_KG(lbs);
 }
 
+double s_feet(char *operation) {
+    char *test = functionHandler(operation, "feet");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double meters = eval(test, true);
+
+    SAFE_FREE(test);
+    if (meters == (double)U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }
+
+    return M_TO_FT(meters);
+}
+
+double s_meter(char *operation) {
+    char *test = functionHandler(operation, "meter");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double feet = eval(test, true);
+
+    SAFE_FREE(test);
+    if (feet == (double)U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }
+
+    return FT_TO_M(feet);
+}
+
 double s_fah(char *operation) {
     char *test = functionHandler(operation, "fah");
     if (strcmp(test, BC_ERROR) == 0) return NAN;
@@ -910,6 +940,52 @@ double s_root(char *operation) {
         result = 1.0 / result;
 
     return result;
+}
+
+double s_bmi(char *operation) {
+    char *test = functionHandler(operation, "bmi");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    char *comma = find_top_level_comma(test);
+    
+    if (!comma) {
+        printf("Error: bmi() requires exactly 2 arguments\n\n");
+        return NAN;
+    }
+
+    *comma = '\0';
+    char *weightStr = test;
+    char *heightStr = comma + 1;
+    
+    uint8_t nullCount = isnull(2, weightStr, heightStr);
+    if (nullCount) {
+        printf("Error: bmi() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    trim(weightStr);
+    trim(heightStr);
+
+    double weight = eval(weightStr, true);
+
+    if (weight == (double)U64_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }  
+    
+    double height = eval(heightStr, true);
+
+    if (height == (double)U64_NAN) {
+        putchar('\n');
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    SAFE_FREE(test);
+
+    return BMI(weight, height);
 }
 
 double s_log(char *operation) {

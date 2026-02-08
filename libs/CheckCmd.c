@@ -693,6 +693,15 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\n"
             "\tlen(str)       : Returns the length of a string\n"
             "\t                 Example: strlen(\"string\") = 6\n"
+            "\n"
+            "\tbmi(X, Y)      : Returns your BMI with wight (X) in kg and height (Y) in meters\n"
+            "\t                 Example: bmi(91, 1.78) = 28.7211\n"
+            "\n"
+            "\tmeter(X)       : Converts feet (X) to meters\n"
+            "\t                 Example: meter(5.8399) = 1.78\n"
+            "\n"
+            "\tfeet(X)        : Converts meter (X) to feet\n"
+            "\t                 Example: feet(1.78) = 5.8399\n"
 
             "\nConstants:\n"
             "\tPI   : 3.141592...\n"
@@ -1101,6 +1110,12 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
             return s_fabs_or_abs(operation, true);
         else if (strncmp(operation, functions[32], 3) == 0) //! len()
             return bc_len(operation);
+        else if (strncmp(operation, functions[33], 3) == 0) //! bmi()
+            return s_bmi(operation);
+        else if (strncmp(operation, functions[34], 4) == 0) //! feet()
+            return s_feet(operation);
+        else if (strncmp(operation, functions[35], 5) == 0) //! meter()
+            return s_meter(operation);
     }    
     uint16_t op_pos = 0;
 
