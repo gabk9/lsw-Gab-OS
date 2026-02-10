@@ -9,7 +9,7 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
-int main(int argc, char **argv) {
+int32_t main(int32_t argc, char **argv) {
 #ifdef _WIN32
     SetUnhandledExceptionFilter(handler);
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE); 

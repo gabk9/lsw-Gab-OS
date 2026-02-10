@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.6.05"
+#define VERSION "r1.6.07"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1620,7 +1620,8 @@ void updatehistory(void) {
         "r1.5.84 - minor changes\n\tEdited: the variable warning when used with other commands now appears without the extra '\\n'\n",
         "r1.5.89 - small changes\n\tEdited: renamed strlen() to len() in the calculator\n",
         "r1.5.94 - small changes\n\tFixed: echo multiplier bug\n\tEdited: bc manual\n",
-        "r1.6.05 - big changes\n\tAdded: bmi(), feet() and meter() functions to bc\n"
+        "r1.6.05 - big changes\n\tAdded: bmi(), feet() and meter() functions to bc\n",
+        "r1.6.07 - minor changes\n\tEdited: type annotation\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
