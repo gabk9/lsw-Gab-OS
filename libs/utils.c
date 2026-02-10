@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 7800
-#define PROJ_SIZE_APPROX_BYTES 228000
+#define PROJ_SIZE_APPROX_BYTES 229000
 
 #define RC_FILE "lswrc.txt"
 
@@ -2110,6 +2110,38 @@ uint8_t is_pi_or_e_expression(const char *s) {
     return 0;
 }
 
+double parse_base_fraction(const char *s, int8_t base) {
+    double result = 0.0;
+    double frac = 0.0;
+    double div = base;
+    int8_t seen_dot = 0;
+
+    for (; *s; s++) {
+        if (*s == '.') {
+            if (seen_dot) break;
+            seen_dot = 1;
+            continue;
+        }
+
+        int32_t digit;
+        if (*s >= '0' && *s <= '9') digit = *s - '0';
+        else if (*s >= 'a' && *s <= 'f') digit = *s - 'a' + 10;
+        else if (*s >= 'A' && *s <= 'F') digit = *s - 'A' + 10;
+        else break;
+
+        if (digit >= base) break;
+
+        if (!seen_dot) {
+            result = result * base + digit;
+        } else {
+            frac += digit / div;
+            div *= base;
+        }
+    }
+
+    return result + frac;
+}
+
 double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
     *ok = 0;
 
@@ -2130,23 +2162,39 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
     bool isBinary = false; 
     if (strncasecmp(str + pos, "0x", 2) == 0) {
         base = 16;
+        pos += 2;
     } else if (strncasecmp(str + pos, "0b", 2) == 0) {
-        isBinary = true;
+        base = 2;
+        pos += 2;
     } else {
-        return 0.0;
+        base = 10;
     }
 
-    pos += 2;
     int16_t num_start = pos;
 
+    bool dot_seen = false;
+
     while (str[pos]) {
-        if (base == 16) {
-            if (!isxdigit((unsigned char)str[pos]))
-                break;
-        } else {
-            if (str[pos] != '0' && str[pos] != '1')
-                break;
+        if (str[pos] == '.') {
+            if (dot_seen) break;
+            dot_seen = true;
+            pos++;
+            continue;
         }
+
+        int digit;
+        if (str[pos] >= '0' && str[pos] <= '9')
+            digit = str[pos] - '0';
+        else if (str[pos] >= 'a' && str[pos] <= 'f')
+            digit = str[pos] - 'a' + 10;
+        else if (str[pos] >= 'A' && str[pos] <= 'F')
+            digit = str[pos] - 'A' + 10;
+        else
+            break;
+
+        if (digit >= base)
+            break;
+
         pos++;
     }
 
@@ -2171,25 +2219,12 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
     strncpy(buf, str + num_start, len);
     buf[len] = '\0';
 
-    int64_t value;
+    double value;
+
     if (!isBinary)
-        value = strtol(buf, NULL, base);
-    else {
-        size_t extra = strlen(buf) + 3;
-        char *temp = malloc(extra);
-
-        if (!temp) {
-            printf("Error: Memory allocation error!\n\n");
-            return NAN;
-        }
-        temp[0] = '0';
-        temp[1] = 'b';
-        temp[2] = '\0';
-
-        strcat(temp, buf);
-
-        value = parseBinToInt(temp);
-    }
+        value = parse_base_fraction(buf, base);
+    else
+        value = parse_base_fraction(buf, 2);
 
     *ok = 1;
     return sign * value * mult;

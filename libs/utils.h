@@ -161,6 +161,7 @@ char **parseData(const char *str, uint16_t *count);
 void lsCmdWin(const char *dirPath, uint8_t showAll);
 void lsCmdLinux(const char *dirPath, uint8_t showAll);
 void charReplace(char *str, int8_t targ, int8_t repl);
+double parse_base_fraction(const char *s, int8_t base);
 uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
 double parse_hex_pi_e_bin(const char *str, int16_t *ok);
