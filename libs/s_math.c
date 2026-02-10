@@ -87,9 +87,12 @@ char *functionHandler(char *operation, const char *function) {
 
     size_t end = strlen(operation) - 1;
     if (operation[0] != '(' || operation[end] != ')') {
-        char missing1 = (operation[0] != '(') ? '(' : '\0';
-        char missing2 = (operation[end] != ')') ? ')' : '\0';
-        printf("Error: expected '%c%c'\n\n", missing1, missing2);
+        char missing = (operation[end] != ')') ? ')' : '\0';
+
+        if (missing)
+            printf("Error: expected '%c'\n\n", missing);
+        else
+            printf("0\n\n");
         return BC_ERROR;
     }
 
@@ -769,6 +772,28 @@ double s_sin(char *operation) {
         result = 0.0;
 
     return result;
+}
+
+double s_cot(char *operation) {
+    char *test = functionHandler(operation, "cot");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    SAFE_FREE(test);
+    if (num == (double)U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }
+
+    double t = tan(num);
+
+    if (fabs(t) < 1e-12) {
+        printf("Error: cot() undefined for %.10g rad\n\n", num);
+        return NAN;
+    }
+    
+    double result = 1.0 / t;
 }
 
 double s_cos(char *operation) {

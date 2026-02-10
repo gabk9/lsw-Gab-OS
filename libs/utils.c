@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 7700
-#define PROJ_SIZE_APPROX_BYTES 227000
+#define PROJ_LINES_APPROX 7800
+#define PROJ_SIZE_APPROX_BYTES 228000
 
 #define RC_FILE "lswrc.txt"
 
@@ -2259,7 +2259,7 @@ double eval(char *operation, bool mathlib) {
         "fact", "sign", "sum", "rad", "deg", "trunc", "randf",
         "fah", "cel", "root", "rand", "mi", "km", "lb", "kg",
         "oct", "hex", "bin", "abs", "fabs", "len", "bmi", "feet",
-        "meter"
+        "meter", "cot"
     };
 
     const char uniOps[] = "+-/*^%%&|<>";
@@ -2297,7 +2297,7 @@ double eval(char *operation, bool mathlib) {
     double val = parse_hex_pi_e_bin(tmp, &ok);
     if (ok) return val;
 
-    if (isalldigit(tmp) || is_pi_or_e_expression(tmp)) {
+    if (is_pi_or_e_expression(tmp)) {
         val = h_atof(tmp);
         SAFE_FREE(tmp);
         return val;

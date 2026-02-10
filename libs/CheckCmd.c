@@ -605,14 +605,20 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t                 Example: root(27, 3) = 3\n"
             "\n"
             "\tsin(X)         : Sine of X\n"
-            "\t                 Example: sin(90) = 1\n"
-            "\t                 Note: X is in degrees\n"
+            "\t                 Example: sin(rad(90)) = 1\n"
+            "\t                 Note: X is in radians\n"
             "\n"
             "\tcos(X)         : Cosine of X\n"
-            "\t                 Example: cos(0) = 1\n"
+            "\t                 Example: cos(rad(0)) = 1\n"
+            "\t                 Note: X is in radians\n"
             "\n"
             "\ttan(X)         : Tangent of X\n"
-            "\t                 Example: tan(45) = 1\n"
+            "\t                 Example: tan(rad(45)) = 1\n"
+            "\t                 Note: X is in radians\n"
+            "\n"
+            "\tcot(X)         : Cotangent of X\n"
+            "\t                 Example: cot(rad(30)) = 1.73205\n"
+            "\t                 Note: X is in radians\n"
             "\n"
             "\trad(X)         : Radians to degrees\n"
             "\t                 Example: rad(3.1415) = 180\n"
@@ -685,6 +691,12 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tkg(X)          : Pounds to kilograms\n"
             "\t                 Example: kg(1) = 0.4535\n"
             "\n"
+            "\tmeter(X)       : Converts feet (X) to meters\n"
+            "\t                 Example: meter(5.8399) = 1.78\n"
+            "\n"
+            "\tfeet(X)        : Converts meter (X) to feet\n"
+            "\t                 Example: feet(1.78) = 5.8399\n"
+            "\n"
             "\tfabs(X)        : Absolute value (float)\n"
             "\t                 Example: fabs(-3.5) = 3.5\n"
             "\n"
@@ -696,12 +708,6 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\n"
             "\tbmi(X, Y)      : Returns your BMI with wight (X) in kg and height (Y) in meters\n"
             "\t                 Example: bmi(91, 1.78) = 28.7211\n"
-            "\n"
-            "\tmeter(X)       : Converts feet (X) to meters\n"
-            "\t                 Example: meter(5.8399) = 1.78\n"
-            "\n"
-            "\tfeet(X)        : Converts meter (X) to feet\n"
-            "\t                 Example: feet(1.78) = 5.8399\n"
 
             "\nConstants:\n"
             "\tPI   : 3.141592...\n"
@@ -1116,6 +1122,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
             return s_feet(operation);
         else if (strncmp(operation, functions[35], 5) == 0) //! meter()
             return s_meter(operation);
+        else if (strncmp(operation, functions[36], 3) == 0) //! cot()
+            return s_cot(operation);
     }    
     uint16_t op_pos = 0;
 
@@ -1159,7 +1167,7 @@ op_found:
 
         double num1_int;
         if (*num1 == '~') {
-            memmove(num1, num1+1, strlen(num1) + 1);            
+            memmove(num1, num1+1, strlen(num1) + 1);
 
             if (!*num1)
                 return 0.0;

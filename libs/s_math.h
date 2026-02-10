@@ -6,7 +6,7 @@
 #include <inttypes.h>
 
 #define PI 3.14159265358979323846
-#define E  2.77182818284590452353
+#define E  2.71828182845904523536
 
 #define KG_TO_LB_FACTOR 2.20462262185
 #define LB_TO_KG_FACTOR 0.45359237
@@ -45,6 +45,7 @@ double s_cos(char *operation)__attribute__((nonnull));
 double s_sin(char *operation)__attribute__((nonnull));
 double s_sum(char *operation)__attribute__((nonnull));
 double s_rad(char *operation)__attribute__((nonnull));
+double s_cot(char *operation)__attribute__((nonnull));
 double s_deg(char *operation)__attribute__((nonnull));
 double s_root(char *operation)__attribute__((nonnull));
 double h_atof(const char *str)__attribute__((nonnull));
