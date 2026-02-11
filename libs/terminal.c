@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.6.18"
+#define VERSION "r1.6.27"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1623,7 +1623,8 @@ void updatehistory(void) {
         "r1.6.05 - big changes\n\tAdded: bmi(), feet() and meter() functions to bc\n",
         "r1.6.07 - minor changes\n\tEdited: type annotation\n",
         "r1.6.13 - small changes\n\tAdded: cot() to bc\n",
-        "r1.6.18 - small changes\n\tFixed: constant parser\n"
+        "r1.6.18 - small changes\n\tFixed: constant parser\n",
+        "r1.6.27 - big changes\n\tFixed: cel() conversion formula\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

@@ -86,7 +86,7 @@ char *functionHandler(char *operation, const char *function)__attribute__((warn_
 #define KG_TO_LB(x) ((x) * KG_TO_LB_FACTOR)
 
 #define C_TO_F(x) ((x) * 1.8 + (32.0))
-#define F_TO_C(x) (((x) - 32.0) * 1.8)
+#define F_TO_C(x) (((x) - 32.0) / 1.8)
 
 #define M_TO_FT(meters) (meters * METERS_TO_FEET_FACTOR)
 #define FT_TO_M(feet) (feet * FEET_TO_METERS_FACTOR)
