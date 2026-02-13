@@ -128,21 +128,6 @@ char *functionHandler(char *operation, const char *function) {
         return BC_ERROR;
     }
 
-    if (strcmp(copy, "ans") == 0) {
-
-        if (isnan(Ans)) {
-            puts("Warning: Ans is undefined\n");
-            SAFE_FREE(copy);
-            return BC_ERROR;
-        }
-
-        char buffer[0x40];
-        snprintf(buffer, sizeof(buffer), "%g", Ans);
-
-        SAFE_FREE(copy);
-        copy = strdup(buffer);
-    }
-
     return copy;
 }
 

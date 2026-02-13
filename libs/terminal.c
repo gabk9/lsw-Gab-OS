@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.6.49"
+#define VERSION "r1.6.55"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -643,9 +643,9 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         }
 
         result = eval(operation, mathlib);
+        Ans = result;
 
         if (!isnan(result) && result != (double)U64_NAN) {
-            Ans = result;
             printf("%g\n\n", result);
             fflush(stdout);
         } 
@@ -1630,7 +1630,8 @@ void updatehistory(void) {
         "r1.6.27 - big changes\n\tFixed: cel() conversion formula\n",
         "r1.6.33 - small changes\n\tEdited: improved functionHandler()\n",
         "r1.6.37 - small changes\n\tAdded: added gradians 'gon()', an another angle measurement to bc\n",
-        "r1.6.49 - big changes\n\tAdded: Ans, a builtin variable that stores the result of the last operation\n"
+        "r1.6.49 - big changes\n\tAdded: Ans, a builtin variable that stores the result of the last operation\n",
+        "r1.6.55 - small changes\n\tEdited: improved Ans behavior\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
