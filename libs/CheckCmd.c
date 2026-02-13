@@ -626,6 +626,9 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tdeg(X)         : Degrees to radians\n"
             "\t                 Example: deg(180) = 3.1415\n"
             "\n"
+            "\tgon(X)         : Radians to gradians\n"
+            "\t                 Example: gon(1) = 63.662\n"
+            "\n"
             "\tln(X)          : Natural logarithm\n"
             "\t                 Example: ln(E) = 1\n"
             "\n"
@@ -1124,6 +1127,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
             return s_meter(operation);
         else if (strncmp(operation, functions[36], 3) == 0) //! cot()
             return s_cot(operation);
+        else if (strncmp(operation, functions[37], 3) == 0) //! gon()
+            return s_gon(operation);
     }    
     uint16_t op_pos = 0;
 

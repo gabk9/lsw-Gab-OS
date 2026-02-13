@@ -16,6 +16,7 @@
 
 #define DEG_TO_RAD_FACTOR 0.01745329251
 #define RAD_TO_DEG_FACTOR 57.2957795131
+#define RAD_TO_GON_FACTOR 63.661977237
 
 #define METERS_TO_FEET_FACTOR 3.28084
 #define FEET_TO_METERS_FACTOR 0.3048
@@ -39,13 +40,14 @@ double s_kg(char *operation)__attribute__((nonnull));
 double s_fah(char *operation)__attribute__((nonnull));
 double s_cel(char *operation)__attribute__((nonnull));
 double s_log(char *operation)__attribute__((nonnull));
-double s_tan(char *operation)__attribute__((nonnull));
 double s_bmi(char *operation)__attribute__((nonnull));
+double s_tan(char *operation)__attribute__((nonnull));
 double s_cos(char *operation)__attribute__((nonnull));
 double s_sin(char *operation)__attribute__((nonnull));
+double s_cot(char *operation)__attribute__((nonnull));
 double s_sum(char *operation)__attribute__((nonnull));
 double s_rad(char *operation)__attribute__((nonnull));
-double s_cot(char *operation)__attribute__((nonnull));
+double s_gon(char *operation)__attribute__((nonnull));
 double s_deg(char *operation)__attribute__((nonnull));
 double s_root(char *operation)__attribute__((nonnull));
 double h_atof(const char *str)__attribute__((nonnull));
@@ -78,6 +80,7 @@ char *functionHandler(char *operation, const char *function)__attribute__((warn_
 
 #define DEG_TO_RAD(x) ((x) * DEG_TO_RAD_FACTOR) 
 #define RAD_TO_DEG(x) ((x) * RAD_TO_DEG_FACTOR)
+#define RAD_TO_GON(x) ((x) * RAD_TO_GON_FACTOR)
 
 #define KM_TO_MI(x) ((x) * KM_TO_MI_FACTOR)
 #define MI_TO_KM(x) ((x) * MI_TO_KM_FACTOR)

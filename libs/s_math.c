@@ -87,12 +87,24 @@ char *functionHandler(char *operation, const char *function) {
 
     size_t end = strlen(operation) - 1;
     if (operation[0] != '(' || operation[end] != ')') {
-        char missing = (operation[end] != ')') ? ')' : '\0';
 
-        if (missing)
-            printf("Error: expected '%c'\n\n", missing);
-        else
+        bool firstIsMissing = false;
+
+        if (operation[0] != '(') {
             printf("0\n\n");
+            firstIsMissing = true;
+        }
+        
+        if (!firstIsMissing) {
+            bool isMissing = strrchr(operation, ')') == false;
+            char chr = operation[end];
+    
+            if (chr != ')' && isMissing)
+                printf("Error: expected ')'\n\n");
+            else if (chr != ')' && !isMissing)
+                printf("0\n\n");
+        }
+            
         return BC_ERROR;
     }
 
@@ -681,6 +693,21 @@ double s_rad(char *operation) {
     }    
 
     return DEG_TO_RAD(deg);
+}
+
+double s_gon(char *operation) {
+    char *test = functionHandler(operation, "gon");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double deg = eval(test, true);
+
+    SAFE_FREE(test);
+    if (deg == (double)U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }    
+
+    return RAD_TO_GON(deg);
 }
 
 double s_deg(char *operation) {
