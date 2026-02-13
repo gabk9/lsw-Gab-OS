@@ -39,6 +39,8 @@
 
 extern double Ans;
 
+#define OLD_ANSWER_STR "ans"
+
 #define MAX_ARGS 0x20
 #define MAX_CHAR 0x400
 #define TIME_FMT "%a %d %b %Y %H:%M:%S %z"

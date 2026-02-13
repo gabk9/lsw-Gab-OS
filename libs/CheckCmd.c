@@ -1157,7 +1157,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
         }
     }
 
-    if (strcmp(operation, "ans") == 0) {
+    if (strcmp(operation, OLD_ANSWER_STR) == 0) {
         if (isnan(Ans)) {
             puts("Warning: Ans is undefined\n");
         }
@@ -1192,7 +1192,7 @@ op_found:
 
             bool isAns = false;
 
-            if (strcmp(num1, "ans") == 0) {
+            if (strcmp(num1, OLD_ANSWER_STR) == 0) {
                 if (isnan(Ans)) {
                     puts("Warning: Ans is undefined\n");
                     return NAN;
@@ -1223,7 +1223,7 @@ op_found:
 
             num1_double = ~(int64_t)num1_double;
         } else {
-            if (strcmp(num1, "ans") == 0) {
+            if (strcmp(num1, OLD_ANSWER_STR) == 0) {
                 if (isnan(Ans)) {
                     puts("Warning: Ans is undefined\n");
                     return NAN;
@@ -1243,7 +1243,7 @@ op_found:
 
             bool isAns = false;
 
-            if (strcmp(num2, "ans") == 0) {
+            if (strcmp(num2, OLD_ANSWER_STR) == 0) {
                 if (isnan(Ans)) {
                     puts("Warning: Ans is undefined\n");
                     return NAN;
@@ -1274,7 +1274,7 @@ op_found:
 
             num2_double = ~(int64_t)num2_double;
         } else {
-            if (strcmp(num2, "ans") == 0) {
+            if (strcmp(num2, OLD_ANSWER_STR) == 0) {
                 if (isnan(Ans)) {
                     puts("Warning: Ans is undefined\n");
                     return NAN;

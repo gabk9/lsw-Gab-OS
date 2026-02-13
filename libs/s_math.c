@@ -154,7 +154,7 @@ double h_atof(const char *str) {
         isUnaryNot = true;
     }
 
-    bool isAns = strcmp(buf, "ans") == 0;
+    bool isAns = strcmp(buf, OLD_ANSWER_STR) == 0;
     if (!isalldigit(buf) && !isAns)
         return 0.0;
 
