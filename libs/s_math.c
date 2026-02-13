@@ -65,7 +65,7 @@ char *find_top_level_comma(char *s) {
         else if (*p == ')') level--;
         else if (*p == ',' && level == 0)
             return p;
-    }
+    }           
     return NULL;
 }
 
@@ -92,6 +92,7 @@ char *functionHandler(char *operation, const char *function) {
 
         if (operation[0] != '(') {
             printf("0\n\n");
+            Ans = 0.0;
             firstIsMissing = true;
         }
         
@@ -101,10 +102,12 @@ char *functionHandler(char *operation, const char *function) {
     
             if (chr != ')' && isMissing)
                 printf("Error: expected ')'\n\n");
-            else if (chr != ')' && !isMissing)
+            else if (chr != ')' && !isMissing) {
+                Ans = 0.0;
                 printf("0\n\n");
+            }
         }
-            
+
         return BC_ERROR;
     }
 
@@ -125,6 +128,21 @@ char *functionHandler(char *operation, const char *function) {
         return BC_ERROR;
     }
 
+    if (strcmp(copy, "ans") == 0) {
+
+        if (isnan(Ans)) {
+            puts("Warning: Ans is undefined\n");
+            SAFE_FREE(copy);
+            return BC_ERROR;
+        }
+
+        char buffer[0x40];
+        snprintf(buffer, sizeof(buffer), "%g", Ans);
+
+        SAFE_FREE(copy);
+        copy = strdup(buffer);
+    }
+
     return copy;
 }
 
@@ -142,9 +160,6 @@ double h_atof(const char *str) {
         return NAN;
     }
     
-    if (!isalldigit(buf))
-        return 0;
-
     bool isUnaryNot = false;
 
     if (*buf == '~') {
@@ -154,8 +169,17 @@ double h_atof(const char *str) {
         isUnaryNot = true;
     }
 
+    bool isAns = strcmp(buf, "ans") == 0;
+    if (!isalldigit(buf) && !isAns)
+        return 0.0;
+
     if (isUnaryNot) {
-        double num = h_atof(buf);
+        double num;
+
+        if (isAns)
+            num = Ans;
+        else 
+            num = h_atof(buf);
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("Error: integer overflow\n\n");

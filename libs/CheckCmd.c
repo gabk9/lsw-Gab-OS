@@ -1,6 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
+double Ans = NAN;
+
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
     #error "Operational system not recognized, terminating program!!"
 #endif
@@ -712,6 +714,11 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tbmi(X, Y)      : Returns your BMI with wight (X) in kg and height (Y) in meters\n"
             "\t                 Example: bmi(91, 1.78) = 28.7211\n"
 
+            "\nBuiltin Variables: (not case sensitive)\n"
+            "\tAns   : stores the result of the last operation\n"
+            "\t        Tip: initially set to NaN; it is also set to NaN after invalid operations\n"
+            "\t        Note: its value cannot be changed manually\n"
+
             "\nConstants:\n"
             "\tPI   : 3.141592...\n"
             "\t       Example: sin(PI / 2) = 1\n"
@@ -1150,7 +1157,13 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
         }
     }
 
-    return h_atof(operation);
+    if (strcmp(operation, "ans") == 0) {
+        if (isnan(Ans)) {
+            puts("Warning: Ans is undefined\n");
+        }
+        return Ans;
+    } else
+        return h_atof(operation);
 
 op_found:
     {
@@ -1170,62 +1183,108 @@ op_found:
             return NAN;
         }
 
-        double num1_int;
+        double num1_double;
         if (*num1 == '~') {
             memmove(num1, num1+1, strlen(num1) + 1);
 
             if (!*num1)
                 return 0.0;
 
-            if (isBcVariable(num1)) {
-                printf("Warning: variables are currently unsupported\n\n");
-                return NAN;
+            bool isAns = false;
+
+            if (strcmp(num1, "ans") == 0) {
+                if (isnan(Ans)) {
+                    puts("Warning: Ans is undefined\n");
+                    return NAN;
+                }
+                
+                num1_double = Ans;
+                isAns = true;
             }
 
-            num1_int = eval(num1, mathlib); 
-            
-            if (num1_int < MIN_SAFE_INT64_D || num1_int > MAX_SAFE_INT64_D) {
-                printf("Error: integer overflow\n\n");
-                return NAN;
-            }
-            
-            if (num1_int != (int64_t)num1_int) {
-                printf("Error: to use the not(~) operator the number must be integer\n\n");
-                return NAN;
+            if (!isAns) {
+                if (isBcVariable(num1)) {
+                    printf("Warning: variables are currently unsupported\n\n");
+                    return NAN;
+                }
+
+                num1_double = eval(num1, mathlib); 
+
+                if (num1_double < MIN_SAFE_INT64_D || num1_double > MAX_SAFE_INT64_D) {
+                    printf("Error: integer overflow\n\n");
+                    return NAN;
+                }
+
+                if (num1_double != (int64_t)num1_double) {
+                    printf("Error: to use the not(~) operator the number must be integer\n\n");
+                    return NAN;
+                }
             }
 
-            num1_int = ~(int64_t)num1_int;
-        } else
-            num1_int = eval(num1, mathlib);
+            num1_double = ~(int64_t)num1_double;
+        } else {
+            if (strcmp(num1, "ans") == 0) {
+                if (isnan(Ans)) {
+                    puts("Warning: Ans is undefined\n");
+                    return NAN;
+                }
 
-        double num2_int;
+                num1_double = Ans;
+            } else
+                num1_double = eval(num1, mathlib);
+        }
+
+        double num2_double;
         if (*num2 == '~') {
             memmove(num2, num2+1, strlen(num2) + 1);
 
             if (!*num2)
                 return 0.0;
 
-            if (isBcVariable(num2)) {
-                printf("Warning: variables are currently unsupported\n\n");
-                return NAN;
+            bool isAns = false;
+
+            if (strcmp(num2, "ans") == 0) {
+                if (isnan(Ans)) {
+                    puts("Warning: Ans is undefined\n");
+                    return NAN;
+                }
+
+                num2_double = Ans;
+                isAns = true;
             }
 
-            num2_int = eval(num2, mathlib); 
+            if (!isAns) {
+                if (isBcVariable(num2)) {
+                    printf("Warning: variables are currently unsupported\n\n");
+                    return NAN;
+                }
+    
+                num2_double = eval(num2, mathlib); 
+    
+                if (num2_double < MIN_SAFE_INT64_D || num2_double > MAX_SAFE_INT64_D) {
+                    printf("Error: integer overflow\n\n");
+                    return NAN;
+                }
+    
+                if (num2_double != (int64_t)num2_double) {
+                    printf("Error: to use the not(~) operator the number must be integer\n\n");
+                    return NAN;
+                }
+            }    
 
-            if (num2_int < MIN_SAFE_INT64_D || num2_int > MAX_SAFE_INT64_D) {
-                printf("Error: integer overflow\n\n");
-                return NAN;
-            }
+            num2_double = ~(int64_t)num2_double;
+        } else {
+            if (strcmp(num2, "ans") == 0) {
+                if (isnan(Ans)) {
+                    puts("Warning: Ans is undefined\n");
+                    return NAN;
+                }
 
-            if (num2_int != (int64_t)num2_int) {
-                printf("Error: to use the not(~) operator the number must be integer\n\n");
-                return NAN;
-            }
+                num2_double = Ans;
+            } else
+                num2_double = eval(num2, mathlib);
+        }
 
-            num2_int = ~(int64_t)num2_int;
-        } else
-            num2_int = eval(num2, mathlib);
-
-        return calc(num1_int, op, num2_int);
+        return calc(num1_double, op, num2_double);
     }
 }

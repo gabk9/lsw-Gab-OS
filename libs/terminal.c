@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.6.37"
+#define VERSION "r1.6.49"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -16,7 +16,7 @@
 #endif
 
 void revCmd(char *instruction) {
-    
+
     if (!*instruction) {
         char *string = calloc(MAX_CHAR, sizeof(char));
 
@@ -546,7 +546,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         return;
     }
 
-
+    Ans = NAN;
     while (true) {
         if (!appear) {
             if (!quiet) {
@@ -623,6 +623,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             char *value = s_oct(operation);
             if (value) {
                 printf("%s\n\n", value);
+                Ans = parse_double(value, NULL);
                 fflush(stdout);
             }
 
@@ -633,6 +634,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             char *value = s_bin(operation);
             if (value) {
                 printf("%s\n\n", value);
+                Ans = parse_double(value, NULL);
                 fflush(stdout);
             }
 
@@ -643,6 +645,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         result = eval(operation, mathlib);
 
         if (!isnan(result) && result != (double)U64_NAN) {
+            Ans = result;
             printf("%g\n\n", result);
             fflush(stdout);
         } 
@@ -1626,7 +1629,8 @@ void updatehistory(void) {
         "r1.6.18 - small changes\n\tFixed: constant parser\n",
         "r1.6.27 - big changes\n\tFixed: cel() conversion formula\n",
         "r1.6.33 - small changes\n\tEdited: improved functionHandler()\n",
-        "r1.6.37 - small changes\n\tAdded: added gradians 'gon()', an another angle measurement to bc\n"
+        "r1.6.37 - small changes\n\tAdded: added gradians 'gon()', an another angle measurement to bc\n",
+        "r1.6.49 - big changes\n\tAdded: Ans, a builtin variable that stores the result of the last operation\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
