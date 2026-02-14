@@ -168,7 +168,6 @@ void charReplace(char *str, int8_t targ, int8_t repl);
 double parse_base_fraction(const char *s, int8_t base);
 uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
-double parse_hex_pi_e_bin(const char *str, int16_t *ok);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
 bool isKeyRepeated(char *data_folder, const char *key_name);
 
@@ -177,6 +176,7 @@ char **readHistory(const char *address, uint32_t *lineCount);
 
 char **copyMat(char **dest, const char **src, uint16_t size);
 void printInFileNTimes(FILE *stream, char *str, int64_t count);
+double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok);
 char **extract_args(char *args, uint16_t *argc, char *firstArg);
 uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps);
 const char *strcasestr_ptr(const char *haystack, const char *needle);

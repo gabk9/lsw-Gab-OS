@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 7900
-#define PROJ_SIZE_APPROX_BYTES 233000
+#define PROJ_SIZE_APPROX_BYTES 233500
 
 #define RC_FILE "lswrc.txt"
 
@@ -403,7 +403,7 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
 }
 
 char* findStarOutsideQuotes(char *s) {
-    int in_single = 0, in_double = 0;
+    int32_t in_single = 0, in_double = 0;
 
     for (; *s; s++) {
         if (*s == '\'' && !in_double) in_single = !in_single;
@@ -432,7 +432,7 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
 
     char *redir = findCharOutsideQuotes(work, '>');
 
-    int append = 0;
+    int32_t append = 0;
     char *filename = NULL;
 
     if (redir) {
@@ -764,11 +764,11 @@ bool isValidFolderOrFileName(const char *name) {
 
 
 char *revStr(const char *str) {
-    int len = strlen(str);
+    int32_t len = strlen(str);
     char *new = calloc(len + 1, 1);
     if (!new) return NULL;
 
-    for (int i = 0; i < len; i++)
+    for (int32_t i = 0; i < len; i++)
         new[i] = str[len - 1 - i];
 
     return new;
@@ -938,7 +938,7 @@ int8_t isDir(const char *path) {
 void int64_to_hex_min(int64_t v, char *out, size_t size) {
     uint64_t u = (uint64_t)v;
 
-    int bits;
+    int32_t bits;
     for (bits = 8; bits < 64; bits++) {
         int64_t sign_bit = 1LL << (bits - 1);
         int64_t min = -sign_bit;
@@ -948,7 +948,7 @@ void int64_to_hex_min(int64_t v, char *out, size_t size) {
             break;
     }
 
-    int hex_digits = (bits + 3) / 4;
+    int32_t hex_digits = (bits + 3) / 4;
     uint64_t mask = (1ULL << (hex_digits * 4)) - 1;
     u &= mask;
 
@@ -1700,9 +1700,9 @@ char *echoHandler(char *str) {
     if (!out) return str;
 
     size_t o = 0;
-    int inQuotes = 0;
+    int32_t inQuotes = 0;
     char quoteChar = 0;
-    int wroteSomething = 0;
+    int32_t wroteSomething = 0;
 
     for (size_t i = 0; i < len; i++) {
         char c = str[i];
@@ -1889,7 +1889,7 @@ void createShortcut(char *instruction, char *path) {
 void removeComments(char *str) {
     if (!str || *str == '\0') return;
 
-    for (int i = 0; str[i] != '\0'; i++) {
+    for (int32_t i = 0; str[i] != '\0'; i++) {
         if ((str[i] == '/' && str[i+1] == '/') || str[i] == '#') {
             str[i] = '\0';
             break;
@@ -2142,7 +2142,7 @@ double parse_base_fraction(const char *s, int8_t base) {
     return result + frac;
 }
 
-double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
+double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     *ok = 0;
 
     if (!str || !str[0])
@@ -2150,7 +2150,7 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
 
     int16_t sign = 1;
     int16_t pos = 0;
-    int base = 0;
+    int32_t base = 0;
 
     if (str[pos] == '-') {
         sign = -1;
@@ -2182,7 +2182,7 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
             continue;
         }
 
-        int digit;
+        int32_t digit;
         if (str[pos] >= '0' && str[pos] <= '9')
             digit = str[pos] - '0';
         else if (str[pos] >= 'a' && str[pos] <= 'f')
@@ -2207,7 +2207,11 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
         mult = PI;
     else if (strcmp(str + pos, "e") == 0)
         mult = E;
-    else
+    else if (strcmp(str + pos, "ans") == 0) {
+        if (isnan(Ans))
+            puts("Warning: Ans is undefined\n");
+        mult = Ans;
+    } else
         return 0.0;
 
     char buf[0x40];
@@ -2231,15 +2235,15 @@ double parse_hex_pi_e_bin(const char *str, int16_t *ok) {
 }
 
 bool has_top_level_operator(const char *s, const char *uniOps, const char **multiOps) {
-    int depth = 0;
+    int32_t depth = 0;
 
-    for (int i = 0; s[i]; i++) {
+    for (int32_t i = 0; s[i]; i++) {
         if (s[i] == '(') depth++;
         else if (s[i] == ')') depth--;
 
         if (depth == 0) {
-            for (int j = 0; multiOps[j]; j++) {
-                int len = strlen(multiOps[j]);
+            for (int32_t j = 0; multiOps[j]; j++) {
+                int32_t len = strlen(multiOps[j]);
                 if (strncmp(&s[i], multiOps[j], len) == 0)
                     return true;
             }
@@ -2253,10 +2257,10 @@ bool has_top_level_operator(const char *s, const char *uniOps, const char **mult
 }
 
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp) {
-    int depth = 0;
-    int len = strlen(s);
+    int32_t depth = 0;
+    int32_t len = strlen(s);
 
-    for (int i = len - 1; i >= 0; i--) {
+    for (int32_t i = len - 1; i >= 0; i--) {
 
         if (s[i] == ')')
             depth++;
@@ -2266,8 +2270,8 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
         if (depth != 0)
             continue;
 
-        for (int j = 0; multiOps[j]; j++) {
-            int oplen = strlen(multiOps[j]);
+        for (int32_t j = 0; multiOps[j]; j++) {
+            int32_t oplen = strlen(multiOps[j]);
             if (i - oplen + 1 < 0)
                 continue;
 
@@ -2329,7 +2333,7 @@ double eval(char *operation, bool mathlib) {
     }
 
     int16_t ok = 0;
-    double val = parse_hex_pi_e_bin(tmp, &ok);
+    double val = parse_bin_hex_oct_ans_e_pi(tmp, &ok);
     if (ok) return val;
 
     if (is_pi_or_e_expression(tmp)) {

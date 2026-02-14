@@ -70,7 +70,7 @@ char *find_top_level_comma(char *s) {
 }
 
 uint16_t count_top_level_commas(const char *s) {
-    int level = 0, count = 0;
+    int32_t level = 0, count = 0;
 
     for (; *s; s++) {
         if (*s == '(') level++;
@@ -182,7 +182,7 @@ double h_atof(const char *str) {
     }
 
     int16_t ok = 0;
-    double hex_pi_e = parse_hex_pi_e_bin(buf, &ok);
+    double hex_pi_e = parse_bin_hex_oct_ans_e_pi(buf, &ok);
     if (ok)
         return hex_pi_e;
 
@@ -573,8 +573,13 @@ char *s_oct(char *operation) {
         return NULL;
     }
 
-    if (ceil(num) != num) {
+    if (num != (int64_t)num) {
         printf("Error: oct() requires an integer!\n\n");
+        return NULL;
+    }
+
+    if (num < 0) {
+        printf("Error: oct() requires non negative numbers\n\n");
         return NULL;
     }
 
@@ -605,7 +610,7 @@ char *s_hex(char *operation) {
         return NULL;
     }
 
-    if (ceil(val) != val) {
+    if (val != (int64_t)val) {
         printf("Error: hex() requires an integer!\n\n");
         return NULL;
     }
@@ -641,7 +646,7 @@ char *s_bin(char *operation) {
         return NULL;
     }
 
-    if (ceil(val) != val) {
+    if (val != (int64_t)val) {
         printf("Bin: bin() requires an integer!\n\n");
         return NULL;
     }
@@ -984,7 +989,7 @@ double s_root(char *operation) {
         index = -index;
     }
 
-    if (rooting < 0 && ((int)index % 2 == 0)) {
+    if (rooting < 0 && ((int32_t)index % 2 == 0)) {
         printf("Error: root() requires an odd index when there is a negative number\n\n");
         return NAN;
     }

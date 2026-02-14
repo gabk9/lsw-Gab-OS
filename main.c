@@ -26,7 +26,7 @@ int32_t main(int32_t argc, char **argv) {
         "randstr", "rev"
     };
 
-    uint16_t cmdCount = sizeof(cmds) / sizeof(*cmds);
+    uint16_t cmdCount = sizeof(cmds) / sizeof(cmds[0]);
 
     char *input = calloc(MAX_CHAR, sizeof(char));
     if (!input) {

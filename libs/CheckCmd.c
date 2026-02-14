@@ -307,7 +307,7 @@ double calc(double num1, char *operation, double num2) {
             return NAN;
         } else {
 
-            result = tetration(num1, (int)num2);
+            result = tetration(num1, (int32_t)num2);
 
             if (isnan(result))
                 printf("Error: invalid input for tetration\n\n");
