@@ -834,7 +834,7 @@ double s_cot(char *operation) {
         return NAN;
     }
     
-    double result = 1.0 / t;
+    return 1.0 / t;
 }
 
 double s_cos(char *operation) {

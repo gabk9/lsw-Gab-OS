@@ -1028,7 +1028,7 @@ bool isHex(const char *str) {
 }
 
 bool isOct(const char *str) {
-    if (!str || str[0] == '\0')
+    if (!str || !*str)
         return false;
 
     if (strncasecmp(str, "0o", 2) != 0)
@@ -1378,7 +1378,7 @@ char *unameCmdWin(uint8_t flags) {
         strcat(result, buffer);
     }
 
-    if (result[0] == '\0') {
+    if (!*result) {
         strcpy(result, "Windows");
     } else {
         trimEnd(result);
@@ -1462,7 +1462,7 @@ char *unameCmdLinux(uint8_t flags) {
     #endif
     }
 
-    if (result[0] == '\0') {
+    if (!*result) {
         strcpy(result, pc.sysname);
     } else {
         trimEnd(result);
@@ -1813,14 +1813,14 @@ bool isBetweenQuotes(const char *action) {
 }
 
 void createShortcut(char *instruction, char *path) {    
-    char *alias = strdup(instruction);
-
-    if (alias[0] == '\0') {
+    
+    if (!*instruction) {
         puts("alias: missing operand\nUse \"man alias\" to check the manual");
-        SAFE_FREE(alias);
         return;
     }
 
+    char *alias = strdup(instruction);
+    
     trim(alias);
     trimEnd(alias);
 

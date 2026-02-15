@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.6.78"
+#define VERSION "r1.6.81"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -573,11 +573,8 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
         removeComments(operation);
 
-        if (!*operation) {
-            puts("Error: insert an operation\n");
+        if (!*operation)
             continue;
-        }
-
 
         trim(operation);
         trimEnd(operation);
@@ -1635,7 +1632,8 @@ void updatehistory(void) {
         "r1.6.60 - small changes\n\tAdded: error to negative numbers to oct() in bc\n",
         "r1.6.69 - big changes\n\tAdded: improved the parser to work with expressions like: '2ans'\n",
         "r1.6.73 - minor changes\n\tFixed: forgot to add ype annotations\n",
-        "r1.6.78 - small changes\n\tEdited: now the parser should work with octal with e or pi expressions, example: '0o2pi'\n"
+        "r1.6.78 - small changes\n\tEdited: now the parser should work with octal with e or pi expressions, example: '0o2pi'\n",
+        "r1.6.81 - minor changes\n\tRemoved: empty input bc error message\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
