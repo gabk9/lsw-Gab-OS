@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.6.73"
+#define VERSION "r1.6.78"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1634,7 +1634,8 @@ void updatehistory(void) {
         "r1.6.55 - small changes\n\tEdited: improved Ans behavior\n",
         "r1.6.60 - small changes\n\tAdded: error to negative numbers to oct() in bc\n",
         "r1.6.69 - big changes\n\tAdded: improved the parser to work with expressions like: '2ans'\n",
-        "r1.6.73 - minor changes\n\tFixed: forgot to add type annotations\n"
+        "r1.6.73 - minor changes\n\tFixed: forgot to add ype annotations\n",
+        "r1.6.78 - small changes\n\tEdited: now the parser should work with octal with e or pi expressions, example: '0o2pi'\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

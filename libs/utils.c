@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 7900
-#define PROJ_SIZE_APPROX_BYTES 233500
+#define PROJ_SIZE_APPROX_BYTES 234000
 
 #define RC_FILE "lswrc.txt"
 
@@ -2166,9 +2166,11 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     } else if (strncasecmp(str + pos, "0b", 2) == 0) {
         base = 2;
         pos += 2;
-    } else {
+    } else if (strncasecmp(str + pos, "0o", 2) == 0) {
+        base = 8;
+        pos += 2;
+    } else
         base = 10;
-    }
 
     int16_t num_start = pos;
 
