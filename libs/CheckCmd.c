@@ -1055,236 +1055,223 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
 }
 
 double CheckOperation(char *operation, char **functions, const char *uniOps, const char **multiOps, bool mathlib) {
-    char op[0x3] = {0};
+    char op[0x4] = {0};
 
-    bool hasOp = has_top_level_operator(operation, uniOps, multiOps);
+    int16_t op_pos = find_main_operator_full(
+        operation,
+        multiOps,
+        uniOps,
+        op
+    );
 
-    if (!hasOp && mathlib) {
-        if (strncmp(operation, functions[0], 5) == 0) //! scale()
-            return s_scale(operation);
-        else if (strncmp(operation, functions[1], 4) == 0) //! sqrt()
-            return s_sqrt(operation);
-        else if (strncmp(operation, functions[2], 3) == 0) //! sin()
-            return s_sin(operation);
-        else if (strncmp(operation, functions[3], 3) == 0) //! cos()
-            return s_cos(operation);
-        else if (strncmp(operation, functions[4], 3) == 0) //! tan()
-            return s_tan(operation);
-        else if (strncmp(operation, functions[5], 2) == 0) //! ln()
-            return s_ln(operation);
-        else if (strncmp(operation, functions[6], 5) == 0) //! log10()
-            return s_log10(operation);
-        else if (strncmp(operation, functions[7], 4) == 0) //! log2()
-            return s_log2(operation);
-        else if (strncmp(operation, functions[8], 3) == 0) //! log()
-            return s_log(operation);
-        else if (strncmp(operation, functions[9], 5) == 0) //! floor()
-            return s_floor(operation);
-        else if (strncmp(operation, functions[10], 4) == 0) //! ceil()
-            return s_ceil(operation);
-        else if (strncmp(operation, functions[11], 5) == 0) //! round()
-            return s_round(operation);
-        else if (strncmp(operation, functions[12], 4) == 0) //! fact()
-            return s_fact(operation);
-        else if (strncmp(operation, functions[13], 4) == 0) //! sign()
-            return s_sign(operation);
-        else if (strncmp(operation, functions[14], 3) == 0) //! sum()
-            return s_sum(operation);
-        else if (strncmp(operation, functions[15], 3) == 0) //! rad()
-            return s_rad(operation);
-        else if (strncmp(operation, functions[16], 3) == 0) //! deg()
-            return s_deg(operation);
-        else if (strncmp(operation, functions[17], 5) == 0) //! trunc()
-            return s_trunc(operation);
-        else if (strncmp(operation, functions[18], 5) == 0) //! randf()
-            return s_randFloat(operation);
-        else if (strncmp(operation, functions[19], 3) == 0) //! fah()
-            return s_fah(operation);
-        else if (strncmp(operation, functions[20], 3) == 0) //! cel()
-            return s_cel(operation);
-        else if (strncmp(operation, functions[21], 4) == 0) //! root()
-            return s_root(operation);
-        else if (strncmp(operation, functions[22], 4) == 0) //! rand()
-            return s_randInt(operation);
-        else if (strncmp(operation, functions[23], 2) == 0) //! mi()
-            return s_miles(operation);
-        else if (strncmp(operation, functions[24], 2) == 0) //! km()
-            return s_km(operation);
-        else if (strncmp(operation, functions[25], 2) == 0) //! lb()
-            return s_pounds(operation);
-        else if (strncmp(operation, functions[26], 2) == 0) //! kg()
-            return s_kg(operation);
-        else if (strncmp(operation, functions[27], 3) == 0) //! oct()
-            return parse_double(operation, functions[27]);
-        else if (strncmp(operation, functions[28], 3) == 0) //! hex()
-            return parse_double(operation, functions[28]);
-        else if (strncmp(operation, functions[29], 3) == 0) //! hex()
-            return parse_double(operation, functions[29]);
-        else if (strncmp(operation, functions[30], 3) == 0) //! abs()
-            return s_fabs_or_abs(operation, false);
-        else if (strncmp(operation, functions[31], 4) == 0) //! fabs()
-            return s_fabs_or_abs(operation, true);
-        else if (strncmp(operation, functions[32], 3) == 0) //! len()
-            return bc_len(operation);
-        else if (strncmp(operation, functions[33], 3) == 0) //! bmi()
-            return s_bmi(operation);
-        else if (strncmp(operation, functions[34], 4) == 0) //! feet()
-            return s_feet(operation);
-        else if (strncmp(operation, functions[35], 5) == 0) //! meter()
-            return s_meter(operation);
-        else if (strncmp(operation, functions[36], 3) == 0) //! cot()
-            return s_cot(operation);
-        else if (strncmp(operation, functions[37], 3) == 0) //! gon()
-            return s_gon(operation);
-    }    
-    uint16_t op_pos = 0;
+    if (op_pos == -1) {
 
-    for (uint16_t i = 0; operation[i]; i++) {
-        for (uint16_t j = 0; multiOps[j]; j++) {
-            uint16_t len = strlen(multiOps[j]);
-            if (strncmp(&operation[i], multiOps[j], len) == 0) {
-                strcpy(op, multiOps[j]);
-                op_pos = i;
-                goto op_found;
-            }
+        if (strcmp(operation, OLD_ANSWER_STR) == 0) {
+            if (isnan(Ans))
+                puts("Warning: Ans is undefined\n");
+
+            return Ans;
         }
 
-        if (strchr(uniOps, operation[i])) {
-            op[0] = operation[i];
-            op[1] = '\0';
-            op_pos = i;
-            goto op_found;
-        }
-    }
+        if (mathlib) {
+            if (strncmp(operation, functions[0], 5) == 0) //! scale()
+                return s_scale(operation);
+            else if (strncmp(operation, functions[1], 4) == 0) //! sqrt()
+                return s_sqrt(operation);
+            else if (strncmp(operation, functions[2], 3) == 0) //! sin()
+                return s_sin(operation);
+            else if (strncmp(operation, functions[3], 3) == 0) //! cos()
+                return s_cos(operation);
+            else if (strncmp(operation, functions[4], 3) == 0) //! tan()
+                return s_tan(operation);
+            else if (strncmp(operation, functions[5], 2) == 0) //! ln()
+                return s_ln(operation);
+            else if (strncmp(operation, functions[6], 5) == 0) //! log10()
+                return s_log10(operation);
+            else if (strncmp(operation, functions[7], 4) == 0) //! log2()
+                return s_log2(operation);
+            else if (strncmp(operation, functions[8], 3) == 0) //! log()
+                return s_log(operation);
+            else if (strncmp(operation, functions[9], 5) == 0) //! floor()
+                return s_floor(operation);
+            else if (strncmp(operation, functions[10], 4) == 0) //! ceil()
+                return s_ceil(operation);
+            else if (strncmp(operation, functions[11], 5) == 0) //! round()
+                return s_round(operation);
+            else if (strncmp(operation, functions[12], 4) == 0) //! fact()
+                return s_fact(operation);
+            else if (strncmp(operation, functions[13], 4) == 0) //! sign()
+                return s_sign(operation);
+            else if (strncmp(operation, functions[14], 3) == 0) //! sum()
+                return s_sum(operation);
+            else if (strncmp(operation, functions[15], 3) == 0) //! rad()
+                return s_rad(operation);
+            else if (strncmp(operation, functions[16], 3) == 0) //! deg()
+                return s_deg(operation);
+            else if (strncmp(operation, functions[17], 5) == 0) //! trunc()
+                return s_trunc(operation);
+            else if (strncmp(operation, functions[18], 5) == 0) //! randf()
+                return s_randFloat(operation);
+            else if (strncmp(operation, functions[19], 3) == 0) //! fah()
+                return s_fah(operation);
+            else if (strncmp(operation, functions[20], 3) == 0) //! cel()
+                return s_cel(operation);
+            else if (strncmp(operation, functions[21], 4) == 0) //! root()
+                return s_root(operation);
+            else if (strncmp(operation, functions[22], 4) == 0) //! rand()
+                return s_randInt(operation);
+            else if (strncmp(operation, functions[23], 2) == 0) //! mi()
+                return s_miles(operation);
+            else if (strncmp(operation, functions[24], 2) == 0) //! km()
+                return s_km(operation);
+            else if (strncmp(operation, functions[25], 2) == 0) //! lb()
+                return s_pounds(operation);
+            else if (strncmp(operation, functions[26], 2) == 0) //! kg()
+                return s_kg(operation);
+            else if (strncmp(operation, functions[27], 3) == 0) //! oct()
+                return parse_double(operation, functions[27]);
+            else if (strncmp(operation, functions[28], 3) == 0) //! hex()
+                return parse_double(operation, functions[28]);
+            else if (strncmp(operation, functions[29], 3) == 0) //! hex()
+                return parse_double(operation, functions[29]);
+            else if (strncmp(operation, functions[30], 3) == 0) //! abs()
+                return s_fabs_or_abs(operation, false);
+            else if (strncmp(operation, functions[31], 4) == 0) //! fabs()
+                return s_fabs_or_abs(operation, true);
+            else if (strncmp(operation, functions[32], 3) == 0) //! len()
+                return bc_len(operation);
+            else if (strncmp(operation, functions[33], 3) == 0) //! bmi()
+                return s_bmi(operation);
+            else if (strncmp(operation, functions[34], 4) == 0) //! feet()
+                return s_feet(operation);
+            else if (strncmp(operation, functions[35], 5) == 0) //! meter()
+                return s_meter(operation);
+            else if (strncmp(operation, functions[36], 3) == 0) //! cot()
+                return s_cot(operation);
+            else if (strncmp(operation, functions[37], 3) == 0) //! gon()
+                return s_gon(operation);
+        }    
 
-    if (strcmp(operation, OLD_ANSWER_STR) == 0) {
-        if (isnan(Ans)) {
-            puts("Warning: Ans is undefined\n");
-        }
-        return Ans;
-    } else
         return h_atof(operation);
-
-op_found:
-    {
-        char buffer[0x100];
-        strcpy(buffer, operation);
-
-        buffer[op_pos] = '\0';
-
-        char *num1 = buffer;
-        char *num2 = buffer + op_pos + strlen(op);
-
-        trim(num1); trimEnd(num1);
-        trim(num2); trimEnd(num2);
-
-        if (isBcVariable(num1) || isBcVariable(num2)) {
-            printf("Warning: variables are currently unsupported\n\n");
-            return NAN;
-        }
-
-        double num1_double;
-        if (*num1 == '~') {
-            memmove(num1, num1+1, strlen(num1) + 1);
-
-            if (!*num1)
-                return 0.0;
-
-            bool isAns = false;
-
-            if (strcmp(num1, OLD_ANSWER_STR) == 0) {
-                if (isnan(Ans)) {
-                    puts("Warning: Ans is undefined\n");
-                    return NAN;
-                }
-                
-                num1_double = Ans;
-                isAns = true;
-            }
-
-            if (!isAns) {
-                if (isBcVariable(num1)) {
-                    printf("Warning: variables are currently unsupported\n\n");
-                    return NAN;
-                }
-
-                num1_double = eval(num1, mathlib); 
-
-                if (num1_double < MIN_SAFE_INT64_D || num1_double > MAX_SAFE_INT64_D) {
-                    printf("Error: integer overflow\n\n");
-                    return NAN;
-                }
-
-                if (num1_double != (int64_t)num1_double) {
-                    printf("Error: to use the not(~) operator the number must be integer\n\n");
-                    return NAN;
-                }
-            }
-
-            num1_double = ~(int64_t)num1_double;
-        } else {
-            if (strcmp(num1, OLD_ANSWER_STR) == 0) {
-                if (isnan(Ans)) {
-                    puts("Warning: Ans is undefined\n");
-                    return NAN;
-                }
-
-                num1_double = Ans;
-            } else
-                num1_double = eval(num1, mathlib);
-        }
-
-        double num2_double;
-        if (*num2 == '~') {
-            memmove(num2, num2+1, strlen(num2) + 1);
-
-            if (!*num2)
-                return 0.0;
-
-            bool isAns = false;
-
-            if (strcmp(num2, OLD_ANSWER_STR) == 0) {
-                if (isnan(Ans)) {
-                    puts("Warning: Ans is undefined\n");
-                    return NAN;
-                }
-
-                num2_double = Ans;
-                isAns = true;
-            }
-
-            if (!isAns) {
-                if (isBcVariable(num2)) {
-                    printf("Warning: variables are currently unsupported\n\n");
-                    return NAN;
-                }
-    
-                num2_double = eval(num2, mathlib); 
-    
-                if (num2_double < MIN_SAFE_INT64_D || num2_double > MAX_SAFE_INT64_D) {
-                    printf("Error: integer overflow\n\n");
-                    return NAN;
-                }
-    
-                if (num2_double != (int64_t)num2_double) {
-                    printf("Error: to use the not(~) operator the number must be integer\n\n");
-                    return NAN;
-                }
-            }    
-
-            num2_double = ~(int64_t)num2_double;
-        } else {
-            if (strcmp(num2, OLD_ANSWER_STR) == 0) {
-                if (isnan(Ans)) {
-                    puts("Warning: Ans is undefined\n");
-                    return NAN;
-                }
-
-                num2_double = Ans;
-            } else
-                num2_double = eval(num2, mathlib);
-        }
-
-        return calc(num1_double, op, num2_double);
     }
+
+    char buffer[0x100];
+    strcpy(buffer, operation);
+
+    buffer[op_pos] = '\0';
+
+    char *num1 = buffer;
+    char *num2 = buffer + op_pos + strlen(op);
+
+    trim(num1); trimEnd(num1);
+    trim(num2); trimEnd(num2);
+
+    if (isBcVariable(num1) || isBcVariable(num2)) {
+        printf("Warning: variables are currently unsupported\n\n");
+        return NAN;
+    }
+
+    double num1_double;
+    if (*num1 == '~') {
+        memmove(num1, num1+1, strlen(num1) + 1);
+
+        if (!*num1)
+            return 0.0;
+
+        bool isAns = false;
+
+        if (strcmp(num1, OLD_ANSWER_STR) == 0) {
+            if (isnan(Ans)) {
+                puts("Warning: Ans is undefined\n");
+                return NAN;
+            }
+            
+            num1_double = Ans;
+            isAns = true;
+        }
+
+        if (!isAns) {
+            if (isBcVariable(num1)) {
+                printf("Warning: variables are currently unsupported\n\n");
+                return NAN;
+            }
+
+            num1_double = eval(num1, mathlib); 
+
+            if (num1_double < MIN_SAFE_INT64_D || num1_double > MAX_SAFE_INT64_D) {
+                printf("Error: integer overflow\n\n");
+                return NAN;
+            }
+
+            if (num1_double != (int64_t)num1_double) {
+                printf("Error: to use the not(~) operator the number must be integer\n\n");
+                return NAN;
+            }
+        }
+
+        num1_double = ~(int64_t)num1_double;
+    } else {
+        if (strcmp(num1, OLD_ANSWER_STR) == 0) {
+            if (isnan(Ans)) {
+                puts("Warning: Ans is undefined\n");
+                return NAN;
+            }
+
+            num1_double = Ans;
+        } else
+            num1_double = eval(num1, mathlib);
+    }
+
+    double num2_double;
+    if (*num2 == '~') {
+        memmove(num2, num2+1, strlen(num2) + 1);
+
+        if (!*num2)
+            return 0.0;
+
+        bool isAns = false;
+
+        if (strcmp(num2, OLD_ANSWER_STR) == 0) {
+            if (isnan(Ans)) {
+                puts("Warning: Ans is undefined\n");
+                return NAN;
+            }
+
+            num2_double = Ans;
+            isAns = true;
+        }
+
+        if (!isAns) {
+            if (isBcVariable(num2)) {
+                printf("Warning: variables are currently unsupported\n\n");
+                return NAN;
+            }
+
+            num2_double = eval(num2, mathlib); 
+
+            if (num2_double < MIN_SAFE_INT64_D || num2_double > MAX_SAFE_INT64_D) {
+                printf("Error: integer overflow\n\n");
+                return NAN;
+            }
+
+            if (num2_double != (int64_t)num2_double) {
+                printf("Error: to use the not(~) operator the number must be integer\n\n");
+                return NAN;
+            }
+        }    
+
+        num2_double = ~(int64_t)num2_double;
+    } else {
+        if (strcmp(num2, OLD_ANSWER_STR) == 0) {
+            if (isnan(Ans)) {
+                puts("Warning: Ans is undefined\n");
+                return NAN;
+            }
+
+            num2_double = Ans;
+        } else
+            num2_double = eval(num2, mathlib);
+    }
+
+    return calc(num1_double, op, num2_double);
 }

@@ -2274,16 +2274,28 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 
         for (int32_t j = 0; multiOps[j]; j++) {
             int32_t oplen = strlen(multiOps[j]);
+
             if (i - oplen + 1 < 0)
                 continue;
 
             if (strncmp(&s[i - oplen + 1], multiOps[j], oplen) == 0) {
-                strcpy(foundOp, multiOps[j]);
+                strncpy(foundOp, multiOps[j], oplen);
+                foundOp[oplen] = '\0';
                 return i - oplen + 1;
             }
         }
 
         if (strchr(uniOps, s[i])) {
+
+            if (i == 0)
+                continue;
+
+            if (strchr(uniOps, s[i - 1]))
+                continue;
+
+            if (s[i - 1] == '(')
+                continue;
+
             foundOp[0] = s[i];
             foundOp[1] = '\0';
             return i;

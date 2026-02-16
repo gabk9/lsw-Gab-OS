@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.6.81"
+#define VERSION "r1.6.95"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -366,36 +366,46 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
         printf("LSW - Gab-OS  %s\n", VERSION);
     }
 
-    if ((flags & BASH_HELP) && insideBash) {
+    if (flags & BASH_HELP) {
         printf("LSW - Gab OS, a Linux like shell (Linux Subsystem for Windows)\n\n");
-        manCmd("bash", cmds, true);
-    } else if ((flags & BASH_HELP) && !insideBash) {
-        printf("LSW - Gab OS, a Linux like shell (Linux Subsystem for Windows)\n\n");
-        printf("You can run commands using 'lsw [COMMAND...]', or you can use options with 'lsw [OPTION...]'\n");
-        printf("\nOptions:\n");
-        printf("\t'-v', '--version'   show version information\n"
-            "\t'-h', '--help'      display manual\n"
-            "\t'-a', '--all'       displays everything\n\n");
-        printf("Commands:\n");
+        
+        if (!insideBash)
+            printf("You can run commands using 'lsw [COMMAND...]', or you can use options with 'lsw [OPTION...]'\n");
+        else
+            manCmd("bash", cmds, true);
 
-        char **copy = NULL;
-        static int8_t initialized = 0;
+        printf("\n\nQuick manual of LSW:\n"
+            "\tUse '&&' to run multiple commands\n\tExample: echo \"Hello World\" && neofetch && sleep 5m && clear\n"
+            "\n"
+            "\tSupposing you created an alias with spaces in it, to run it you will have to run the command with matching quotes\n\tExample: <prompt> \"command testing\"\n"
+        );
 
-        if (!initialized) {
-            copy = malloc(cmdCount * sizeof(char *));
+        if (!insideBash) {
+            printf("\nOptions:\n");
+            printf("\t'-v', '--version'   show version information\n"
+                "\t'-h', '--help'      display manual\n"
+                "\t'-a', '--all'       displays everything\n\n"
+            );
+            printf("Commands:\n");
+            char **copy = NULL;
+            static int8_t initialized = 0;
+    
+            if (!initialized) {
+                copy = malloc(cmdCount * sizeof(char *));
+                for (uint16_t i = 0; i < cmdCount; i++)
+                    copy[i] = strdup(cmds[i]);
+    
+                bsort(copy, cmdCount);
+                initialized = 1;
+            }
+    
             for (uint16_t i = 0; i < cmdCount; i++)
-                copy[i] = strdup(cmds[i]);
-
-            bsort(copy, cmdCount);
-            initialized = 1;
+                printf("\t%s\n", copy[i]);
+    
+            for (uint16_t i = 0; i < cmdCount; i++)
+                SAFE_FREE(copy[i]);
+            SAFE_FREE(copy);
         }
-
-        for (uint16_t i = 0; i < cmdCount; i++)
-            printf("\t%s\n", copy[i]);
-
-        for (uint16_t i = 0; i < cmdCount; i++)
-            SAFE_FREE(copy[i]);
-        SAFE_FREE(copy);
     }
 }
 
@@ -1633,7 +1643,9 @@ void updatehistory(void) {
         "r1.6.69 - big changes\n\tAdded: improved the parser to work with expressions like: '2ans'\n",
         "r1.6.73 - minor changes\n\tFixed: forgot to add ype annotations\n",
         "r1.6.78 - small changes\n\tEdited: now the parser should work with octal with e or pi expressions, example: '0o2pi'\n",
-        "r1.6.81 - minor changes\n\tRemoved: empty input bc error message\n"
+        "r1.6.81 - minor changes\n\tRemoved: empty input bc error message\n",
+        "r1.6.90 - big changes\n\tEdited: improved mostly of eval() parser\n",
+        "r1.6.95 - small changes\n\tAdded: more instructions to lsw manual\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
