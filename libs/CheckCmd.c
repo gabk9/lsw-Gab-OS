@@ -745,6 +745,8 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tOctal: (prefix: '0o')         base 8 numbers e.g. 0o2000 = 1024\n"
             "\n"
             "\tHexadecimal: (prefix: '0x')   base 16 numbers e.g. 0x400 = 1024\n"
+            "\n"
+            "\tAscii: (characters)           1 bytes chars only e.g. 'a' = 97\n"
             );
 
 
@@ -1064,7 +1066,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
     if (op_pos == -1) {
 
-        if (strcmp(operation, OLD_ANSWER_STR) == 0) {
+        if (strcasecmp(operation, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans))
                 puts("Warning: Ans is undefined\n");
 
@@ -1178,7 +1180,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
         bool isAns = false;
 
-        if (strcmp(num1, OLD_ANSWER_STR) == 0) {
+        if (strcasecmp(num1, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
                 puts("Warning: Ans is undefined\n");
                 return NAN;
@@ -1209,7 +1211,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
         num1_double = ~(int64_t)num1_double;
     } else {
-        if (strcmp(num1, OLD_ANSWER_STR) == 0) {
+        if (strcasecmp(num1, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
                 puts("Warning: Ans is undefined\n");
                 return NAN;
@@ -1229,7 +1231,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
         bool isAns = false;
 
-        if (strcmp(num2, OLD_ANSWER_STR) == 0) {
+        if (strcasecmp(num2, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
                 puts("Warning: Ans is undefined\n");
                 return NAN;
@@ -1260,7 +1262,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
         num2_double = ~(int64_t)num2_double;
     } else {
-        if (strcmp(num2, OLD_ANSWER_STR) == 0) {
+        if (strcasecmp(num2, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
                 puts("Warning: Ans is undefined\n");
                 return NAN;

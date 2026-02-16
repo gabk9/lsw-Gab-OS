@@ -138,6 +138,10 @@ double h_atof(const char *str) {
 
     trim(buf);
     trimEnd(buf);
+
+    if (*buf == '\'' && buf[2] == '\'' && buf[3] == '\0')
+        return buf[1];
+
     tolowerstr(buf);
 
     if (isBcVariable(buf)) {
@@ -304,7 +308,7 @@ static uint8_t validPtrFuncArgs(char *arg) {
     if (arg[0] != '"' || arg[len-1] != '"') {
 
         if (arg[len-1] == '\'' && arg[0] == '\'') {
-            printf("Error: must be a char pointer\n\n");
+            printf("Error: must be a string\n\n");
             return 0;
         }
 

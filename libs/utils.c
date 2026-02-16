@@ -2331,8 +2331,6 @@ double eval(char *operation, bool mathlib) {
         NULL
     };
 
-    operation = tolowerstr(operation);
-
     char *tmp = strdup(operation);
     charRm(tmp, ' ');
 
@@ -2343,10 +2341,10 @@ double eval(char *operation, bool mathlib) {
         }
     }
 
-    if (strcmp(tmp, "pi") == 0) return PI;
-    if (strcmp(tmp, "-pi") == 0) return -PI;
-    if (strcmp(tmp, "e") == 0) return E;
-    if (strcmp(tmp, "-e") == 0) return -E;
+    if (strcasecmp(tmp, "pi") == 0) return PI;
+    if (strcasecmp(tmp, "-pi") == 0) return -PI;
+    if (strcasecmp(tmp, "e") == 0) return E;
+    if (strcasecmp(tmp, "-e") == 0) return -E;
 
 
     if (isHex(tmp) || isOct(tmp)) {
