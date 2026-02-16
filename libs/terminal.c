@@ -5,9 +5,11 @@
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__ANDROID__)
     #ifdef __linux__
         #define SYSTEM "Linux"
+    #elif defined(__ANDROID__)
+        #define SYSTEM "Android"
     #else
         #define SYSTEM "Mac OS"
     #endif

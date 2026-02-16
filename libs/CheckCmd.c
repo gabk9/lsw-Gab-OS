@@ -3,7 +3,7 @@
 
 double Ans = NAN;
 
-#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
+#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 

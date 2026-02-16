@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8000
-#define PROJ_SIZE_APPROX_BYTES 235000
+#define PROJ_SIZE_APPROX_BYTES 235500
 
 #define RC_FILE "lswrc.txt"
 
@@ -19,7 +19,7 @@
 
 #ifdef _WIN32
     extern HANDLE hConsole;
-#elif !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
+#elif !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
@@ -1445,7 +1445,7 @@ char *unameCmdLinux(uint8_t flags) {
         FILE *fp = fopen("/proc/version", "r");
 
         if (fp) {
-            char version[256];
+            char version[0x100];
 
             if (fgets(version, sizeof(version), fp)) {
                 if (strstr(version, "GNU"))
