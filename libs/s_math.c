@@ -146,7 +146,6 @@ double h_atof(const char *str) {
     }
     
     bool isUnaryNot = false;
-    bool isAnsNegUnary = false;
 
     if (*buf == '~') {
         memmove(buf, buf+1, strlen(buf)+1);
@@ -161,7 +160,7 @@ double h_atof(const char *str) {
     if (*test == '-' && strcmp(test+1, OLD_ANSWER_STR) == 0) {
 
         SAFE_FREE(test);
-        
+
         if (isnan(Ans)) {
             puts("Warning: Ans is undefined\n");
             return NAN;

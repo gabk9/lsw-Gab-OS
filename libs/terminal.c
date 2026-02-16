@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.06"
+#define VERSION "r1.7.14"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -564,8 +564,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                 printf("type 'quit' or 'exit' to exit, 'man' to check the manual inside the calculator, otherwise use 'man bc'\n");
                 printf("it no longer supports comma instead of dots and type 'clear' or 'cls' to clear the screen and scrollback buffer");
                 printf("\nPS: mathlib is off by default, type 'mathlib' to turn it on/off "
-                    "if you're inside the terminal, otherwise use 'bc -l' or 'bc --mathlib', it enables functions and "
-                    "the other numeric systems\n");
+                    "if you're inside the terminal, otherwise use 'bc -l' or 'bc --mathlib', look at the manual to see in details what it does\n");
             }
             printf("Mathlib status: ");
             if (mathlib)
@@ -1647,7 +1646,8 @@ void updatehistory(void) {
         "r1.6.90 - big changes\n\tEdited: improved mostly of eval() parser\n",
         "r1.6.95 - small changes\n\tAdded: more instructions to lsw manual\n",
         "r1.7.00 - small changes\n\tFixed: eval() parser not working with '-' as an unary operator\n",
-        "r1.7.06 - small changes\n\tFixed: Ans not working with unary '-'\n"
+        "r1.7.09 - big changes\n\tFixed: Ans not working with unary '-'\n",
+        "r1.7.14 - small changes\n\tEdited: bc manual and bc initial string\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

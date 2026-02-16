@@ -590,7 +590,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t         Explanation: returns 1 if the number is different to the other, otherwise returns 0\n"
 
 
-            "\nFunctions: (only works if mathlib is turned on)\n"
+            "\nFunctions: (mathlib must be on to grant access)\n"
             "\tclear, cls     : Clears the calculator scrollback\n"
             "\n"
             "\tmathlib        : Toggles mathlib\n"
@@ -714,19 +714,19 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tbmi(X, Y)      : Returns your BMI with wight (X) in kg and height (Y) in meters\n"
             "\t                 Example: bmi(91, 1.78) = 28.7211\n"
 
-            "\nBuiltin Variables: (not case sensitive)\n"
+            "\nBuiltin Variables: (not case sensitive and mathlib must be on to grant access)\n"
             "\tAns   : stores the result of the last operation\n"
             "\t        Tip: initially set to NaN; it is also set to NaN after invalid operations\n"
             "\t        Note: its value cannot be changed manually\n"
 
-            "\nConstants:\n"
+            "\nConstants: (mathlib must be on to grant access)\n"
             "\tPI   : 3.141592...\n"
             "\t       Example: sin(PI / 2) = 1\n"
             "\n"
             "\tE    : 2.718281...\n"
             "\t       Example: ln(E) = 1\n"
 
-            "\nSuffixes: (not case sensitive and only works for non hexadecimals)\n"
+            "\nSuffixes: (not case sensitive and only works for non hexadecimals and mathlib must be on to grant access)\n"
             "\tK   : 1.000               (1e+3)\n"
             "\t      Example: 5K = 5.000\n"
             "\n"
@@ -739,7 +739,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tT   : 1.000.000.000.000   (1e+12)\n"
             "\t      Example: 1T = 1.000.000.000.000\n"
 
-            "\nNumeric systems:\n"
+            "\nNumeric systems: (mathlib must be on to grant full access)\n"
             "\tBinary: (prefix: '0b')        base 2 numbers e.g. 0b010000000000 = 1024\n"
             "\n"
             "\tDecimal: (default):           base 10 numbers e.g. 1024\n"
