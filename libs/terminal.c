@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.00"
+#define VERSION "r1.7.06"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1646,7 +1646,8 @@ void updatehistory(void) {
         "r1.6.81 - minor changes\n\tRemoved: empty input bc error message\n",
         "r1.6.90 - big changes\n\tEdited: improved mostly of eval() parser\n",
         "r1.6.95 - small changes\n\tAdded: more instructions to lsw manual\n",
-        "r1.7.00 - small changes\n\tFixed: eval() parser not working with '-' as an unary operator\n"
+        "r1.7.00 - small changes\n\tFixed: eval() parser not working with '-' as an unary operator\n",
+        "r1.7.06 - small changes\n\tFixed: Ans not working with unary '-'\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
