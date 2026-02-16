@@ -174,8 +174,7 @@ double h_atof(const char *str) {
             return NAN;
         }
 
-        Ans = (Ans == 0) ? 0 : -Ans;
-        return Ans;
+        return -Ans;
     }
     SAFE_FREE(test);
 
