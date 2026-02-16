@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8000
-#define PROJ_SIZE_APPROX_BYTES 235500
+#define PROJ_SIZE_APPROX_BYTES 236000
 
 #define RC_FILE "lswrc.txt"
 
@@ -2152,7 +2152,7 @@ double parse_base_fraction(const char *s, int8_t base) {
 double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     *ok = 0;
 
-    if (!str || !str[0])
+    if (!str || !*str)
         return 0.0;
 
     int16_t sign = 1;
@@ -2212,11 +2212,11 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
 
     double mult = 0.0;
 
-    if (strcmp(str + pos, "pi") == 0)
+    if (strcasecmp(str + pos, "pi") == 0)
         mult = PI;
-    else if (strcmp(str + pos, "e") == 0)
+    else if (strcasecmp(str + pos, "e") == 0)
         mult = E;
-    else if (strcmp(str + pos, "ans") == 0) {
+    else if (strcasecmp(str + pos, "ans") == 0) {
         if (isnan(Ans))
             puts("Warning: Ans is undefined\n");
         mult = Ans;
@@ -2267,9 +2267,18 @@ bool has_top_level_operator(const char *s, const char *uniOps, const char **mult
 
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp) {
     int32_t depth = 0;
+    bool in_quotes = false;
     int32_t len = strlen(s);
 
     for (int32_t i = len - 1; i >= 0; i--) {
+
+        if (s[i] == '\'') {
+            in_quotes = !in_quotes;
+            continue;
+        }
+
+        if (in_quotes)
+            continue;
 
         if (s[i] == ')')
             depth++;
@@ -2280,7 +2289,6 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
             continue;
 
         for (int32_t j = 0; multiOps[j]; j++) {
-
             int32_t oplen = strlen(multiOps[j]);
 
             if (i - oplen + 1 < 0)

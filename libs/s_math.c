@@ -139,62 +139,57 @@ double h_atof(const char *str) {
     trim(buf);
     trimEnd(buf);
 
-    if (*buf == '\'' && buf[2] == '\'' && buf[3] == '\0')
-        return buf[1];
-
-    tolowerstr(buf);
-
+    
     if (isBcVariable(buf)) {
         printf("Warning: variables are currently unsupported\n\n");
         return NAN;
     }
     
     bool isUnaryNot = false;
+    bool isUnaryNeg = false;
 
-    if (*buf == '~') {
+    if (*buf == '~' || *buf == '-') {
+        if (*buf == '~')
+            isUnaryNot = true;
+        else
+            isUnaryNeg = true;
+
         memmove(buf, buf+1, strlen(buf)+1);
         trim(buf);
-
-        isUnaryNot = true;
     }
 
-    char *test = strdup(buf);
-    charRm(test, ' ');
+    bool isAns = strcasecmp(buf, OLD_ANSWER_STR) == 0;
 
-    if (*test == '-' && strcmp(test+1, OLD_ANSWER_STR) == 0) {
+    if (isUnaryNeg) {
 
-        SAFE_FREE(test);
-
-        if (isnan(Ans)) {
+        if (isAns && isnan(Ans)) {
             puts("Warning: Ans is undefined\n");
             return NAN;
         }
 
-        memmove(buf, buf+1, strlen(buf)+1);
-        trim(buf);
+        double num;
+        if (!isAns)
+            num = h_atof(buf);
+        else
+            num = Ans;
 
-        if (Ans < MIN_SAFE_INT64_D || Ans > MAX_SAFE_INT64_D) {
+        if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("Error: integer overflow\n\n");
             return NAN;
         }
 
-        return -Ans;
+        return -num;
     }
-    SAFE_FREE(test);
-
-    bool isAns = strcmp(buf, OLD_ANSWER_STR) == 0;
-    if (!isalldigit(buf) && !isAns)
-        return 0.0;
 
     if (isUnaryNot) {
         double num;
 
         if (isAns)
             num = Ans;
-        else 
+            else 
             num = h_atof(buf);
-
-        if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
+            
+            if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("Error: integer overflow\n\n");
             return NAN;
         }
@@ -209,6 +204,9 @@ double h_atof(const char *str) {
         return (double)value;
     }
 
+    if (*buf == '\'' && buf[2] == '\'' && buf[3] == '\0')
+        return (double)buf[1];
+    
     int16_t ok = 0;
     double hex_pi_e = parse_bin_hex_oct_ans_e_pi(buf, &ok);
     if (ok)
@@ -217,10 +215,10 @@ double h_atof(const char *str) {
     uint16_t len = strlen(buf);
 
     bool is_hex = false;
-    if (len > 2 && buf[0] == '0' && buf[1] == 'x')
+    if (len > 2 && buf[0] == '0' && (buf[1] == 'x' || buf[1] == 'X'))
         is_hex = true;
 
-    bool has_exp = (strchr(buf, 'e') != NULL);
+    bool has_exp = (strchr(buf, 'e') != NULL || strchr(buf, 'E') != NULL);
 
     bool is_octal = isOct(buf);
 
@@ -238,32 +236,32 @@ double h_atof(const char *str) {
         {'t', 1e12},
     };
 
-    if (allow_suffix) {
+    if (allow_suffix || (*buf == 'e' || *buf == 'E')) {
         for (size_t mi = 0; mi < sizeof(suffix) / sizeof(suffix[0]); mi++) {
-            if (len > 1 && buf[len - 1] == suffix[mi].suffix) {
+            if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
                 buf[len - 1] = '\0';
                 return h_atof(buf) * suffix[mi].mult;
             }
         }
     }
 
-    if (strcmp(buf, "pi") == 0) return PI;
-    if (strcmp(buf, "-pi") == 0) return -PI;
-    if (strcmp(buf, "e") == 0)  return E;
-    if (strcmp(buf, "-e") == 0) return -E;
+    if (strcasecmp(buf, "pi") == 0) return PI;
+    if (strcasecmp(buf, "-pi") == 0) return -PI;
+    if (strcasecmp(buf, "e") == 0)  return E;
+    if (strcasecmp(buf, "-e") == 0) return -E;
 
     uint16_t i = 0;
     while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))
         i++;
 
-    if (i > 0 && strcmp(buf + i, "pi") == 0) {
+    if (i > 0 && strcasecmp(buf + i, "pi") == 0) {
         char temp[0x40];
         strncpy(temp, buf, i);
         temp[i] = '\0';
         return h_atof(temp) * PI;
     }
 
-    if (i > 0 && strcmp(buf + i, "e") == 0) {
+    if (i > 0 && strcasecmp(buf + i, "e") == 0) {
         char temp[0x40];
         strncpy(temp, buf, i);
         temp[i] = '\0';

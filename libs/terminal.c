@@ -1,19 +1,9 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.30"
+#define VERSION "r1.7.38"
 
-#ifdef _WIN32
-    #define SYSTEM "Windows"
-#elif defined(__linux__) || defined(__APPLE__) || defined(__ANDROID__)
-    #ifdef __linux__
-        #define SYSTEM "Linux"
-    #elif defined(__ANDROID__)
-        #define SYSTEM "Android"
-    #else
-        #define SYSTEM "Mac OS"
-    #endif
-#else
+#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
@@ -1642,7 +1632,7 @@ void updatehistory(void) {
         "r1.6.55 - small changes\n\tEdited: improved Ans behavior\n",
         "r1.6.60 - small changes\n\tAdded: error to negative numbers to oct() in bc\n",
         "r1.6.69 - big changes\n\tAdded: improved the parser to work with expressions like: '2ans'\n",
-        "r1.6.73 - minor changes\n\tFixed: forgot to add ype annotations\n",
+        "r1.6.73 - minor changes\n\tFixed: forgot to add type annotations\n",
         "r1.6.78 - small changes\n\tEdited: now the parser should work with octal with e or pi expressions, example: '0o2pi'\n",
         "r1.6.81 - minor changes\n\tRemoved: empty input bc error message\n",
         "r1.6.90 - big changes\n\tEdited: improved mostly of eval() parser\n",
@@ -1651,7 +1641,8 @@ void updatehistory(void) {
         "r1.7.09 - big changes\n\tFixed: Ans not working with unary '-'\n",
         "r1.7.14 - small changes\n\tEdited: bc manual and bc initial string\n",
         "r1.7.18 - small changes\n\tEdited: the user should now appear on android\n",
-        "r1.7.30 - big changes\n\tAdded: ascii characters support to bc\n"
+        "r1.7.30 - big changes\n\tAdded: ascii characters support to bc\n",
+        "r1.7.38 - big changes\n\tEdited: improved bc suffix and ascii parser\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
