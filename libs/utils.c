@@ -2273,6 +2273,7 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
             continue;
 
         for (int32_t j = 0; multiOps[j]; j++) {
+
             int32_t oplen = strlen(multiOps[j]);
 
             if (i - oplen + 1 < 0)
@@ -2287,13 +2288,14 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 
         if (strchr(uniOps, s[i])) {
 
-            if (i == 0)
+            int k = i - 1;
+            while (k >= 0 && isspace((unsigned char)s[k]))
+                k--;
+
+            if (k < 0)
                 continue;
 
-            if (strchr(uniOps, s[i - 1]))
-                continue;
-
-            if (s[i - 1] == '(')
+            if (strchr(uniOps, s[k]) || s[k] == '(')
                 continue;
 
             foundOp[0] = s[i];
