@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.14"
+#define VERSION "r1.7.18"
 
 #ifdef _WIN32
     #define SYSTEM "Windows"
@@ -1647,7 +1647,8 @@ void updatehistory(void) {
         "r1.6.95 - small changes\n\tAdded: more instructions to lsw manual\n",
         "r1.7.00 - small changes\n\tFixed: eval() parser not working with '-' as an unary operator\n",
         "r1.7.09 - big changes\n\tFixed: Ans not working with unary '-'\n",
-        "r1.7.14 - small changes\n\tEdited: bc manual and bc initial string\n"
+        "r1.7.14 - small changes\n\tEdited: bc manual and bc initial string\n",
+        "r1.7.18 - small changes\n\tEdited: the user should now appear on android\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

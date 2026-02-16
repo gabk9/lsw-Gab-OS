@@ -1169,7 +1169,14 @@ char *get_user(void) {
 #ifdef _WIN32
     char *user = getenv("USERNAME");
 #else
-    char *user = getenv("USER");
+    #ifndef __ANDROID__
+        char *user = getenv("USER");
+    #else
+        uid_t uid = getuid();
+        struct passwd *pw = getpwuid(uid);
+
+        char *user = pw->pw_name;
+    #endif
 #endif
 
     return (user) ? user : "Unknown";

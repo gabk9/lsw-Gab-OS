@@ -20,9 +20,7 @@ char *stringToVariable(const char *str, int32_t *changed) {
     }
     else if (strcasecmp(str, "$username") == 0 || strcasecmp(str, "$user") == 0) {
         *changed = 1;
-        const char *user = getenv("USER");
-        if (!user) user = getenv("USERNAME");
-        if (!user) user = "Unknown";
+        const char *user = get_user();
         return strdup(user);
     }
     else if (strcasecmp(str, "$temp") == 0) {
