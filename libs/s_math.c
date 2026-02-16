@@ -168,10 +168,10 @@ double h_atof(const char *str) {
         }
 
         double num;
-        if (!isAns)
-            num = h_atof(buf);
-        else
+        if (isAns)
             num = Ans;
+        else
+            num = h_atof(buf);
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("Error: integer overflow\n\n");
@@ -186,7 +186,7 @@ double h_atof(const char *str) {
 
         if (isAns)
             num = Ans;
-            else 
+        else 
             num = h_atof(buf);
             
             if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
