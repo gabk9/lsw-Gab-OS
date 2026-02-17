@@ -676,6 +676,11 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tbin(X)         : Convert X to binary\n"
             "\t                 Example: bin(5) = 0b0101\n"
             "\n"
+            "\tchr(X)         : Convert X to ascii\n"
+            "\t                 Example: ascii(65) = 'A'\n"
+            "\t                 Note: escape characters does not work\n"
+            "\t                 Tip: the number must be an integer between 0 and 127 (inclusive)\n"
+            "\n"
             "\tfah(X)         : Celsius to Fahrenheit\n"
             "\t                 Example: fah(0) = 32\n"
             "\n"
@@ -1150,6 +1155,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
                 return s_cot(operation);
             else if (strncmp(operation, functions[37], 3) == 0) //! gon()
                 return s_gon(operation);
+            else if (strncmp(operation, functions[38], 3) == 0) //! chr()
+                return parse_double(operation, functions[38]);
         }    
 
         return h_atof(operation);

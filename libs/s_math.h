@@ -32,6 +32,7 @@ uint64_t fact(int64_t num);
 double tetration(double base, int32_t height);
 double parse_double(char *str, char *funcName);
 double s_ln(char *operation)__attribute__((nonnull));
+char *s_chr(char *operation)__attribute__((nonnull));
 char *s_oct(char *operation)__attribute__((nonnull));
 char *s_hex(char *operation)__attribute__((nonnull));
 char *s_bin(char *operation)__attribute__((nonnull));

@@ -624,6 +624,43 @@ char *s_oct(char *operation) {
     return buffer;
 }
 
+char *s_chr(char *operation) {
+    char *test = functionHandler(operation, "chr");
+    if (strcmp(test, BC_ERROR) == 0)
+        return NULL;
+
+    double num = eval(test, true);
+    SAFE_FREE(test);
+
+    if (num != (int64_t)num) {
+        printf("Error: chr() requires an integer\n\n");
+        return NULL;
+    }
+
+    int64_t value = (int64_t)num;
+
+    if (value < 0 || value > 127) {
+        printf("Error: chr() requires an integer between 0 and 127 (inclusive)\n\n");
+        return NULL;
+    }
+
+    if (value < 32 || value == 127) {
+        printf("Error: chr() does not allow control characters\n\n");
+        return NULL;
+    }
+
+    char *buff = malloc(4);
+    if (!buff)
+        return NULL;
+
+    buff[0] = '\'';
+    buff[1] = (char)value;
+    buff[2] = '\'';
+    buff[3] = '\0';
+
+    return buff;
+}
+
 char *s_hex(char *operation) {
     char *test = functionHandler(operation, "hex");
     if (strcmp(test, BC_ERROR) == 0) return NULL;

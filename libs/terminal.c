@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.38"
+#define VERSION "r1.7.49"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -612,7 +612,8 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             if (value) {
                 printf("%s\n\n", value);
                 fflush(stdout);
-            }
+            } else
+                Ans = NAN;
 
             SAFE_FREE(value);
             continue;
@@ -623,7 +624,8 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                 printf("%s\n\n", value);
                 Ans = parse_double(value, NULL);
                 fflush(stdout);
-            }
+            } else
+                Ans = NAN;
 
             SAFE_FREE(value);
             continue;
@@ -634,10 +636,23 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                 printf("%s\n\n", value);
                 Ans = parse_double(value, NULL);
                 fflush(stdout);
-            }
+            } else 
+                Ans = NAN;
 
             SAFE_FREE(value);
             continue;
+        }
+        else if (strncmp(operation, "chr", 3) == 0 && mathlib) {
+            char *value = s_chr(operation);
+            if (value) {
+                printf("%s\n\n", value);
+                Ans = parse_double(value, NULL);
+                fflush(stdout);
+            } else
+                Ans = NAN;
+
+            SAFE_FREE(value);
+            continue; 
         }
 
         result = eval(operation, mathlib);
@@ -1642,7 +1657,8 @@ void updatehistory(void) {
         "r1.7.14 - small changes\n\tEdited: bc manual and bc initial string\n",
         "r1.7.18 - small changes\n\tEdited: the user should now appear on android\n",
         "r1.7.30 - big changes\n\tAdded: ascii characters support to bc\n",
-        "r1.7.38 - big changes\n\tEdited: improved bc suffix and ascii parser\n"
+        "r1.7.38 - big changes\n\tEdited: improved bc suffix and ascii parser\n",
+        "r1.7.49 - big changes\n\tAdded: chr() function to bc\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
