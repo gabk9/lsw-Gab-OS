@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8000
-#define PROJ_SIZE_APPROX_BYTES 237500
+#define PROJ_SIZE_APPROX_BYTES 238000
 
 #define RC_FILE "lswrc.txt"
 
@@ -251,7 +251,7 @@ uint16_t getHistSizeConfig(char *lswrc_path) {
         }
 
         if (key && val && strcmp(key, "HISTSIZE") == 0) {
-            result = h_atof(val);
+            result = h_atof(val, false);
             SAFE_FREE(lineCpy);
             break;
         }
@@ -2356,7 +2356,7 @@ double eval(char *operation, bool mathlib) {
 
 
     if (isHex(tmp) || isOct(tmp)) {
-        double val = h_atof(tmp);
+        double val = h_atof(tmp, mathlib);
         SAFE_FREE(tmp);
         return val;
     }
@@ -2366,7 +2366,7 @@ double eval(char *operation, bool mathlib) {
     if (ok) return val;
 
     if (is_pi_or_e_expression(tmp)) {
-        val = h_atof(tmp);
+        val = h_atof(tmp, mathlib);
         SAFE_FREE(tmp);
         return val;
     }

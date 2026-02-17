@@ -131,14 +131,13 @@ char *functionHandler(char *operation, const char *function) {
     return copy;
 }
 
-double h_atof(const char *str) {
+double h_atof(const char *str, bool mathlib) {
     char buf[0x80];
     strncpy(buf, str, sizeof(buf) - 1);
     buf[sizeof(buf) - 1] = '\0';
 
     trim(buf);
     trimEnd(buf);
-
     
     if (isBcVariable(buf)) {
         printf("Warning: variables are currently unsupported\n\n");
@@ -171,7 +170,7 @@ double h_atof(const char *str) {
         if (isAns)
             num = Ans;
         else
-            num = h_atof(buf);
+            num = eval(buf, mathlib);
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("Error: integer overflow\n\n");
@@ -187,7 +186,7 @@ double h_atof(const char *str) {
         if (isAns)
             num = Ans;
         else 
-            num = h_atof(buf);
+            num = eval(buf, mathlib);
             
             if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("Error: integer overflow\n\n");
@@ -240,7 +239,7 @@ double h_atof(const char *str) {
         for (size_t mi = 0; mi < sizeof(suffix) / sizeof(suffix[0]); mi++) {
             if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
                 buf[len - 1] = '\0';
-                return h_atof(buf) * suffix[mi].mult;
+                return eval(buf, mathlib) * suffix[mi].mult;
             }
         }
     }
@@ -258,14 +257,14 @@ double h_atof(const char *str) {
         char temp[0x40];
         strncpy(temp, buf, i);
         temp[i] = '\0';
-        return h_atof(temp) * PI;
+        return eval(temp, mathlib) * PI;
     }
 
     if (i > 0 && strcasecmp(buf + i, "e") == 0) {
         char temp[0x40];
         strncpy(temp, buf, i);
         temp[i] = '\0';
-        return h_atof(temp) * E;
+        return eval(temp, mathlib) * E;
     }
 
     if (is_hex)

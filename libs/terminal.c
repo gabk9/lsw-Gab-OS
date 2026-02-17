@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.49"
+#define VERSION "r1.7.55"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1658,7 +1658,8 @@ void updatehistory(void) {
         "r1.7.18 - small changes\n\tEdited: the user should now appear on android\n",
         "r1.7.30 - big changes\n\tAdded: ascii characters support to bc\n",
         "r1.7.38 - big changes\n\tEdited: improved bc suffix and ascii parser\n",
-        "r1.7.49 - big changes\n\tAdded: chr() function to bc\n"
+        "r1.7.49 - big changes\n\tAdded: chr() function to bc\n",
+        "r1.7.55 - small changes\n\tEdited: improved the bc parser once again\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(logs[0]);

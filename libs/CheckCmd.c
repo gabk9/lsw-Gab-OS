@@ -185,7 +185,7 @@ void checkLswrcSyntax(char *data_folder) {
             args[0] = ' ';
             trim(args);
 
-            double num = h_atof(args);
+            double num = h_atof(args, false);
 
             if (!isalldigit(args) || num != (int64_t)num) {
                 fprintf(stderr, "HISTFILE: arguments with invalid data type!\n");
@@ -1159,7 +1159,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
                 return parse_double(operation, functions[38]);
         }    
 
-        return h_atof(operation);
+        return h_atof(operation, mathlib);
     }
 
     char buffer[0x100];
