@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.55"
+#define VERSION "r1.7.63"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -607,7 +607,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
             continue;
         }
-        else if (strncmp(operation, "hex", 3) == 0 && mathlib) {
+        else if (validStrBcFuncException(operation, "hex") && mathlib) {
             char *value = s_hex(operation);
             if (value) {
                 printf("%s\n\n", value);
@@ -618,7 +618,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             SAFE_FREE(value);
             continue;
         }
-        else if (strncmp(operation, "oct", 3) == 0 && mathlib) {
+        else if (validStrBcFuncException(operation, "oct") && mathlib) {
             char *value = s_oct(operation);
             if (value) {
                 printf("%s\n\n", value);
@@ -630,7 +630,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             SAFE_FREE(value);
             continue;
         }
-        else if (strncmp(operation, "bin", 3) == 0 && mathlib) {
+        else if (validStrBcFuncException(operation, "bin") && mathlib) {
             char *value = s_bin(operation);
             if (value) {
                 printf("%s\n\n", value);
@@ -642,7 +642,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             SAFE_FREE(value);
             continue;
         }
-        else if (strncmp(operation, "chr", 3) == 0 && mathlib) {
+        else if (validStrBcFuncException(operation, "chr") && mathlib) {
             char *value = s_chr(operation);
             if (value) {
                 printf("%s\n\n", value);
@@ -662,8 +662,6 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             printf("%g\n\n", result);
             fflush(stdout);
         } 
-        if (result == (double)U64_NAN)
-            putchar('\n');
     }
     SAFE_FREE(operation);
 }
@@ -1659,10 +1657,11 @@ void updatehistory(void) {
         "r1.7.30 - big changes\n\tAdded: ascii characters support to bc\n",
         "r1.7.38 - big changes\n\tEdited: improved bc suffix and ascii parser\n",
         "r1.7.49 - big changes\n\tAdded: chr() function to bc\n",
-        "r1.7.55 - small changes\n\tEdited: improved the bc parser once again\n"
+        "r1.7.55 - small changes\n\tEdited: improved the bc parser once again\n",
+        "r1.7.63 - small changes\n\tEdited: improved the str functions parsers (bin(), chr(), hex() and() oct())"
     };
 
-    uint16_t logCount = sizeof(logs) / sizeof(logs[0]);
+    uint16_t logCount = sizeof(logs) / sizeof(*logs);
 
     for (uint16_t i = 0; i < logCount; i++) {
         if (i != logCount - 1)
