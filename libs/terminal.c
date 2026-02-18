@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.74"
+#define VERSION "r1.7.85"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -654,11 +654,11 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         }
 
         result = eval(operation, mathlib);
-        Ans = result;
+        Ans = (result == (double)U64_NAN) ? NAN : result;
 
         if (!isnan(result) && result != (double)U64_NAN)
             printf("%g\n\n", result);
-        if (result == U64_NAN)
+        if (result == (double)U64_NAN)
             putchar('\n');
 
         fflush(stdout);
@@ -1661,8 +1661,10 @@ void updatehistory(void) {
         "r1.7.38 - big changes\n\tEdited: improved bc suffix and ascii parser\n",
         "r1.7.49 - big changes\n\tAdded: chr() function to bc\n",
         "r1.7.55 - small changes\n\tEdited: improved the bc parser once again\n",
-        "r1.7.63 - small changes\n\tEdited: improved the str functions parsers (bin(), chr(), hex() and() oct())",
-        "r1.7.74 - big changes\n\tEdited: most of the error strings\n"
+        "r1.7.63 - small changes\n\tEdited: improved the str functions parsers (bin(), chr(), hex() and() oct())\n",
+        "r1.7.74 - big changes\n\tEdited: most of the error strings\n",
+        "r1.7.80 - small changes\n\tFixed: Ans not working\n",
+        "r1.7.85 - small changes\n\tFixed: now atof will not convert 'nan' or 'inf', it will just return 0\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

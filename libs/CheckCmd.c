@@ -1076,6 +1076,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
                 puts("Warning: Ans is undefined");
                 return U64_NAN;
             }
+
+            return Ans;
         }
 
         if (mathlib) {

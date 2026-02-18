@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8100
-#define PROJ_SIZE_APPROX_BYTES 239000
+#define PROJ_SIZE_APPROX_BYTES 239500
 
 #define RC_FILE "lswrc.txt"
 
@@ -119,8 +119,6 @@ bool isKeyRepeated(char *data_folder, const char *key_name) {
 
         if (!*buffer)
             continue;
-
-        char *lineCpy = strdup(buffer);
 
         char *save;
         char *cmd = strtok_r(buffer, "=", &save);

@@ -157,6 +157,9 @@ double h_atof(const char *str, bool mathlib) {
         trim(buf);
     }
 
+    if (strcasecmp(buf, "nan") == 0 || strcasecmp(buf, "inf") == 0)
+        return 0.0;
+
     bool isAns = strcasecmp(buf, OLD_ANSWER_STR) == 0;
 
     if (isUnaryNeg) {
@@ -185,8 +188,9 @@ double h_atof(const char *str, bool mathlib) {
 
         if (isAns)
             num = Ans;
-        else 
+        else {
             num = eval(buf, mathlib);
+        }
             
             if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("Error: integer overflow\n\n");
