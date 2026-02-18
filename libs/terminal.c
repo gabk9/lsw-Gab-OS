@@ -201,7 +201,7 @@ char *randstrCmd(char *instruction) {
         return NULL;
     }
 
-    if (ceil(len) != len) {
+    if ((int64_t)len != len) {
         printf("Error: must be integer!\n");
         return NULL;
     }

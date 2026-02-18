@@ -58,6 +58,8 @@ extern double Ans;
 #define LS_ALL 0b00000001
 
 #define DEFAULT_HISTSIZE 1000
+#define HISTSIZE_MAX     10000
+#define HISTSIZE_MIN     10
 
 #define BASH_VERSION 0b00000001
 #define BASH_HELP    0b00000010

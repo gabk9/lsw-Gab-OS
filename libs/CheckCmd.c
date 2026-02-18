@@ -196,7 +196,7 @@ void checkLswrcSyntax(char *data_folder) {
                 exit(EXIT_FAILURE);
             }
             
-            if (num < 10 || num > 10000) {
+            if (num < HISTSIZE_MIN || num > HISTSIZE_MAX) {
                 fprintf(stderr, "HISTFILE: the argument must be between 10 and 10000 (inclusive)\n");
                 SAFE_FREE(lineCpy);
                 SAFE_FREE(secondCpy);
@@ -255,28 +255,28 @@ double calc(double num1, char *operation, double num2) {
         
         result = fmod(num1, num2);
     } else if (strcmp(operation, "^") == 0) {
-        if (ceil(num1) != num1 || ceil(num2) != num2) {
+        if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
             printf("Error: must be integers\n\n");
             return NAN;
         }
 
-        result = (int32_t)num1 ^ (int32_t)num2;
+        result = (int64_t)num1 ^ (int64_t)num2;
     }
     else if (strcmp(operation, "&") == 0) {
-        if (ceil(num1) != num1 || ceil(num2) != num2) {
+        if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
             printf("Error: must be integers\n\n");
             return NAN;
         }
 
-        result = (int32_t)num1 & (int32_t)num2;
+        result = (int64_t)num1 & (int64_t)num2;
     }
     else if (strcmp(operation, "|") == 0) {
-        if (ceil(num1) != num1 || ceil(num2) != num2) {
+        if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
             printf("Error: must be integers\n\n");
             return NAN;
         }
 
-        result = (int32_t)num1 | (int32_t)num2;
+        result = (int64_t)num1 | (int64_t)num2;
     }
     else if (strcmp(operation, "<") == 0)
         result = num1 < num2;
@@ -284,7 +284,7 @@ double calc(double num1, char *operation, double num2) {
         result = num1 > num2;
 
     else if (strcmp(operation, "**") == 0) {
-        if (num1 < 0 && floor(num2) != num2) {
+        if (num1 < 0 && (int64_t)num2 != num2) {
             printf("Error: negative base with non-integer exponent\n\n");
             return NAN;
         }
@@ -294,7 +294,7 @@ double calc(double num1, char *operation, double num2) {
 
     else if (strcmp(operation, "^^") == 0) {
 
-        if (num2 != (int32_t)num2) {
+        if (num2 != (int64_t)num2) {
             printf("Error: tetration height must be an integer\n\n");
             return NAN;
         } else if (num2 < 0) {
