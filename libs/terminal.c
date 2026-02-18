@@ -605,7 +605,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
             continue;
         }
-        else if (validStrBcFuncException(operation, "hex") && mathlib) {
+        else if (mathlib && validStrBcFuncException(operation, "hex")) {
             char *value = s_hex(operation);
             if (value) {
                 printf("%s\n\n", value);
@@ -616,7 +616,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             SAFE_FREE(value);
             continue;
         }
-        else if (validStrBcFuncException(operation, "oct") && mathlib) {
+        else if (mathlib && validStrBcFuncException(operation, "oct")) {
             char *value = s_oct(operation);
             if (value) {
                 printf("%s\n\n", value);
@@ -628,7 +628,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             SAFE_FREE(value);
             continue;
         }
-        else if (validStrBcFuncException(operation, "bin") && mathlib) {
+        else if (mathlib && validStrBcFuncException(operation, "bin")) {
             char *value = s_bin(operation);
             if (value) {
                 printf("%s\n\n", value);
@@ -640,7 +640,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             SAFE_FREE(value);
             continue;
         }
-        else if (validStrBcFuncException(operation, "chr") && mathlib) {
+        else if (mathlib && validStrBcFuncException(operation, "chr")) {
             char *value = s_chr(operation);
             if (value) {
                 printf("%s\n\n", value);

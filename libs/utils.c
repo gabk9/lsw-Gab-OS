@@ -59,7 +59,7 @@ bool validStrBcFuncException(char *str, char *funcname) {
         else if (test[i] == ')') {
             depth--;
             if (depth == 0) {
-                closing_index = (int)i;
+                closing_index = (int32_t)i;
                 break;
             }
         }
@@ -2355,7 +2355,7 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 
         if (strchr(uniOps, s[i])) {
 
-            int k = i - 1;
+            int32_t k = i - 1;
             while (k >= 0 && isspace((unsigned char)s[k]))
                 k--;
 
