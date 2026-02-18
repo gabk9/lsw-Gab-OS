@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.63"
+#define VERSION "r1.7.74"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -13,7 +13,7 @@ void revCmd(char *instruction) {
         char *string = calloc(MAX_CHAR, sizeof(char));
 
         if (!string) {
-            printf("Error: memory allocation Error!!\n");
+            printf("rev: memory allocation Error!!\n");
             return;
         }
 
@@ -30,10 +30,8 @@ void revCmd(char *instruction) {
             fgets(string, MAX_CHAR, stdin);
             string[strcspn(string, "\n")] = '\0';
 
-            if (!*string) {
-                printf("Error: insert a string!\n\n");
+            if (!*string)
                 continue;
-            }
 
             trim(string);
             trimEnd(string);
@@ -83,20 +81,20 @@ void revCmd(char *instruction) {
                             strchar(destFile, '\\') != -1 || strchar(sourceFile, '\\') != -1);
 
             if (isPath) {
-                printf("Error: currently it does not support paths\n");
+                printf("rev: currently it does not support paths\n");
                 return;
             }
 
             if (!isValidFolderOrFileName(sourceFile) ||
                 !isValidFolderOrFileName(destFile)) {
-                printf("Error: invalid file name\n");
+                printf("rev: invalid file name\n");
                 return;
             }
 
             FILE *source = fopen(sourceFile, "r");
 
             if (!source) {
-                printf("Error: could not open '%s'\n", sourceFile);
+                printf("rev: could not open '%s'\n", sourceFile);
                 return;
             }
 
@@ -105,7 +103,7 @@ void revCmd(char *instruction) {
 
             FILE *dest = fopen(destFile, "w");
             if (!dest) {
-                printf("Error: could not create '%s'\n", destFile);
+                printf("rev: could not create '%s'\n", destFile);
                 SAFE_FCLOSE(source);
                 return;
             }
@@ -128,19 +126,19 @@ void revCmd(char *instruction) {
             uint8_t isPath = (strchar(instruction, '/') != -1 || strchar(instruction, '/') != -1);
 
             if (isPath) {
-                printf("Error: currently it does not support paths\n");
+                printf("rev: currently it does not support paths\n");
                 return;
             }
 
             if (!isValidFolderOrFileName(instruction)) {
-                printf("Error: invalid file name\n");
+                printf("rev: invalid file name\n");
                 return;
             }
 
             FILE *source = fopen(instruction, "r");
 
             if (!source) {
-                printf("Error: could not open '%s'\n", instruction);
+                printf("rev: could not open '%s'\n", instruction);
                 return;
             }
 
@@ -197,18 +195,18 @@ char *randstrCmd(char *instruction) {
     }
 
     if (len <= 0 || len >= 65536) {
-        printf("Error: length must be > 0 and < 65536\n");
+        printf("randstr: length must be > 0 and < 65536\n");
         return NULL;
     }
 
     if ((int64_t)len != len) {
-        printf("Error: must be integer!\n");
+        printf("randstr: must be integer!\n");
         return NULL;
     }
 
     char *str = malloc(len + 1);
     if (!str) {
-        puts("Error: memory allocation error!!");
+        puts("randstr: memory allocation error!!");
         return NULL;
     }
 
@@ -267,7 +265,7 @@ void sleepCmd(char *instruction) {
     time *= unit;
 
     if (time < 0) {
-        puts("Error: must be greater than 0");
+        puts("sleep: must be greater than 0");
         return;
     }
 
@@ -431,7 +429,7 @@ void renameCmd(char *instruction) {
     }
 
     if (rename(oldName, newName) != 0)
-        perror("Error");
+        perror("rename");
 
 }
 
@@ -489,7 +487,7 @@ void clearHistoryCmd(const char *path) {
         FILE *f = fopen(path, "w");
 
         if (!f) 
-            perror("Error");
+            perror("clearhistory");
         else
             puts("'history.txt' cleared successfully");
 
@@ -544,7 +542,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
     char *operation = calloc(MAX_CHAR, sizeof(char));
 
     if (!operation) {
-        puts("Error: Allocation error!!");
+        puts("bc: Allocation error!!");
         return;
     }
 
@@ -658,10 +656,12 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         result = eval(operation, mathlib);
         Ans = result;
 
-        if (!isnan(result) && result != (double)U64_NAN) {
+        if (!isnan(result) && result != (double)U64_NAN)
             printf("%g\n\n", result);
-            fflush(stdout);
-        } 
+        if (result == U64_NAN)
+            putchar('\n');
+
+        fflush(stdout);
     }
     SAFE_FREE(operation);
 }
@@ -771,7 +771,7 @@ void grepCmd(char *instruction) {
     }
 
     if (!found)
-        printf("pattern '%s' not found in '%s'\n", pattern, file);
+        printf("grep: pattern '%s' not found in '%s'\n", pattern, file);
 
     SAFE_FCLOSE(f);
 }
@@ -820,48 +820,51 @@ void historyCmd(char *operation, const char *path) {
             line = strtok(NULL, "\n");
         }
         SAFE_FREE(fileBuffer);
-    } else {
-        double num;
-        if (isBcVariable(operation)) {
-            printf("Warning: variables are currently unsupported\n");
-            num = 0;
-        } else 
-            num = eval(operation, true);
+        SAFE_FCLOSE(f);
+
+        return;
+    }
+
+    double num;
+    if (isBcVariable(operation)) {
+        printf("Warning: variables are currently unsupported\n");
+        num = 0;
+    } else 
+        num = eval(operation, true);
 
 
-        if (isnan(num) || num == (double)U64_NAN) {
-            SAFE_FCLOSE(f);
-            return;
-        }
+    if (isnan(num) || num == (double)U64_NAN) {
+        SAFE_FCLOSE(f);
+        return;
+    }
 
-        if (num != (int64_t)num) {
-            printf("Error: must be integer\n");
-            SAFE_FCLOSE(f);
-            return;
-        }
+    if (num != (int64_t)num) {
+        printf("history: must be integer\n");
+        SAFE_FCLOSE(f);
+        return;
+    }
 
-        if (num <= 0 || num >= 10000) {
-            printf("Error: must be greater than 0 and less than 10000 (10e+4)\n");
-            SAFE_FCLOSE(f);
-            return;
-        }
+    if (num <= 0 || num >= 10000) {
+        printf("history: must be greater than 0 and less than 10000 (10e+4)\n");
+        SAFE_FCLOSE(f);
+        return;
+    }
 
-        uint16_t i = 1;
+    uint16_t i = 1;
 
-        char buff[MAX_CHAR];
+    char buff[MAX_CHAR];
 
-        while (i <= num) {
-            if (!fgets(buff, sizeof(buff), f)) 
-                break;
+    while (i <= num) {
+        if (!fgets(buff, sizeof(buff), f)) 
+            break;
 
-            buff[strcspn(buff, "\n")] = '\0';
-            if (!*buff) 
-                continue;
-        
-            printf("%5u  %s\n", i, buff);
+        buff[strcspn(buff, "\n")] = '\0';
+        if (!*buff) 
+            continue;
+    
+        printf("%5u  %s\n", i, buff);
 
-            i++;
-        }
+        i++;
     }
         
     SAFE_FCLOSE(f);
@@ -956,7 +959,7 @@ void touchCmd(char *instruction) {
     if (string == -1) {
 
         if (!isValidFolderOrFileName(instruction)) {
-            printf("Error: invalid file name\n");
+            printf("touch: invalid file name\n");
             return;
         }
 
@@ -973,7 +976,7 @@ void touchCmd(char *instruction) {
         trimEnd(filename);
 
         if (!isValidFolderOrFileName(filename)) {
-            printf("Error: invalid file name\n");
+            printf("touch: invalid file name\n");
             SAFE_FREE(copy);
             return;
         }
@@ -1010,7 +1013,7 @@ void touchCmd(char *instruction) {
         trim(filename); trimEnd(filename);
 
         if (!isValidFolderOrFileName(filename)) {
-            printf("Error: invalid file name\n");
+            printf("touch: invalid file name\n");
             SAFE_FREE(copy);
             SAFE_FREE(test);
             return;
@@ -1030,14 +1033,14 @@ void touchCmd(char *instruction) {
 
     
             if (count != (int64_t)count) {
-                printf("Error: the multiplier must be an integer\n");
+                printf("touch: the multiplier must be an integer\n");
                 SAFE_FREE(copy);
                 SAFE_FREE(test);
                 return;
             }
 
             if (count <= 0) {
-                printf("Error: the multiplier must be greater than 0\n");
+                printf("touch: the multiplier must be greater than 0\n");
                 SAFE_FREE(copy);
                 SAFE_FREE(test);
                 return;
@@ -1089,7 +1092,7 @@ void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
         
         FILE *f = fopen(files[i], "rb");
         if (!f) {
-            fprintf(stderr, "Error: could not open '%s'\n", files[i]);
+            fprintf(stderr, "cat: could not open '%s'\n", files[i]);
             for (uint16_t j = 0; j < fileCount; j++)
                 SAFE_FREE(files[j]);
             SAFE_FREE(files);
@@ -1248,7 +1251,7 @@ void rmdirCmd(char *instruction) {
     if (flags & RM_BIN)
         for (uint16_t i = 0; i < fileCount; i++) {
             if (!move_to_trash(files[i])) {
-                printf("Error: cannot move '%s' to the recycle bin: operation failed\n", files[i]);
+                printf("rmdir: cannot move '%s' to the recycle bin: operation failed\n", files[i]);
             } else {
                 printf("'%s' moved to recycle bin\n", files[i]);
             }
@@ -1370,7 +1373,7 @@ void listDrives(void) {
 #ifdef _WIN32
     DWORD drives = GetLogicalDrives();
     if (drives == 0) {
-        puts("Error: could not get logical drives");
+        puts("drives: could not get logical drives");
         return;
     }
 
@@ -1387,7 +1390,7 @@ void listDrives(void) {
 
     DIR *dir = opendir(path);
     if (!dir) {
-        perror("Error opening /media directory");
+        puts("drives: could not open /media folder");
         return;
     }
 
@@ -1404,7 +1407,7 @@ void listDrives(void) {
     }
 
     if (!found)
-        puts("  (no mounted drives found)");
+        puts("drives: (no mounted drives found)");
 
     closedir(dir);
 #endif
@@ -1658,7 +1661,8 @@ void updatehistory(void) {
         "r1.7.38 - big changes\n\tEdited: improved bc suffix and ascii parser\n",
         "r1.7.49 - big changes\n\tAdded: chr() function to bc\n",
         "r1.7.55 - small changes\n\tEdited: improved the bc parser once again\n",
-        "r1.7.63 - small changes\n\tEdited: improved the str functions parsers (bin(), chr(), hex() and() oct())"
+        "r1.7.63 - small changes\n\tEdited: improved the str functions parsers (bin(), chr(), hex() and() oct())",
+        "r1.7.74 - big changes\n\tEdited: most of the error strings\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
@@ -1781,7 +1785,7 @@ void echoCmd(char *instruction) {
         char *filename = strtok_r(NULL, ">", &save);
 
         if (!inFile || !filename) {
-            puts("Error: invalid syntax");
+            puts("echo: invalid syntax");
             SAFE_FREE(copy);
             return;
         }
@@ -1802,7 +1806,7 @@ void echoCmd(char *instruction) {
                 break;
 
             case -2:
-                puts("Error: invalid redirection syntax");
+                puts("echo: invalid redirection syntax");
                 return;
 
             case 1:
@@ -1831,7 +1835,7 @@ void echoCmd(char *instruction) {
         }
 
         if (!isValidFolderOrFileName(filename)) {
-            printf("Error: invalid file name\n");
+            printf("echo: invalid file name\n");
             return;
         }
 
@@ -1882,7 +1886,7 @@ void lsCmd(const char *option, const char *address) {
         }
 
     } else if (*option != '\0' && option[0] != '-') {
-        printf("Error: invalid argument: '%s'\n", option);
+        printf("ls: invalid argument: '%s'\n", option);
         return;
     }
 

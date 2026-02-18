@@ -1072,10 +1072,10 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
     if (op_pos == -1) {
 
         if (strcasecmp(operation, OLD_ANSWER_STR) == 0) {
-            if (isnan(Ans))
-                puts("Warning: Ans is undefined\n");
-
-            return Ans;
+            if (isnan(Ans)) {
+                puts("Warning: Ans is undefined");
+                return U64_NAN;
+            }
         }
 
         if (mathlib) {
@@ -1189,8 +1189,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
         if (strcasecmp(num1, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
-                puts("Warning: Ans is undefined\n");
-                return NAN;
+                puts("Warning: Ans is undefined");
+                return U64_NAN;
             }
             
             num1_double = Ans;
@@ -1220,8 +1220,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
     } else {
         if (strcasecmp(num1, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
-                puts("Warning: Ans is undefined\n");
-                return NAN;
+                puts("Warning: Ans is undefined");
+                return U64_NAN;
             }
 
             num1_double = Ans;
@@ -1240,8 +1240,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
         if (strcasecmp(num2, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
-                puts("Warning: Ans is undefined\n");
-                return NAN;
+                puts("Warning: Ans is undefined");
+                return U64_NAN;
             }
 
             num2_double = Ans;
@@ -1271,8 +1271,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
     } else {
         if (strcasecmp(num2, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
-                puts("Warning: Ans is undefined\n");
-                return NAN;
+                puts("Warning: Ans is undefined");
+                return U64_NAN;
             }
 
             num2_double = Ans;

@@ -404,7 +404,7 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
     char *num = strtok_r(NULL, "*", &save);
 
     if (!str || !num || (num[0] == '*' && num[1] == '\0')){
-        puts("Error: invalid syntax");
+        puts("echo: invalid syntax");
         return 1;
     }
 
@@ -424,12 +424,12 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
         }
 
         if (count != (int64_t)count) {
-            printf("Error: the multiplier must be an integer\n");
+            printf("echo: the multiplier must be an integer\n");
             return 0;
         }
 
         if (count <= 0) {
-            printf("Error: the multiplier must be greater than 0\n");
+            printf("echo: the multiplier must be greater than 0\n");
             return 0;
         }
     }
@@ -499,7 +499,7 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
         while (*redir == ' ') redir++;
 
         if (!*redir) {
-            puts("Error: invalid syntax");
+            puts("echo: invalid syntax");
             goto fail;
         }
 
@@ -509,7 +509,7 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
         trimEnd(filename);
 
         if (!isValidFolderOrFileName(filename)) {
-            puts("Error: invalid file name");
+            puts("echo: invalid file name");
             goto fail;
         }
     }
@@ -533,12 +533,12 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
             count = eval(star, true);
 
         if (count != (int64_t)count) {
-            puts("Error: the multiplier must be an integer");
+            puts("echo: the multiplier must be an integer");
             goto fail;
         }
 
         if (count <= 0) {
-            puts("Error: the multiplier must be greater than 0");
+            puts("echo: the multiplier must be greater than 0");
             goto fail;
         }
     }
@@ -559,7 +559,7 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
     if (filename) {
         f = fopen(filename, append ? "a" : "w");
         if (!f) {
-            perror("Error");
+            perror("echo");
             goto fail;
         }
     }
