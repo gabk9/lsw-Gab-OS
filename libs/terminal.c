@@ -30,8 +30,10 @@ void revCmd(char *instruction) {
             fgets(string, MAX_CHAR, stdin);
             string[strcspn(string, "\n")] = '\0';
 
-            if (!*string)
+            if (!*string) {
+                putchar('\n');
                 continue;
+            }
 
             trim(string);
             trimEnd(string);
@@ -572,11 +574,13 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
         removeComments(operation);
 
-        if (!*operation)
-            continue;
-
         trim(operation);
         trimEnd(operation);
+
+        if (!*operation) {
+            putchar('\n');
+            continue;
+        }
 
         if (isValidBcCommand(operation, "quit") ||
             isValidBcCommand(operation, "exit")) {
@@ -609,6 +613,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             char *value = s_hex(operation);
             if (value) {
                 printf("%s\n\n", value);
+                Ans = h_atof(value, false);
                 fflush(stdout);
             } else
                 Ans = NAN;
@@ -620,7 +625,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             char *value = s_oct(operation);
             if (value) {
                 printf("%s\n\n", value);
-                Ans = parse_double(value, NULL);
+                Ans = h_atof(value, false);
                 fflush(stdout);
             } else
                 Ans = NAN;
@@ -632,7 +637,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             char *value = s_bin(operation);
             if (value) {
                 printf("%s\n\n", value);
-                Ans = parse_double(value, NULL);
+                Ans = h_atof(value, false);
                 fflush(stdout);
             } else 
                 Ans = NAN;
@@ -644,7 +649,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             char *value = s_chr(operation);
             if (value) {
                 printf("%s\n\n", value);
-                Ans = parse_double(value, NULL);
+                Ans = h_atof(value, false);
                 fflush(stdout);
             } else
                 Ans = NAN;
