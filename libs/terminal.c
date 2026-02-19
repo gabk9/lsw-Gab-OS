@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.7.85"
+#define VERSION "r1.8.09"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1669,7 +1669,9 @@ void updatehistory(void) {
         "r1.7.63 - small changes\n\tEdited: improved the str functions parsers (bin(), chr(), hex() and() oct())\n",
         "r1.7.74 - big changes\n\tEdited: most of the error strings\n",
         "r1.7.80 - small changes\n\tFixed: Ans not working\n",
-        "r1.7.85 - small changes\n\tFixed: now atof will not convert 'nan' or 'inf', it will just return 0\n"
+        "r1.7.85 - small changes\n\tFixed: now atof will not convert 'nan' or 'inf', it will just return 0\n",
+        "r1.8.00 - big changes\n\tAdded: acos(), acot(), asin(), atan() and now 'inf' returned\n",
+        "r1.8.09 - big changes\n\tEdited: removed useless code\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

@@ -347,7 +347,7 @@ double calc(double num1, char *operation, double num2) {
     }
 
     if (isinf(result)) {
-        printf("Error: result overflow (too large)\n\n");
+        printf("Error: numeric overflow (too large)\n\n");
         return NAN;
     }
 
@@ -601,29 +601,45 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tsqrt(X)        : Square root\n"
             "\t                 Example: sqrt(16) = 4\n"
             "\n"
-            "\troot(X, Y)     : Y-th root of X\n"
-            "\t                 Example: root(27, 3) = 3\n"
+            "\troot(X, Y)     : X-th root of Y\n"
+            "\t                 Example: root(3, 27) = 3\n"
             "\n"
             "\tsin(X)         : Sine of X\n"
             "\t                 Example: sin(rad(90)) = 1\n"
             "\t                 Note: X is in radians\n"
             "\n"
+            "\tasin(X)        : Arc sine (inverse sine) of X\n"
+            "\t                 Example: asin(0.5) = 0.523599\n"
+            "\t                 Note: Returns value in radians\n"
+            "\n"
             "\tcos(X)         : Cosine of X\n"
             "\t                 Example: cos(rad(0)) = 1\n"
             "\t                 Note: X is in radians\n"
+            "\n"
+            "\tacos(X)        : Arc cosine (inverse cosine) of X\n"
+            "\t                 Example: acos(0.5) = 1.0472\n"
+            "\t                 Note: Returns value in radians\n"
             "\n"
             "\ttan(X)         : Tangent of X\n"
             "\t                 Example: tan(rad(45)) = 1\n"
             "\t                 Note: X is in radians\n"
             "\n"
+            "\tatan(X)        : Arc tangent (inverse tangent) of X\n"
+            "\t                 Example: atan(1) = 0.785398\n"
+            "\t                 Note: Returns value in radians\n"
+            "\n"
             "\tcot(X)         : Cotangent of X\n"
             "\t                 Example: cot(rad(30)) = 1.73205\n"
             "\t                 Note: X is in radians\n"
             "\n"
-            "\trad(X)         : Radians to degrees\n"
+            "\tacot(X)        : Arc cotangent (inverse cotangent) of X\n"
+            "\t                 Example: acot(1) = 0.785398\n"
+            "\t                 Note: Returns value in radians (range: 0 < result < pi)\n"
+            "\n"
+            "\trad(X)         : Degrees to radians\n"
             "\t                 Example: rad(3.1415) = 180\n"
             "\n"
-            "\tdeg(X)         : Degrees to radians\n"
+            "\tdeg(X)         : Radians to degrees\n"
             "\t                 Example: deg(180) = 3.1415\n"
             "\n"
             "\tgon(X)         : Radians to gradians\n"
@@ -722,12 +738,15 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t        Tip: initially set to NaN; it is also set to NaN after invalid operations\n"
             "\t        Note: its value cannot be changed manually\n"
 
-            "\nConstants: (mathlib must be on to grant access)\n"
+            "\nConstants: (not case sensitive and mathlib must be on to grant access)\n"
             "\tPI   : 3.141592...\n"
             "\t       Example: sin(PI / 2) = 1\n"
             "\n"
             "\tE    : 2.718281...\n"
             "\t       Example: ln(E) = 1\n"
+            "\n"
+            "\tINF  : 1.797e+308 (64 bit)\n"
+            "\t     : Example: acot(-inf) = pi\n"
 
             "\nSuffixes: (not case sensitive and only works for non hexadecimals and mathlib must be on to grant access)\n"
             "\tK   : 1.000               (1e+3)\n"
@@ -742,7 +761,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tT   : 1.000.000.000.000   (1e+12)\n"
             "\t      Example: 1T = 1.000.000.000.000\n"
 
-            "\nNumeric systems: (mathlib must be on to grant full access)\n"
+            "\nNumeric systems: (not case sensitive an mathlib must be on to grant full access)\n"
             "\tBinary: (prefix: '0b')        base 2 numbers e.g. 0b010000000000 = 1024\n"
             "\n"
             "\tDecimal: (default):           base 10 numbers e.g. 1024\n"
@@ -1159,6 +1178,14 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
                 return s_gon(operation);
             else if (strncmp(operation, functions[38], 3) == 0) //! chr()
                 return parse_double(operation, functions[38]);
+            else if (strncmp(operation, functions[39], 4) == 0) //! asin()
+                return s_asin(operation);
+            else if (strncmp(operation, functions[40], 4) == 0) //! acos()
+                return s_acos(operation);
+            else if (strncmp(operation, functions[41], 4) == 0) //! atan()
+                return s_atan(operation);
+            else if (strncmp(operation, functions[42], 4) == 0) //! acot()
+                return s_acot(operation);
         }    
 
         return h_atof(operation, mathlib);
@@ -1180,107 +1207,15 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
         return NAN;
     }
 
-    double num1_double;
-    if (*num1 == '~') {
-        memmove(num1, num1+1, strlen(num1) + 1);
+    double num1_double = eval(num1, mathlib);
 
-        if (!*num1)
-            return 0.0;
+    if (num1_double == (double)U64_NAN)
+        return U64_NAN;
 
-        bool isAns = false;
+    double num2_double = eval(num2, mathlib);
 
-        if (strcasecmp(num1, OLD_ANSWER_STR) == 0) {
-            if (isnan(Ans)) {
-                puts("Warning: Ans is undefined");
-                return U64_NAN;
-            }
-            
-            num1_double = Ans;
-            isAns = true;
-        }
-
-        if (!isAns) {
-            if (isBcVariable(num1)) {
-                printf("Warning: variables are currently unsupported\n\n");
-                return NAN;
-            }
-
-            num1_double = eval(num1, mathlib); 
-
-            if (num1_double < MIN_SAFE_INT64_D || num1_double > MAX_SAFE_INT64_D) {
-                printf("Error: integer overflow\n\n");
-                return NAN;
-            }
-
-            if (num1_double != (int64_t)num1_double) {
-                printf("Error: to use the not(~) operator the number must be integer\n\n");
-                return NAN;
-            }
-        }
-
-        num1_double = ~(int64_t)num1_double;
-    } else {
-        if (strcasecmp(num1, OLD_ANSWER_STR) == 0) {
-            if (isnan(Ans)) {
-                puts("Warning: Ans is undefined");
-                return U64_NAN;
-            }
-
-            num1_double = Ans;
-        } else
-            num1_double = eval(num1, mathlib);
-    }
-
-    double num2_double;
-    if (*num2 == '~') {
-        memmove(num2, num2+1, strlen(num2) + 1);
-
-        if (!*num2)
-            return 0.0;
-
-        bool isAns = false;
-
-        if (strcasecmp(num2, OLD_ANSWER_STR) == 0) {
-            if (isnan(Ans)) {
-                puts("Warning: Ans is undefined");
-                return U64_NAN;
-            }
-
-            num2_double = Ans;
-            isAns = true;
-        }
-
-        if (!isAns) {
-            if (isBcVariable(num2)) {
-                printf("Warning: variables are currently unsupported\n\n");
-                return NAN;
-            }
-
-            num2_double = eval(num2, mathlib); 
-
-            if (num2_double < MIN_SAFE_INT64_D || num2_double > MAX_SAFE_INT64_D) {
-                printf("Error: integer overflow\n\n");
-                return NAN;
-            }
-
-            if (num2_double != (int64_t)num2_double) {
-                printf("Error: to use the not(~) operator the number must be integer\n\n");
-                return NAN;
-            }
-        }    
-
-        num2_double = ~(int64_t)num2_double;
-    } else {
-        if (strcasecmp(num2, OLD_ANSWER_STR) == 0) {
-            if (isnan(Ans)) {
-                puts("Warning: Ans is undefined");
-                return U64_NAN;
-            }
-
-            num2_double = Ans;
-        } else
-            num2_double = eval(num2, mathlib);
-    }
+    if (num2_double == (double)U64_NAN)
+        return U64_NAN;
 
     return calc(num1_double, op, num2_double);
 }

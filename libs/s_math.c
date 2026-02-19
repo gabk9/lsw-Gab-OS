@@ -157,7 +157,10 @@ double h_atof(const char *str, bool mathlib) {
         trim(buf);
     }
 
-    if (strcasecmp(buf, "nan") == 0 || strcasecmp(buf, "inf") == 0)
+    if (strcasecmp(buf, "inf") == 0 && isUnaryNeg)
+        return -INFINITY;
+
+    if (strcasecmp(buf, "nan") == 0)
         return 0.0;
 
     bool isAns = strcasecmp(buf, OLD_ANSWER_STR) == 0;
@@ -166,7 +169,7 @@ double h_atof(const char *str, bool mathlib) {
 
         if (isAns && isnan(Ans)) {
             puts("Warning: Ans is undefined\n");
-            return NAN;
+            return U64_NAN;
         }
 
         double num;
@@ -176,7 +179,7 @@ double h_atof(const char *str, bool mathlib) {
             num = eval(buf, mathlib);
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
-            printf("Error: integer overflow\n\n");
+            printf("Error: numeric overflow (too large)\n\n");
             return NAN;
         }
 
@@ -193,7 +196,7 @@ double h_atof(const char *str, bool mathlib) {
         }
             
             if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
-            printf("Error: integer overflow\n\n");
+            printf("Error: numeric overflow (too large)\n\n");
             return NAN;
         }
 
@@ -872,13 +875,32 @@ double s_sin(char *operation) {
         putchar('\n');
         return NAN;
     }    
-
     double result = sin(num);
-
+    
     if (fabs(result) < 1e-6)
         result = 0.0;
 
     return result;
+}
+
+double s_asin(char *operation) {
+    char *test = functionHandler(operation, "asin");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    SAFE_FREE(test);
+    if (num == (double)U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }    
+    
+    if (num < -1.0 || num > 1.0) {
+        puts("Error: asin() is defined only for -1 <= x <= 1\n");
+        return NAN;
+    }
+    
+    return asin(num);
 }
 
 double s_cot(char *operation) {
@@ -903,6 +925,21 @@ double s_cot(char *operation) {
     return 1.0 / t;
 }
 
+double s_acot(char *operation) {
+    char *test = functionHandler(operation, "acot");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    SAFE_FREE(test);
+    if (num == (double)U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }
+
+    return PI / 2.0 - atan(num);
+}
+
 double s_cos(char *operation) {
     char *test = functionHandler(operation, "cos");
     if (strcmp(test, BC_ERROR) == 0) return NAN;
@@ -921,6 +958,26 @@ double s_cos(char *operation) {
         result = 0.0;
 
     return result;
+}
+
+double s_acos(char *operation) {
+    char *test = functionHandler(operation, "acos");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    SAFE_FREE(test);
+    if (num == (double)U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }    
+
+    if (num < -1.0 || num > 1.0) {
+        puts("Error: acos() is defined only for -1 <= x <= 1\n");
+        return NAN;
+    }
+
+    return acos(num);
 }
 
 double s_tan(char *operation) {
@@ -948,6 +1005,22 @@ double s_tan(char *operation) {
         result = 0.0;
 
     return result;
+}
+
+double s_atan(char *operation) {
+    char *test = functionHandler(operation, "atan");
+    if (strcmp(test, BC_ERROR) == 0)
+        return NAN;
+
+    double angle = eval(test, true);
+
+    SAFE_FREE(test);
+    if (angle == (double)U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }
+
+    return atan(angle);
 }
 
 double s_ln(char *operation) {

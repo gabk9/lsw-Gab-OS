@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8100
-#define PROJ_SIZE_APPROX_BYTES 239500
+#define PROJ_SIZE_APPROX_BYTES 240500
 
 #define RC_FILE "lswrc.txt"
 
@@ -2379,7 +2379,7 @@ double eval(char *operation, bool mathlib) {
         "fact", "sign", "sum", "rad", "deg", "trunc", "randf",
         "fah", "cel", "root", "rand", "mi", "km", "lb", "kg",
         "oct", "hex", "bin", "abs", "fabs", "len", "bmi", "feet",
-        "meter", "cot", "gon", "chr"
+        "meter", "cot", "gon", "chr", "asin", "acos", "atan", "acot"
     };
 
     const char uniOps[] = "+-/*^%%&|<>";
