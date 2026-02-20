@@ -169,7 +169,7 @@ double h_atof(const char *str, bool mathlib) {
 
         if (isAns && isnan(Ans)) {
             puts("Warning: Ans is undefined\n");
-            return U64_NAN;
+            return (double)U64_NAN;
         }
 
         double num;

@@ -1111,7 +1111,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
         if (strcasecmp(operation, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
                 puts("Warning: Ans is undefined");
-                return U64_NAN;
+                return (double)U64_NAN;
             }
 
             return Ans;
@@ -1228,14 +1228,14 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
     double num1_double = eval(num1, mathlib);
 
     if (num1_double == (double)U64_NAN)
-        return U64_NAN;
+        return (double)U64_NAN;
     else if (num1_double == QUICK_EVAL_FIX)
         return (double)U64_NAN;
 
     double num2_double = eval(num2, mathlib);
 
     if (num2_double == (double)U64_NAN)
-        return U64_NAN;
+        return (double)U64_NAN;
     else if (num2_double == QUICK_EVAL_FIX)
         return (double)U64_NAN;
 
