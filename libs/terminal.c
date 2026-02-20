@@ -1893,7 +1893,6 @@ void lsCmd(char **argv, uint16_t argc, const char *address) {
     const char *dirPath = (address && *address) ? address : ".";
 
     uint8_t flags = 0;
-    uint16_t fileCount = 0;
 
     if (argc > 1) {
         for (uint16_t i = 1; i < argc; i++) {

@@ -1476,14 +1476,12 @@ double s_sign(char *operation) {
     if (num < 0.0)
         return -1.0;
 
-    if (num == 0)
-        return signbit(num) ? -0.0 : 0.0;
+    return signbit(num) ? -0.0 : 0.0;
 }
 
 double s_sum(char *operation) {
     char *raw = functionHandler(operation, "sum");
-    if (strcmp(raw, BC_ERROR) == 0)
-        return NAN;
+    if (strcmp(raw, BC_ERROR) == 0) return NAN;
 
     char *test = strdup(raw);
     SAFE_FREE(raw);
