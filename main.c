@@ -30,7 +30,7 @@ int32_t main(int32_t argc, char **argv) {
 
     char *input = calloc(MAX_CHAR, sizeof(char));
     if (!input) {
-        perror("Error: Memory allocation error!!\n");
+        perror("bash: Memory allocation error!!\n");
         return 1;
     }
 
