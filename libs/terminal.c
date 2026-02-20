@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.8.25"
+#define VERSION "r1.8.30"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -190,11 +190,8 @@ char *randstrCmd(char *instruction) {
         }
     }
 
-    if (len == (double)U64_NAN) {
-        errno = EINVAL;
-        perror("Error");
+    if (len == (double)U64_NAN)
         return NULL;
-    }
 
     if (len <= 0 || len >= 65536) {
         printf("randstr: length must be > 0 and < 65536\n");
@@ -491,10 +488,10 @@ void clearHistoryCmd(const char *path) {
         if (!f) 
             perror("clearhistory");
         else
-            puts("'history.txt' cleared successfully");
+            puts("clearhistory: 'history.txt' cleared successfully");
 
     } else {
-        puts("Deletion cancelled");
+        puts("clearhistory: deletion cancelled");
     }
 }
 
@@ -785,7 +782,7 @@ void historyCmd(char *operation, const char *path) {
     FILE *f = fopen(path, "r");
 
     if (!f) {
-        perror("Error");
+        perror("history");
         return;
     }
 
@@ -932,7 +929,7 @@ void rmCmd(uint16_t argc, char **argv) {
         printf("Are you sure you want to delete %d file(s)? (y/n): ", fileCount);
 
         if (!fgets(answer, sizeof(answer), stdin)) {
-            puts("Error reading input");
+            puts("rm: reading input error");
             return;
         }
 
@@ -940,7 +937,7 @@ void rmCmd(uint16_t argc, char **argv) {
         safe_lower_inplace(answer);
 
         if (answer[0] != 'y') {
-            puts("Deletion cancelled");
+            puts("rm: deletion cancelled");
             return;
         }
     }
@@ -951,9 +948,9 @@ void rmCmd(uint16_t argc, char **argv) {
         }
         else {
             if (flags & RM_BIN)
-                printf("'%s' moved to recycle bin\n", argv[i]);
+                printf("rm: '%s' moved to recycle bin\n", argv[i]);
             else
-                printf("'%s' deleted successfully\n", argv[i]);
+                printf("rm: '%s' deleted successfully\n", argv[i]);
         }
     }
 }
@@ -1275,7 +1272,7 @@ void rmdirCmd(char *instruction) {
             if (!move_to_trash(files[i])) {
                 printf("rmdir: cannot move '%s' to the recycle bin: operation failed\n", files[i]);
             } else {
-                printf("'%s' moved to recycle bin\n", files[i]);
+                printf("rmdir: '%s' moved to recycle bin\n", files[i]);
             }
             SAFE_FREE(files[i]);
         }
@@ -1284,7 +1281,7 @@ void rmdirCmd(char *instruction) {
             if (rmdir(files[i]) != 0) {
                 perror(files[i]);
             } else {
-                printf("'%s' deleted successfully\n", files[i]);
+                printf("rmdir: '%s' deleted successfully\n", files[i]);
             }
             SAFE_FREE(files[i]);
         }
@@ -1690,7 +1687,8 @@ void updatehistory(void) {
         "r1.8.00 - big changes\n\tAdded: acos(), acot(), asin(), atan() and now 'inf' returned\n",
         "r1.8.09 - big changes\n\tEdited: removed useless code\n",
         "r1.8.15 - small changes\n\tEdited: now the alias is checked first, allowing you to create aliases with the terminal's command names\n",
-        "r1.8.25 - big changes\n\tAdded: new option to rm and rmdir\n\tEdited: double '-' options are no longer case sensitive\n"
+        "r1.8.25 - big changes\n\tAdded: new option to rm and rmdir\n\tEdited: double '-' options are no longer case sensitive\n",
+        "r1.8.30 - small changes\n\tEdited: ls now works by argv and argc\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
@@ -1714,7 +1712,7 @@ char *unameCmd(uint16_t argc, char **argv) {
         for (uint16_t i = 1; i < argc; i++) {
             char *opt = argv[i];
 
-            if (opt[0] != '-') {
+            if (*opt != '-') {
                 printf("uname: invalid argument: '%s'\n", opt);
                 return NULL;
             }
@@ -1887,35 +1885,42 @@ void echoCmd(char *instruction) {
     }
 }
 
-void lsCmd(const char *option, const char *address) {
-    const char *dirPath = (address && address[0]) ? address : ".";
+void lsCmd(char **argv, uint16_t argc, const char *address) {
+    const char *dirPath = (address && *address) ? address : ".";
 
     uint8_t flags = 0;
+    uint16_t fileCount = 0;
 
-    if (option[0] == '-') {
+    if (argc > 1) {
+        for (uint16_t i = 1; i < argc; i++) {
+            char *opt = argv[i];
 
-        if (option[1] == '-') {
-            if (strcasecmp(option, "--all") == 0)
-                flags |= LS_ALL;
-            else {
-                printf("ls: invalid option: '%s'\n", option);
+            if (*opt != '-') {
+                printf("ls: invalid argument: '%s'\n", opt);
                 return;
             }
-        } else {
-            for (uint16_t i = 1; option[i]; i++) {
-                char opt = tolower((unsigned char)option[i]);
-                switch (opt) {
+
+            if (opt[1] == '-') {
+                if (strcasecmp(opt, "--all") == 0) {
+                    flags |= LS_ALL;
+                }
+                else {
+                    printf("ls: invalid option: '%s'\n", opt);
+                    return;
+                }
+                continue;
+            }
+
+            for (uint16_t j = 1; opt[j]; j++) {
+                char chr = tolower((unsigned char)opt[j]);
+                switch (chr) {
                     case 'a': flags |= LS_ALL; break;
                     default:
-                        printf("ls: invalid option: '-%c'\n", option[i]);
+                        printf("ls: invalid option: '-%c'\n", opt[j]);
                         return;
                 }
             }
         }
-
-    } else if (*option != '\0' && option[0] != '-') {
-        printf("ls: invalid argument: '%s'\n", option);
-        return;
     }
 
     enableAnsiIfNeeded();

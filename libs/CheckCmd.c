@@ -242,21 +242,21 @@ double calc(double num1, char *operation, double num2) {
         result = num1 * num2;
     else if (strcmp(operation, "/") == 0) {
         if (!num2) {
-            printf("Error: can't divide by 0\n\n");
+            printf("eval: can't divide by 0\n\n");
             return NAN;
         }
 
         result = num1 / num2;
     } else if (strcmp(operation, "%") == 0) {
         if (!num2) {
-            printf("Error: can't divide by 0\n\n");
+            printf("eval: can't divide by 0\n\n");
             return NAN;
         }
         
         result = fmod(num1, num2);
     } else if (strcmp(operation, "^") == 0) {
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
-            printf("Error: must be integers\n\n");
+            printf("eval: must be integers\n\n");
             return NAN;
         }
 
@@ -264,7 +264,7 @@ double calc(double num1, char *operation, double num2) {
     }
     else if (strcmp(operation, "&") == 0) {
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
-            printf("Error: must be integers\n\n");
+            printf("eval: must be integers\n\n");
             return NAN;
         }
 
@@ -272,7 +272,7 @@ double calc(double num1, char *operation, double num2) {
     }
     else if (strcmp(operation, "|") == 0) {
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
-            printf("Error: must be integers\n\n");
+            printf("eval: must be integers\n\n");
             return NAN;
         }
 
@@ -285,7 +285,7 @@ double calc(double num1, char *operation, double num2) {
 
     else if (strcmp(operation, "**") == 0) {
         if (num1 < 0 && (int64_t)num2 != num2) {
-            printf("Error: negative base with non-integer exponent\n\n");
+            printf("eval: negative base with non-integer exponent\n\n");
             return NAN;
         }
         else
@@ -295,33 +295,33 @@ double calc(double num1, char *operation, double num2) {
     else if (strcmp(operation, "^^") == 0) {
 
         if (num2 != (int64_t)num2) {
-            printf("Error: tetration height must be an integer\n\n");
+            printf("eval: tetration height must be an integer\n\n");
             return NAN;
         } else if (num2 < 0) {
-            printf("Error: tetration height must be non-negative\n\n");
+            printf("eval: tetration height must be non-negative\n\n");
             return NAN;
         } else if (num1 == 0.0 && num2 == 0.0) {
-            printf("Error: 0^^0 is undefined\n\n");
+            printf("eval: 0^^0 is undefined\n\n");
             return NAN;
         } else {
 
             result = tetration(num1, (int32_t)num2);
 
             if (isnan(result))
-                printf("Error: invalid input for tetration\n\n");
+                printf("eval: invalid input for tetration\n\n");
         }
     }
 
     else if (strcmp(operation, "<<") == 0) {
         if (num2 < 0 || num2 >= sizeof(long long) * 8) {
-            printf("Error: shift amount must be between 0 and %zu\n\n", sizeof(uint64_t) * 8 - 1);
+            printf("eval: shift amount must be between 0 and %zu\n\n", sizeof(uint64_t) * 8 - 1);
             return NAN;
         }
         result = (uint64_t)num1 << (uint64_t)num2;
     }
     else if (strcmp(operation, ">>") == 0) {
         if (num2 < 0 || num2 >= sizeof(long long) * 8) {
-            printf("Error: shift amount must be between 0 and %zu\n\n", sizeof(int64_t) * 8 - 1);
+            printf("eval: shift amount must be between 0 and %zu\n\n", sizeof(int64_t) * 8 - 1);
             return NAN;
         }
 
@@ -342,12 +342,12 @@ double calc(double num1, char *operation, double num2) {
         result = num1 == num2;
 
     else {
-        printf("Error: Unknown operator '%s'\n\n", operation);
+        printf("eval: Unknown operator '%s'\n\n", operation);
         return NAN;
     }
 
     if (isinf(result)) {
-        printf("Error: numeric overflow (too large)\n\n");
+        printf("eval: numeric overflow (too large)\n\n");
         return NAN;
     }
 
@@ -435,10 +435,10 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'mkdir' makes directories\n\nUsage:\n\tmkdir [FOLDER NAME...]\n");
 
     else if (strcmp(instruction, cmds[13]) ==  0) { //! rmdir
-        printf("'rmdir' removes empty directories\n\nUsage:\n\trmdir [OPTION] [FOLDER NAME...]\n\n");
-        printf("Options:\n\t"
-            "'-b', '--recycle-bin'   moves to recycle bin\n"
-            "\t'-e', '--erase'       removes completely\n"
+        printf("'rmdir' removes empty directories\n\nUsage:\n\trmdir [OPTION...] [FOLDER NAME...]\n\n");
+        printf("Options:\n"
+            "\t'-b', '--recycle-bin'   moves to recycle bin\n"
+            "\t'-e', '--erase'         removes completely\n"
         );
     }
 
@@ -835,7 +835,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
     }
 
     else
-        printf("The manual for the '%s' command was not found!!\n", instruction);
+        printf("man: the manual for the '%s' command was not found!!\n", instruction);
 
 }
 
@@ -844,7 +844,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
                     char *data_folder, bool isInsideBash, bool isFromAlias) {
     char *temp = strdup(input);
     if (!temp) {
-        perror("Error: strdup failed");
+        perror("bash: strdup failed");
         return;
     }
 
@@ -889,7 +889,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
             if (!SetCurrentDirectory(temp)) {
                 char path[4] = { temp[0], ':', '\\', '\0' };
                 if (!SetCurrentDirectory(path))
-                    printf("Error: Drive %c: not accessible or does not exist\n", temp[0]);
+                    printf("bash: Drive %c: not accessible or does not exist\n", temp[0]);
             }
             SAFE_FREE(*address);
             *address = getcwd(NULL, 0);
@@ -954,8 +954,16 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     }
 
 
-    else if (strcmp(instruction, cmds[7]) == 0) //! ls
-        lsCmd(args ? args : "", *address);
+    else if (strcmp(instruction, cmds[7]) == 0) { //! ls
+        uint16_t argc_ls;
+        char **argv_ls = extract_args(args, &argc_ls, "ls");
+
+        lsCmd(argv_ls, argc_ls, *address);
+
+        for (uint16_t i = 1; i < argc_ls; i++)
+            SAFE_FREE(argv_ls[i]);
+        SAFE_FREE(argv_ls);
+    }
 
     else if (strcmp(instruction, cmds[8]) == 0) //! man
         manCmdMulti(args ? args : "", cmds, isInsideBash);
@@ -1083,7 +1091,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         revCmd(args ? args : "");
 
     else
-        printf("The command '%s' was not found!!\n", instruction);
+        printf("bash: the command '%s' was not found!!\n", instruction);
 
     SAFE_FREE(temp);
 }
