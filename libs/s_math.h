@@ -14,10 +14,6 @@
 #define KM_TO_MI_FACTOR 0.62137
 #define MI_TO_KM_FACTOR 1.609344
 
-#define DEG_TO_RAD_FACTOR 0.01745329251
-#define RAD_TO_DEG_FACTOR 57.2957795131
-#define RAD_TO_GON_FACTOR 63.661977237
-
 #define METERS_TO_FEET_FACTOR 3.28084
 #define FEET_TO_METERS_FACTOR 0.3048
 
@@ -83,9 +79,9 @@ double h_atof(const char *str, bool mathlib)__attribute__((nonnull(1)));
 double s_fabs_or_abs(char *operation, bool enable_single_point)__attribute__((nonnull));
 char *functionHandler(char *operation, const char *function)__attribute__((warn_unused_result));
 
-#define DEG_TO_RAD(x) ((x) * DEG_TO_RAD_FACTOR) 
-#define RAD_TO_DEG(x) ((x) * RAD_TO_DEG_FACTOR)
-#define RAD_TO_GON(x) ((x) * RAD_TO_GON_FACTOR)
+#define DEG_TO_RAD(x) ((x) * (PI / 180.0))
+#define RAD_TO_DEG(x) ((x) * (180.0 / PI))
+#define RAD_TO_GON(x) ((x) * (200.0 / PI))
 
 #define KM_TO_MI(x) ((x) * KM_TO_MI_FACTOR)
 #define MI_TO_KM(x) ((x) * MI_TO_KM_FACTOR)

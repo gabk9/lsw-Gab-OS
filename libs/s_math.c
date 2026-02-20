@@ -1470,9 +1470,14 @@ double s_sign(char *operation) {
         return NAN;
     }   
 
-    if (num > 0) return 1.0;
-    if (num == 0) return 0.0;
-    return -1.0;
+    if (num > 0.0)
+        return 1.0;
+
+    if (num < 0.0)
+        return -1.0;
+
+    if (num == 0)
+        return signbit(num) ? -0.0 : 0.0;
 }
 
 double s_sum(char *operation) {

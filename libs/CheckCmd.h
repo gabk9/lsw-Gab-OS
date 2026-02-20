@@ -2,8 +2,8 @@
 #define CHECKCMD_H
 
 void checkLswrcSyntax(char *data_folder);
-double calc(double num1, char *operation, double num2);
 char *stringToVariable(const char *str, int32_t *changed);
+double calc(double num1, char *operation, double num2, bool mathLib);
 void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash);
 double CheckOperation(char *operation, char **functions, const char *uniOps, const char **multiOps, bool mathlib);
 

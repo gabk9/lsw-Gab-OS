@@ -2316,40 +2316,64 @@ bool has_top_level_operator(const char *s, const char *uniOps, const char **mult
 }
 
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp) {
-    int32_t depth = 0;
-    bool in_quotes = false;
     int32_t len = strlen(s);
 
     for (int32_t i = len - 1; i >= 0; i--) {
 
-        if (s[i] == '\'') {
-            in_quotes = !in_quotes;
-            continue;
+        int32_t depth = 0;
+        bool in_quotes = false;
+
+        for (int32_t k = 0; k <= i; k++) {
+            if (s[k] == '\'')
+                in_quotes = !in_quotes;
+
+            if (!in_quotes) {
+                if (s[k] == '(')
+                    depth++;
+                else if (s[k] == ')')
+                    depth--;
+            }
         }
 
-        if (in_quotes)
-            continue;
-
-        if (s[i] == ')')
-            depth++;
-        else if (s[i] == '(')
-            depth--;
-
-        if (depth != 0)
+        if (depth != 0 || in_quotes)
             continue;
 
         for (int32_t j = 0; multiOps[j]; j++) {
-            int32_t oplen = strlen(multiOps[j]);
 
-            if (i - oplen + 1 < 0)
+            int32_t oplen = strlen(multiOps[j]);
+            int32_t start = i - oplen + 1;
+
+            if (start < 0)
                 continue;
 
-            if (strncmp(&s[i - oplen + 1], multiOps[j], oplen) == 0) {
+            if (strncmp(&s[start], multiOps[j], oplen) == 0) {
+
                 strncpy(foundOp, multiOps[j], oplen);
                 foundOp[oplen] = '\0';
-                return i - oplen + 1;
+                return start;
             }
         }
+    }
+
+    for (int32_t i = len - 1; i >= 0; i--) {
+
+        int32_t depth = 0;
+        bool in_quotes = false;
+
+        for (int32_t k = 0; k <= i; k++) {
+            if (s[k] == '\'')
+                in_quotes = !in_quotes;
+
+            if (!in_quotes) {
+                if (s[k] == '(')
+                    depth++;
+                else if (s[k] == ')')
+                    depth--;
+            }
+        }
+
+        if (depth != 0 || in_quotes)
+            continue;
 
         if (strchr(uniOps, s[i])) {
 

@@ -230,7 +230,7 @@ void checkLswrcSyntax(char *data_folder) {
     SAFE_FCLOSE(f);
 }
 
-double calc(double num1, char *operation, double num2) {
+double calc(double num1, char *operation, double num2, bool mathLib) {
 
     double result;
 
@@ -241,18 +241,29 @@ double calc(double num1, char *operation, double num2) {
     else if (strcmp(operation, "*") == 0)
         result = num1 * num2;
     else if (strcmp(operation, "/") == 0) {
-        if (!num2) {
-            printf("eval: can't divide by 0\n\n");
-            return NAN;
+
+        if (num2 == 0.0) {
+
+            if (!mathLib) {
+                printf("eval: can't divide by 0\n\n");
+                return NAN;
+            }
+
+            if (num1 == 0.0)
+                return 0.0;
+
+            int32_t negative = signbit(num1) ^ signbit(num2);
+
+            return negative ? -INFINITY : INFINITY;
         }
 
         result = num1 / num2;
     } else if (strcmp(operation, "%") == 0) {
-        if (!num2) {
+        if (num2 == 0) {
             printf("eval: can't divide by 0\n\n");
             return NAN;
         }
-        
+
         result = fmod(num1, num2);
     } else if (strcmp(operation, "^") == 0) {
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
@@ -339,7 +350,8 @@ double calc(double num1, char *operation, double num2) {
     else if (strcmp(operation, "!=") == 0)
         result = num1 != num2;
     else if (strcmp(operation, "==") == 0)
-        result = num1 == num2;
+        result = fabs(num1 - num2) < EPS;
+
 
     else {
         printf("eval: Unknown operator '%s'\n\n", operation);
@@ -1239,5 +1251,5 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
     else if (num2_double == QUICK_EVAL_FIX)
         return (double)U64_NAN;
 
-    return calc(num1_double, op, num2_double);
+    return calc(num1_double, op, num2_double, mathlib);
 }
