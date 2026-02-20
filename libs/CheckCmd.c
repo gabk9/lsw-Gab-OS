@@ -436,7 +436,10 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
     else if (strcmp(instruction, cmds[13]) ==  0) { //! rmdir
         printf("'rmdir' removes empty directories\n\nUsage:\n\trmdir [OPTION] [FOLDER NAME...]\n\n");
-        printf("Options:\n\t'-b', '--recycle-bin'   moves to recycle bin\n");
+        printf("Options:\n\t"
+            "'-b', '--recycle-bin'   moves to recycle bin\n"
+            "\t'-e', '--erase'       removes completely\n"
+        );
     }
 
     else if (strcmp(instruction, cmds[14]) ==  0) //! cat
@@ -474,9 +477,11 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
     else if (strcmp(instruction, cmds[16]) ==  0) { //! rm
         printf("'rm' removes files or empty folders\n\nUsage:\n\trm [OPTION...] [FILE/FOLDER NAME...]\n\nOptions:\n");
-        printf("\t'-f', '--force'         removes without prompt\n");
-        printf("\t'-i', '--interactive'   prompt before deletion (default)\n");
-        printf("\t'-b', '--recycle-bin'   moves to recycle bin\n");
+        printf("\t'-f', '--force'         removes without prompt\n"
+            "\t'-i', '--interactive'   prompt before deletion (default)\n"
+            "\t'-b', '--recycle-bin'   moves to recycle bin\n"
+            "\t'-e', '--erase'         removes completely\n"
+        );
     }
 
     else if (strcmp(instruction, cmds[17]) ==  0) //! history
@@ -733,12 +738,12 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tbmi(X, Y)      : Returns your BMI with wight (X) in kg and height (Y) in meters\n"
             "\t                 Example: bmi(91, 1.78) = 28.7211\n"
 
-            "\nBuiltin Variables: (not case sensitive and mathlib must be on to grant access)\n"
+            "\nBuiltin Variables: (mathlib must be on to grant access)\n"
             "\tAns   : stores the result of the last operation\n"
             "\t        Tip: initially set to NaN; it is also set to NaN after invalid operations\n"
             "\t        Note: its value cannot be changed manually\n"
 
-            "\nConstants: (not case sensitive and mathlib must be on to grant access)\n"
+            "\nConstants: (mathlib must be on to grant access)\n"
             "\tPI   : 3.141592...\n"
             "\t       Example: sin(PI / 2) = 1\n"
             "\n"
@@ -748,7 +753,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tINF  : 1.797e+308 (64 bit)\n"
             "\t     : Example: acot(-inf) = pi\n"
 
-            "\nSuffixes: (not case sensitive and only works for non hexadecimals and mathlib must be on to grant access)\n"
+            "\nSuffixes: (only works for non hexadecimals and mathlib must be on to grant access)\n"
             "\tK   : 1.000               (1e+3)\n"
             "\t      Example: 5K = 5.000\n"
             "\n"
@@ -761,7 +766,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tT   : 1.000.000.000.000   (1e+12)\n"
             "\t      Example: 1T = 1.000.000.000.000\n"
 
-            "\nNumeric systems: (not case sensitive an mathlib must be on to grant full access)\n"
+            "\nNumeric systems: (mathlib must be on to grant full access)\n"
             "\tBinary: (prefix: '0b')        base 2 numbers e.g. 0b010000000000 = 1024\n"
             "\n"
             "\tDecimal: (default):           base 10 numbers e.g. 1024\n"
@@ -836,7 +841,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
 void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCount,
                     char **address, char *history_path,
-                    char *data_folder, uint8_t isInsideBash) {
+                    char *data_folder, bool isInsideBash, bool isFromAlias) {
     char *temp = strdup(input);
     if (!temp) {
         perror("Error: strdup failed");
@@ -867,7 +872,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
                 processCommand(segment, NULL,
                             cmds, cmdCount,
                             address, history_path,
-                            data_folder, isInsideBash);
+                            data_folder, isInsideBash, false);
             }
 
             if (!pos)
@@ -902,6 +907,13 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     trim(instruction);
     trimEnd(instruction);
     trimBetween(instruction);
+
+
+    if (!isFromAlias && isalias(instruction, args ? args : "", cmds, cmdCount, address, 
+    history_path, data_folder, isInsideBash)) {
+        SAFE_FREE(temp);
+        return;
+    }
 
     if (strcmp(instruction, cmds[0]) == 0) //! clear
         cls();
@@ -1070,9 +1082,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     else if (strcmp(instruction, cmds[32]) == 0) //! rev
         revCmd(args ? args : "");
 
-    else if (!isalias(instruction, args ? args : "",
-                    cmds, cmdCount, address,
-                    history_path, data_folder, isInsideBash))
+    else
         printf("The command '%s' was not found!!\n", instruction);
 
     SAFE_FREE(temp);

@@ -80,7 +80,7 @@ int32_t main(int32_t argc, char **argv) {
         if (input[0] == '-') 
             bashCmd(argc, argv, cmds, cmdCount, false);
         else
-            processCommand(input, arguments, cmds, cmdCount, &address, history_path, data_folder, false);
+            processCommand(input, arguments, cmds, cmdCount, &address, history_path, data_folder, false, false);
 
         SAFE_FREE(data_folder);
         SAFE_FREE(program_root);
@@ -131,7 +131,7 @@ int32_t main(int32_t argc, char **argv) {
 
         saveHist(input, history_path, data_folder);
 
-        processCommand(input, NULL, cmds, cmdCount, &address, history_path, data_folder, true);
+        processCommand(input, NULL, cmds, cmdCount, &address, history_path, data_folder, true, false);
     }
     
     SAFE_FREE(data_folder);

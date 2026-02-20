@@ -157,7 +157,7 @@ double h_atof(const char *str, bool mathlib) {
         trim(buf);
     }
 
-    if (strcasecmp(buf, "inf") == 0 && isUnaryNeg)
+    if (isUnaryNeg && strcasecmp(buf, "inf") == 0)
         return -INFINITY;
 
     if (strcasecmp(buf, "nan") == 0)

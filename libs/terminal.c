@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.8.09"
+#define VERSION "r1.8.25"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -172,7 +172,7 @@ char *randstrCmd(char *instruction) {
         }
 
         if (instruction[1] == '-') {
-            if (strncmp(instruction, "--len", 5) == 0)
+            if (strncasecmp(instruction, "--len", 5) == 0)
                 len = parse_len(instruction + 5);
             else {
                 printf("randstr: invalid option: '%s'\n", instruction);
@@ -331,11 +331,11 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
         }
 
         if (argv[i][1] == '-') {
-            if (strcmp(argv[i], "--version") == 0)
+            if (strcasecmp(argv[i], "--version") == 0)
                 flags |= BASH_VERSION;
-            else if (strcmp(argv[i], "--help") == 0)
+            else if (strcasecmp(argv[i], "--help") == 0)
                 flags |= BASH_HELP;
-            else if (strcmp(argv[i], "--all") == 0)
+            else if (strcasecmp(argv[i], "--all") == 0)
                 flags |= BASH_ALL;
             else
                 printf("%s: invalid option: '%s'\n", shell, argv[i]);
@@ -514,9 +514,9 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         }
 
         if (opt[1] == '-') {
-            if (strcmp(opt, "--quiet") == 0)
+            if (strcasecmp(opt, "--quiet") == 0)
                 flags |= BC_QUIET;
-            else if (strcmp(opt, "--mathlib") == 0)
+            else if (strcasecmp(opt, "--mathlib") == 0)
                 flags |= BC_MATHLIB;
             else {
                 printf("bc: invalid option: '%s'\n", opt);
@@ -687,7 +687,7 @@ void grepCmd(char *instruction) {
         rest = strtok(NULL, "");
 
         if (option && option[1] == '-') {
-            if (strcmp(option, "--ignore-case") == 0)
+            if (strcasecmp(option, "--ignore-case") == 0)
                 ignoreCase = 1;
             else {
                 printf("grep: invalid option: '%s'\n", option);
@@ -889,18 +889,32 @@ void rmCmd(uint16_t argc, char **argv) {
         char *arg = argv[i];
 
         if (arg[0] == '-') {
-            if (!strcmp(arg, "-f") || !strcmp(arg, "--force")) {
-                flags |= RM_FORCE;
-            }
-            else if (!strcmp(arg, "-i") || !strcmp(arg, "--interactive")) {
-                flags &= ~RM_FORCE;
-            }
-            else if (!strcmp(arg, "-b") || !strcmp(arg, "--recycle-bin")) {
-                flags |= RM_BIN;
-            }
-            else {
-                printf("rm: invalid option '%s'\n", arg);
-                return;
+            if (arg[1] == '-') {
+                if (strcasecmp(arg, "--force") == 0)
+                    flags |= RM_FORCE;
+                else if (strcasecmp(arg, "--interactive") == 0)
+                    flags &= ~RM_FORCE;
+                    else if (strcasecmp(arg, "--recycle-bin") == 0)
+                    flags |= RM_BIN;
+                else if (strcasecmp(arg, "--erase") == 0)
+                    flags &= ~RM_BIN;
+                else {
+                    printf("rm: invalid option: '%s'\n", arg);
+                }
+
+            } else {
+                for (size_t i = 1; arg[i]; i++) {
+                    arg[i] = tolower((unsigned char)arg[i]);
+                    switch (arg[i]) {
+                        case 'f': flags |= RM_FORCE; break;
+                        case 'i': flags &= ~RM_FORCE; break;
+                        case 'b': flags |= RM_BIN; break;
+                        case 'e': flags &= ~RM_BIN; break;
+                        default:
+                            printf("rm: invalid option: '-%c'\n", arg[i]);
+                            return;
+                    }
+                }
             }
         }
         else {
@@ -1212,8 +1226,10 @@ void rmdirCmd(char *instruction) {
         option[len] = '\0';
 
         if (option[1] == '-') {
-            if (strcmp(option, "recycle-bin") == 0)
+            if (strcasecmp(option, "recycle-bin") == 0)
                 flags |= RM_BIN;
+            else if (strcasecmp(option, "--erase") == 0)
+                flags &= ~RM_BIN;
             else {
                 printf("rmdir: invalid option: '%s'\n", option);
                 return;
@@ -1223,6 +1239,7 @@ void rmdirCmd(char *instruction) {
                 char opt = tolower((unsigned char)option[i]);
                 switch (opt) {
                     case 'b': flags |= RM_BIN; break;
+                    case 'e': flags &= ~RM_BIN; break;
                     default:
                         printf("rmdir: invalid option: '-%c'\n", option[i]);
                         return;
@@ -1671,7 +1688,9 @@ void updatehistory(void) {
         "r1.7.80 - small changes\n\tFixed: Ans not working\n",
         "r1.7.85 - small changes\n\tFixed: now atof will not convert 'nan' or 'inf', it will just return 0\n",
         "r1.8.00 - big changes\n\tAdded: acos(), acot(), asin(), atan() and now 'inf' returned\n",
-        "r1.8.09 - big changes\n\tEdited: removed useless code\n"
+        "r1.8.09 - big changes\n\tEdited: removed useless code\n",
+        "r1.8.15 - small changes\n\tEdited: now the alias is checked first, allowing you to create aliases with the terminal's command names\n",
+        "r1.8.25 - big changes\n\tAdded: new option to rm and rmdir\n\tEdited: double '-' options are no longer case sensitive\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
@@ -1701,25 +1720,25 @@ char *unameCmd(uint16_t argc, char **argv) {
             }
 
             if (opt[1] == '-') {
-                if (strcmp(opt, "--all") == 0) {
+                if (strcasecmp(opt, "--all") == 0) {
                     flags = U_ALL;
                 }
-                else if (strcmp(opt, "--kernel-name") == 0) {
+                else if (strcasecmp(opt, "--kernel-name") == 0) {
                     flags |= U_KERN_NAME;
                 }
-                else if (strcmp(opt, "--kernel-release") == 0) {
+                else if (strcasecmp(opt, "--kernel-release") == 0) {
                     flags |= U_KERN_RELEASE;
                 }
-                else if (strcmp(opt, "--machine") == 0) {
+                else if (strcasecmp(opt, "--machine") == 0) {
                     flags |= U_MACHINE;
                 }
-                else if (strcmp(opt, "--kernel-version") == 0) {
+                else if (strcasecmp(opt, "--kernel-version") == 0) {
                     flags |= U_KERN_VERSION;
                 }
-                else if (strcmp(opt, "--nodename") == 0) {
+                else if (strcasecmp(opt, "--nodename") == 0) {
                     flags |= U_HOST_NAME;
                 }
-                else if (strcmp(opt, "--operating-system") == 0) {
+                else if (strcasecmp(opt, "--operating-system") == 0) {
                     flags |= U_OPERATING_SYSTEM;
                 }
                 else {
@@ -1876,7 +1895,7 @@ void lsCmd(const char *option, const char *address) {
     if (option[0] == '-') {
 
         if (option[1] == '-') {
-            if (strcmp(option, "--all") == 0)
+            if (strcasecmp(option, "--all") == 0)
                 flags |= LS_ALL;
             else {
                 printf("ls: invalid option: '%s'\n", option);

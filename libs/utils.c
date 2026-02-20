@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8100
-#define PROJ_SIZE_APPROX_BYTES 240500
+#define PROJ_SIZE_APPROX_BYTES 242000
 
 #define RC_FILE "lswrc.txt"
 
@@ -2041,7 +2041,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
             char *fullAction;
 
             if (args && *args) {
-                size_t len = strlen(action) + strlen(args) + 2;
+                size_t len = strlen(action) + strlen(args) + 3;
                 fullAction = malloc(len);
                 snprintf(fullAction, len, "%s %s", action, args);
             } else {
@@ -2054,7 +2054,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
             if (!*args)
                 args = strtok_r(NULL, " ", &save);
 
-            processCommand(fullAction, NULL, cmds, cmdCount, address, history_path, data_folder, isInsideBash);
+            processCommand(fullAction, NULL, cmds, cmdCount, address, history_path, data_folder, isInsideBash, true);
             SAFE_FREE(fullAction);
             SAFE_FREE(line);
             SAFE_FCLOSE(f);
