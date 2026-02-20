@@ -1229,11 +1229,15 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
     if (num1_double == (double)U64_NAN)
         return U64_NAN;
+    else if (num1_double == QUICK_EVAL_FIX)
+        return (double)U64_NAN;
 
     double num2_double = eval(num2, mathlib);
 
     if (num2_double == (double)U64_NAN)
         return U64_NAN;
+    else if (num2_double == QUICK_EVAL_FIX)
+        return (double)U64_NAN;
 
     return calc(num1_double, op, num2_double);
 }

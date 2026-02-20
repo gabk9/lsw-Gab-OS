@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.8.30"
+#define VERSION "r1.8.34"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -656,6 +656,8 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         }
 
         result = eval(operation, mathlib);
+        result = (result == QUICK_EVAL_FIX) ? 0.0 : result;
+
         Ans = (result == (double)U64_NAN) ? NAN : result;
 
         if (!isnan(result) && result != (double)U64_NAN)
@@ -1688,7 +1690,8 @@ void updatehistory(void) {
         "r1.8.09 - big changes\n\tEdited: removed useless code\n",
         "r1.8.15 - small changes\n\tEdited: now the alias is checked first, allowing you to create aliases with the terminal's command names\n",
         "r1.8.25 - big changes\n\tAdded: new option to rm and rmdir\n\tEdited: double '-' options are no longer case sensitive\n",
-        "r1.8.30 - small changes\n\tEdited: ls now works by argv and argc\n"
+        "r1.8.30 - small changes\n\tEdited: ls now works by argv and argc\n",
+        "r1.8.34 - minor changes\n\tFixed: now bc returns 0 properly when you type random characters\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

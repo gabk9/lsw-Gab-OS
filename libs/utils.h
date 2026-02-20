@@ -44,10 +44,11 @@ extern double Ans;
 #define MAX_ARGS 0x20
 #define MAX_CHAR 0x400
 #define TIME_FMT "%a %d %b %Y %H:%M:%S %z"
-#define U32_NAN ((uint32_t)(UINT32_MAX - 1u))
+#define U32_NAN ((uint32_t)(UINT32_MAX - 1U))
 #define MAX_SAFE_INT64_D  9223372036854775807.0
 #define MIN_SAFE_INT64_D -9223372036854775808.0
-#define U64_NAN ((uint64_t)(UINT64_MAX - 1ull))
+#define U64_NAN ((uint64_t)(UINT64_MAX - 1ULL))
+#define QUICK_EVAL_FIX ((double)(U64_NAN - 2ULL))
 
 #define RM_FORCE 0b00000001
 #define RM_BIN   0b00000010

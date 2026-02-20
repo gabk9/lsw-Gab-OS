@@ -284,6 +284,9 @@ double h_atof(const char *str, bool mathlib) {
     if (is_bin)
         return parseBinToInt(buf);
 
+    if (!isalldigit(buf))
+        return QUICK_EVAL_FIX;
+
     return atof(buf);
 }
 
