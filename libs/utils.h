@@ -50,7 +50,7 @@ extern double Ans;
 #define MAX_SAFE_INT64_D  9223372036854775807.0
 #define MIN_SAFE_INT64_D -9223372036854775808.0
 #define U64_NAN ((uint64_t)(UINT64_MAX - 1ULL))
-#define QUICK_EVAL_FIX ((double)(U64_NAN - 2ULL))
+#define QUICK_EVAL_FIX ((double)(DBL_MAX - 2ULL))
 
 #define RM_FORCE 0b00000001
 #define RM_BIN   0b00000010
