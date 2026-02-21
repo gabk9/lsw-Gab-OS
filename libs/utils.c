@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8300
-#define PROJ_SIZE_APPROX_BYTES 247000
+#define PROJ_LINES_APPROX 8500
+#define PROJ_SIZE_APPROX_BYTES 251000
 
 #define RC_FILE "lswrc.txt"
 
@@ -419,6 +419,7 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
             count = 0;
         } else {
             count = eval(num, true);
+            count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
         }
 
         if (count != (int64_t)count) {
@@ -527,8 +528,10 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
         if (isBcVariable(star)) {
             printf("Warning: variables are currently unsupported\n");
             count = 0;
-        } else 
+        } else {
             count = eval(star, true);
+            count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
+        }
 
         if (count != (int64_t)count) {
             puts("echo: the multiplier must be an integer");
@@ -834,7 +837,8 @@ double parse_len(char *s) {
             s++;
     }
 
-    return eval(s, true);
+    double result = eval(s, true);
+    return (result == QUICK_EVAL_FIX) ? 0.0 : result;
 }
 
 char randChr(void) {

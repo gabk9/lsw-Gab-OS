@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.8.62"
+#define VERSION "r1.8.74"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -255,8 +255,10 @@ void sleepCmd(char *instruction) {
     if (isBcVariable(instruction)) {
         printf("Warning: variables are currently unsupported\n");
         time = 0;
-    } else 
+    } else {
         time = eval(instruction, true);
+        time = (time == QUICK_EVAL_FIX) ? 0.0 : time;
+    }
 
     if (isnan(time) || time == (double)U64_NAN)
         return;
@@ -655,7 +657,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             continue; 
         }
 
-        result = eval(operation, mathlib);
+        result = eval(operation, mathlib);        
         result = (result == QUICK_EVAL_FIX) ? 0.0 : result;
 
         Ans = (result == (double)U64_NAN) ? NAN : result;
@@ -681,7 +683,7 @@ void grepCmd(char *instruction) {
     char *option;
     char *rest = buffer;
 
-    if (buffer[0] == '-') {
+    if (buffer[0] == '-' && buffer[1]) {
         option = strtok(buffer, " ");
         rest = strtok(NULL, "");
 
@@ -833,8 +835,10 @@ void historyCmd(char *operation, const char *path) {
     if (isBcVariable(operation)) {
         printf("Warning: variables are currently unsupported\n");
         num = 0;
-    } else 
+    } else {
         num = eval(operation, true);
+        num = (num == QUICK_EVAL_FIX) ? 0.0 : num;
+    }
 
 
     if (isnan(num) || num == (double)U64_NAN) {
@@ -887,7 +891,7 @@ void rmCmd(uint16_t argc, char **argv) {
     for (uint16_t i = 1; i < argc; i++) {
         char *arg = argv[i];
 
-        if (arg[0] == '-') {
+        if (arg[0] == '-' && arg[1]) {
             if (arg[1] == '-') {
                 if (strcasecmp(arg, "--force") == 0)
                     flags |= RM_FORCE;
@@ -899,6 +903,7 @@ void rmCmd(uint16_t argc, char **argv) {
                     flags &= ~RM_BIN;
                 else {
                     printf("rm: invalid option: '%s'\n", arg);
+                    return;
                 }
 
             } else {
@@ -1046,8 +1051,10 @@ void touchCmd(char *instruction) {
             if (isBcVariable(num)) {
                 printf("Warning: variables are currently unsupported\n");
                 count = 0;
-            } else 
+            } else {
                 count = eval(num, true);
+                count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
+            }
 
     
             if (count != (int64_t)count) {
@@ -1211,7 +1218,7 @@ void rmdirCmd(char *instruction) {
     
     char *args = instruction;
     
-    if (args[0] == '-') {
+    if (args[0] == '-' && args[1]) {
         char *end = args;
 
         while (*end && *end != ' ')
@@ -1696,7 +1703,10 @@ void updatehistory(void) {
         "r1.8.46 - minor changes\n\tFixed: ans returning 0 when set to NAN\n",
         "r1.8.52 - small changes\n\tFixed: 'get_cpu_model()' should now work on android\n",
         "r1.8.57 - minor changes\n\tFixed: inf not working properly\n",
-        "r1.8.62 - small changes\n\tEdited: improved bc function identifier\n"
+        "r1.8.62 - small changes\n\tEdited: improved bc function identifier\n",
+        "r1.8.65 - minor changes\n\tFixed: eval() returning nan instead of 0 at some point\n",
+        "r1.8.69 - minor changes\n\tEdited: improved options behavior\n",
+        "r1.8.74 - small changes\n\tFixed: eval() returning the wrong value at some point\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
