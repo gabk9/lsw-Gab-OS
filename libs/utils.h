@@ -96,6 +96,13 @@ enum color4 {
     LIGHT_RED, LIGHT_MAGENTA, LIGHT_YELLOW, BRIGHT_WHITE
 };
 
+enum paren_result {
+    PAREN_OK,
+    PAREN_MISSING_CLOSE,
+    PAREN_MISSING_OPEN,
+    PAREN_UNCLOSED_QUOTE
+};
+
 char randChr(void);
 char *get_user(void);
 void trim(char *str);

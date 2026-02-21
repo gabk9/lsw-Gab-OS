@@ -45,16 +45,44 @@ static uint8_t isnull(int32_t count, ...) {
     return nullCount;
 }
 
-bool parentheses_balanced(const char *s) {
+enum paren_result parenthesis_check(const char *s) {
+
     int32_t level = 0;
+    bool in_double_quotes = false;
+    bool in_single_quotes = false;
+
     for (; *s; s++) {
-        if (*s == '(') level++;
+
+        if (*s == '"' && !in_single_quotes) {
+            in_double_quotes = !in_double_quotes;
+            continue;
+        }
+
+        if (*s == '\'' && !in_double_quotes) {
+            in_single_quotes = !in_single_quotes;
+            continue;
+        }
+
+        if (in_double_quotes || in_single_quotes)
+            continue;
+
+        if (*s == '(') {
+            level++;
+        }
         else if (*s == ')') {
             level--;
-            if (level < 0) return false;
+            if (level < 0)
+                return PAREN_MISSING_OPEN;
         }
     }
-    return level == 0;
+
+    if (in_double_quotes || in_single_quotes)
+        return PAREN_UNCLOSED_QUOTE;
+
+    if (level > 0)
+        return PAREN_MISSING_CLOSE;
+
+    return PAREN_OK;
 }
 
 //! unused
@@ -86,14 +114,26 @@ char *functionHandler(char *operation, const char *function) {
     operation = strrm(operation, function);    
     trim(operation);
 
-    size_t end = strlen(operation) - 1;
-    if (operation[0] != '(' || operation[end] != ')') {
+    enum paren_result result = parenthesis_check(operation);
 
-        bool isMissing = strrchr(operation, ')') == false;
-        char chr = operation[end];
+    if (result != PAREN_OK) {
 
-        if (chr != ')' && isMissing)
-            printf("Error: expected ')'\n\n");
+        switch (result) {
+            case PAREN_MISSING_CLOSE:
+                printf("Error: expected ')'\n\n");
+                break;
+
+            case PAREN_MISSING_OPEN:
+                printf("Error: unexpected ')'\n\n");
+                break;
+
+            case PAREN_UNCLOSED_QUOTE:
+                printf("Error: unclosed quote\n\n");
+                break;
+
+            default:
+                break;
+        }
 
         return BC_ERROR;
     }
@@ -324,7 +364,7 @@ static uint8_t validPtrFuncArgs(char *arg) {
         if (isdigit((uint8_t)arg[0])) {
 
             if (isOct(arg) || isHex(arg) || isBin(arg)) {
-                printf("Error: must be a char pointer\n\n");
+                printf("Error: must be a string\n\n");
                 return 0;
             }
         }

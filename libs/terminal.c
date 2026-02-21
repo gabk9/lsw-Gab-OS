@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.8.74"
+#define VERSION "r1.8.86"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1694,7 +1694,7 @@ void updatehistory(void) {
         "r1.7.80 - small changes\n\tFixed: Ans not working\n",
         "r1.7.85 - small changes\n\tFixed: now atof will not convert 'nan' or 'inf', it will just return 0\n",
         "r1.8.00 - big changes\n\tAdded: acos(), acot(), asin(), atan() and now 'inf' returned\n",
-        "r1.8.09 - big changes\n\tEdited: removed useless code\n",
+        "r1.8.09 - big changes\n\tRemoved: useless code\n",
         "r1.8.15 - small changes\n\tEdited: now the alias is checked first, allowing you to create aliases with the terminal's command names\n",
         "r1.8.25 - big changes\n\tAdded: new option to rm and rmdir\n\tEdited: double '-' options are no longer case sensitive\n",
         "r1.8.30 - small changes\n\tEdited: ls now works by argv and argc\n",
@@ -1706,7 +1706,8 @@ void updatehistory(void) {
         "r1.8.62 - small changes\n\tEdited: improved bc function identifier\n",
         "r1.8.65 - minor changes\n\tFixed: eval() returning nan instead of 0 at some point\n",
         "r1.8.69 - minor changes\n\tEdited: improved options behavior\n",
-        "r1.8.74 - small changes\n\tFixed: eval() returning the wrong value at some point\n"
+        "r1.8.74 - small changes\n\tFixed: eval() returning the wrong value at some point\n",
+        "r1.8.86 - big changes\n\tRemoved: useless code\n\tEdited: improved the parenthesis balance analyzer\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
