@@ -2158,19 +2158,6 @@ void charRm(char *str, int8_t targ) {
     str[j] = '\0';
 }
 
-uint8_t is_pi_or_e_expression(const char *s) {
-    if (!isdigit(s[0]) && s[0] != '-') return 0;
-
-    uint16_t i = 1;
-    while (isdigit(s[i]) || s[i] == '.' || s[i] == ',') i++;
-
-    if (strcasecmp(s + i, "pi") == 0) return 1;
-
-    if (strcasecmp(s + i, "e") == 0) return 1;
-
-    return 0;
-}
-
 double parse_base_fraction(const char *s, int8_t base) {
     double result = 0.0;
     double frac = 0.0;
@@ -2209,25 +2196,28 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     if (!str || !*str)
         return 0.0;
 
+    char *cpy = strdup(str);
+    charRm(cpy, ' ');
+
     int16_t sign = 1;
     int16_t pos = 0;
     int32_t base = 0;
 
-    if (str[pos] == '-') {
+    if (cpy[pos] == '-') {
         sign = -1;
         pos++;
-    } else if (str[pos] == '+') {
+    } else if (cpy[pos] == '+') {
         pos++;
     }
 
     bool isBinary = false; 
-    if (strncasecmp(str + pos, "0x", 2) == 0) {
+    if (strncasecmp(cpy + pos, "0x", 2) == 0) {
         base = 16;
         pos += 2;
-    } else if (strncasecmp(str + pos, "0b", 2) == 0) {
+    } else if (strncasecmp(cpy + pos, "0b", 2) == 0) {
         base = 2;
         pos += 2;
-    } else if (strncasecmp(str + pos, "0o", 2) == 0) {
+    } else if (strncasecmp(cpy + pos, "0o", 2) == 0) {
         base = 8;
         pos += 2;
     } else
@@ -2237,8 +2227,8 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
 
     bool dot_seen = false;
 
-    while (str[pos]) {
-        if (str[pos] == '.') {
+    while (cpy[pos]) {
+        if (cpy[pos] == '.') {
             if (dot_seen) break;
             dot_seen = true;
             pos++;
@@ -2246,12 +2236,12 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
         }
 
         int32_t digit;
-        if (str[pos] >= '0' && str[pos] <= '9')
-            digit = str[pos] - '0';
-        else if (str[pos] >= 'a' && str[pos] <= 'f')
-            digit = str[pos] - 'a' + 10;
-        else if (str[pos] >= 'A' && str[pos] <= 'F')
-            digit = str[pos] - 'A' + 10;
+        if (cpy[pos] >= '0' && cpy[pos] <= '9')
+            digit = cpy[pos] - '0';
+        else if (cpy[pos] >= 'a' && cpy[pos] <= 'f')
+            digit = cpy[pos] - 'a' + 10;
+        else if (cpy[pos] >= 'A' && cpy[pos] <= 'F')
+            digit = cpy[pos] - 'A' + 10;
         else
             break;
 
@@ -2261,29 +2251,35 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
         pos++;
     }
 
-    if (pos == num_start)
+    if (pos == num_start) {
+        SAFE_FREE(cpy);
         return 0.0;
+    }
 
     double mult = 0.0;
 
-    if (strcasecmp(str + pos, "pi") == 0)
+    if (strcasecmp(cpy + pos, "pi") == 0)
         mult = PI;
-    else if (strcasecmp(str + pos, "e") == 0)
+    else if (strcasecmp(cpy + pos, "e") == 0)
         mult = E;
-    else if (strcasecmp(str + pos, "ans") == 0) {
+    else if (strcasecmp(cpy + pos, "ans") == 0) {
         if (isnan(Ans))
             puts("Warning: Ans is undefined\n");
         mult = Ans;
-    } else
+    } else {
+        SAFE_FREE(cpy);
         return 0.0;
+    }
 
     char buf[0x40];
     size_t len = pos - num_start;
 
-    if (len >= sizeof(buf))
+    if (len >= sizeof(buf)) {   
+        SAFE_FREE(cpy);
         return 0.0;
+    }
 
-    strncpy(buf, str + num_start, len);
+    strncpy(buf, cpy + num_start, len);
     buf[len] = '\0';
 
     double value;
@@ -2294,6 +2290,8 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
         value = parse_base_fraction(buf, 2);
 
     *ok = 1;
+    
+    SAFE_FREE(cpy);
     return sign * value * mult;
 }
 

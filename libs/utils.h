@@ -160,7 +160,6 @@ LONG WINAPI handler(EXCEPTION_POINTERS *e);
 
 double eval(char *operation, bool mathlib);
 uint8_t bsort(char **array, uint16_t count);
-uint8_t is_pi_or_e_expression(const char *s);
 int16_t rm_delete(char *path, uint8_t flags);
 int16_t strchar(const char *str, int8_t chr);
 uint16_t getHistSizeConfig(char *lswrc_path);
