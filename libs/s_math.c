@@ -88,25 +88,11 @@ char *functionHandler(char *operation, const char *function) {
     size_t end = strlen(operation) - 1;
     if (operation[0] != '(' || operation[end] != ')') {
 
-        bool firstIsMissing = false;
+        bool isMissing = strrchr(operation, ')') == false;
+        char chr = operation[end];
 
-        if (operation[0] != '(') {
-            printf("0\n\n");
-            Ans = 0.0;
-            firstIsMissing = true;
-        }
-        
-        if (!firstIsMissing) {
-            bool isMissing = strrchr(operation, ')') == false;
-            char chr = operation[end];
-    
-            if (chr != ')' && isMissing)
-                printf("Error: expected ')'\n\n");
-            else if (chr != ')' && !isMissing) {
-                Ans = 0.0;
-                printf("0\n\n");
-            }
-        }
+        if (chr != ')' && isMissing)
+            printf("Error: expected ')'\n\n");
 
         return BC_ERROR;
     }
@@ -157,8 +143,8 @@ double h_atof(const char *str, bool mathlib) {
         trim(buf);
     }
 
-    if (isUnaryNeg && strcasecmp(buf, "inf") == 0)
-        return -INFINITY;
+    if (strcasecmp(buf, "inf") == 0)
+        return isUnaryNeg ? -INFINITY : INFINITY;
 
     if (strcasecmp(buf, "nan") == 0)
         return 0.0;

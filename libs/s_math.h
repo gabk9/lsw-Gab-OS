@@ -1,6 +1,8 @@
 #ifndef S_MATH_H
 #define S_MATH_H 
 
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <inttypes.h>
@@ -8,7 +10,7 @@
 #define PI 3.14159265358979323846
 #define E  2.71828182845904523536
 
-#define KG_TO_LB_FACTOR 2.20462262185
+#define KG_TO_LB_FACTOR 2.2046226218
 #define LB_TO_KG_FACTOR 0.45359237
 
 #define KM_TO_MI_FACTOR 0.62137

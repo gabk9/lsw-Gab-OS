@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.8.46"
+#define VERSION "r1.8.62"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1693,7 +1693,10 @@ void updatehistory(void) {
         "r1.8.30 - small changes\n\tEdited: ls now works by argv and argc\n",
         "r1.8.34 - minor changes\n\tFixed: now bc returns 0 properly when you type random characters\n",
         "r1.8.43 - big changes\n\tFixed: '==' not working properly\n\tEdited: improved the calc precision\n",
-        "r1.8.46 - minor changes\n\tFixed: ans returning 0 when set to NAN\n"
+        "r1.8.46 - minor changes\n\tFixed: ans returning 0 when set to NAN\n",
+        "r1.8.52 - small changes\n\tFixed: 'get_cpu_model()' should now work on android\n",
+        "r1.8.57 - minor changes\n\tFixed: inf not working properly\n",
+        "r1.8.62 - small changes\n\tEdited: improved bc function identifier\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
@@ -1952,12 +1955,12 @@ void neofetchCmd(char *lswrc_path) {
 
 
 
-    uint8_t lines = sizeof(ascii_art) / sizeof(ascii_art[0]);
+    uint8_t lines = sizeof(ascii_art) / sizeof(*ascii_art);
     
-    enum color4 title_color = YELLOW;
-    enum color4 label_color = LIGHT_CYAN;
-    enum color4 art_color = GREEN;
-    enum color4 art_bg_color = LIGHT_GREEN;
+    const enum color4 title_color = YELLOW;
+    const enum color4 label_color = LIGHT_CYAN;
+    const enum color4 art_color = GREEN;
+    const enum color4 art_bg_color = LIGHT_GREEN;
 
     for (uint8_t i = 0; i < lines; i++) {
         for (size_t j = 0; ascii_art[i][j]; j++) {
@@ -1967,9 +1970,8 @@ void neofetchCmd(char *lswrc_path) {
                 if ((unsigned char)ascii_art[i][j] == 0xE2 &&
                     (unsigned char)ascii_art[i][j+1] == 0x95) {
                     setColor(art_bg_color);
-                } else {
+                } else
                     setColor(art_color);
-                }
             }
 
             putchar(ascii_art[i][j]);

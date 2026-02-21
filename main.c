@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
     #define rmdir _rmdir
-    #define ch dir _chdir
+    #define chdir _chdir
     #define getcwd _getcwd
     HANDLE hConsole;
 #elif !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
@@ -12,7 +12,7 @@
 int32_t main(int32_t argc, char **argv) {
 #ifdef _WIN32
     SetUnhandledExceptionFilter(handler);
-    hConsole = GetStdHandle(STD_OUTPUT_HANDLE); 
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     setup_console();
 #endif
     initRandom();

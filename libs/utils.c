@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8200
-#define PROJ_SIZE_APPROX_BYTES 243000
+#define PROJ_LINES_APPROX 8300
+#define PROJ_SIZE_APPROX_BYTES 247000
 
 #define RC_FILE "lswrc.txt"
 
@@ -1386,7 +1386,7 @@ char *unameCmdWin(uint8_t flags) {
     }
 
     if (flags & U_OPERATING_SYSTEM) {
-        const char* os_name = "Windows";
+        const char *os_name = "Windows";
         
         if (ver.dwMajorVersion == 10) {
             if (ver.dwBuildNumber >= 22000)
@@ -2160,9 +2160,9 @@ uint8_t is_pi_or_e_expression(const char *s) {
     uint16_t i = 1;
     while (isdigit(s[i]) || s[i] == '.' || s[i] == ',') i++;
 
-    if (strcmp(s + i, "pi") == 0) return 1;
+    if (strcasecmp(s + i, "pi") == 0) return 1;
 
-    if (strcmp(s + i, "e") == 0) return 1;
+    if (strcasecmp(s + i, "e") == 0) return 1;
 
     return 0;
 }
@@ -2703,17 +2703,40 @@ char* get_cpu_model(void) {
     return cpu;
 #elif __linux__
     static char cpu[0x80];
+
     FILE *fp = fopen("/proc/cpuinfo", "r");
-    if (!fp) return "Unknown";
-    while (fgets(cpu, sizeof(cpu), fp)) {
-        if (strncmp(cpu, "model name", 10) == 0) {
-            SAFE_FCLOSE(fp);
-            cpu[strcspn(cpu, "\n")] = '\0';
-            char *colon = strchr(cpu, ':');
-            return colon ? colon + 2 : "Unknown";
+    if (fp) {
+        while (fgets(cpu, sizeof(cpu), fp)) {
+            if (strncmp(cpu, "model name", 10) == 0) {
+                fclose(fp);
+                cpu[strcspn(cpu, "\n")] = '\0';
+                char *colon = strchr(cpu, ':');
+                return colon ? colon + 2 : "Unknown";
+            }
         }
+        fclose(fp);
     }
-    SAFE_FCLOSE(fp);
+
+    fp = fopen("/sys/firmware/devicetree/base/model", "r");
+    if (fp) {
+        fgets(cpu, sizeof(cpu), fp);
+        fclose(fp);
+        cpu[strcspn(cpu, "\n")] = '\0';
+        return cpu;
+    }
+
+    fp = fopen("/sys/devices/system/cpu/cpu0/uevent", "r");
+    if (fp) {
+        while (fgets(cpu, sizeof(cpu), fp)) {
+            if (strncmp(cpu, "OF_COMPATIBLE_", 14) == 0) {
+                fclose(fp);
+                cpu[strcspn(cpu, "\n")] = '\0';
+                return cpu;
+            }
+        }
+        fclose(fp);
+    }
+
     return "Unknown";
 #elif __APPLE__
     static char cpu[0x80];

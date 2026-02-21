@@ -1130,95 +1130,144 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
         }
 
         if (mathlib) {
-            if (strncmp(operation, functions[0], 5) == 0) //! scale()
-                return s_scale(operation);
-            else if (strncmp(operation, functions[1], 4) == 0) //! sqrt()
-                return s_sqrt(operation);
-            else if (strncmp(operation, functions[2], 3) == 0) //! sin()
-                return s_sin(operation);
-            else if (strncmp(operation, functions[3], 3) == 0) //! cos()
-                return s_cos(operation);
-            else if (strncmp(operation, functions[4], 3) == 0) //! tan()
-                return s_tan(operation);
-            else if (strncmp(operation, functions[5], 2) == 0) //! ln()
-                return s_ln(operation);
-            else if (strncmp(operation, functions[6], 5) == 0) //! log10()
-                return s_log10(operation);
-            else if (strncmp(operation, functions[7], 4) == 0) //! log2()
-                return s_log2(operation);
-            else if (strncmp(operation, functions[8], 3) == 0) //! log()
-                return s_log(operation);
-            else if (strncmp(operation, functions[9], 5) == 0) //! floor()
-                return s_floor(operation);
-            else if (strncmp(operation, functions[10], 4) == 0) //! ceil()
-                return s_ceil(operation);
-            else if (strncmp(operation, functions[11], 5) == 0) //! round()
-                return s_round(operation);
-            else if (strncmp(operation, functions[12], 4) == 0) //! fact()
-                return s_fact(operation);
-            else if (strncmp(operation, functions[13], 4) == 0) //! sign()
-                return s_sign(operation);
-            else if (strncmp(operation, functions[14], 3) == 0) //! sum()
-                return s_sum(operation);
-            else if (strncmp(operation, functions[15], 3) == 0) //! rad()
-                return s_rad(operation);
-            else if (strncmp(operation, functions[16], 3) == 0) //! deg()
-                return s_deg(operation);
-            else if (strncmp(operation, functions[17], 5) == 0) //! trunc()
-                return s_trunc(operation);
-            else if (strncmp(operation, functions[18], 5) == 0) //! randf()
-                return s_randFloat(operation);
-            else if (strncmp(operation, functions[19], 3) == 0) //! fah()
-                return s_fah(operation);
-            else if (strncmp(operation, functions[20], 3) == 0) //! cel()
-                return s_cel(operation);
-            else if (strncmp(operation, functions[21], 4) == 0) //! root()
-                return s_root(operation);
-            else if (strncmp(operation, functions[22], 4) == 0) //! rand()
-                return s_randInt(operation);
-            else if (strncmp(operation, functions[23], 2) == 0) //! mi()
-                return s_miles(operation);
-            else if (strncmp(operation, functions[24], 2) == 0) //! km()
-                return s_km(operation);
-            else if (strncmp(operation, functions[25], 2) == 0) //! lb()
-                return s_pounds(operation);
-            else if (strncmp(operation, functions[26], 2) == 0) //! kg()
-                return s_kg(operation);
-            else if (strncmp(operation, functions[27], 3) == 0) //! oct()
-                return parse_double(operation, functions[27]);
-            else if (strncmp(operation, functions[28], 3) == 0) //! hex()
-                return parse_double(operation, functions[28]);
-            else if (strncmp(operation, functions[29], 3) == 0) //! hex()
-                return parse_double(operation, functions[29]);
-            else if (strncmp(operation, functions[30], 3) == 0) //! abs()
-                return s_fabs_or_abs(operation, false);
-            else if (strncmp(operation, functions[31], 4) == 0) //! fabs()
-                return s_fabs_or_abs(operation, true);
-            else if (strncmp(operation, functions[32], 3) == 0) //! len()
-                return bc_len(operation);
-            else if (strncmp(operation, functions[33], 3) == 0) //! bmi()
-                return s_bmi(operation);
-            else if (strncmp(operation, functions[34], 4) == 0) //! feet()
-                return s_feet(operation);
-            else if (strncmp(operation, functions[35], 5) == 0) //! meter()
-                return s_meter(operation);
-            else if (strncmp(operation, functions[36], 3) == 0) //! cot()
-                return s_cot(operation);
-            else if (strncmp(operation, functions[37], 3) == 0) //! gon()
-                return s_gon(operation);
-            else if (strncmp(operation, functions[38], 3) == 0) //! chr()
-                return parse_double(operation, functions[38]);
-            else if (strncmp(operation, functions[39], 4) == 0) //! asin()
-                return s_asin(operation);
-            else if (strncmp(operation, functions[40], 4) == 0) //! acos()
-                return s_acos(operation);
-            else if (strncmp(operation, functions[41], 4) == 0) //! atan()
-                return s_atan(operation);
-            else if (strncmp(operation, functions[42], 4) == 0) //! acot()
-                return s_acot(operation);
-        }    
+            char *test = strdup(operation);
+            charRm(test, ' ');
 
-        return h_atof(operation, mathlib);
+            if (test[5] == '(' && strncmp(operation, functions[0], 5) == 0) { //! scale()
+                SAFE_FREE(test);
+                return s_scale(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[1], 4) == 0) { //! sqrt()
+                SAFE_FREE(test);
+                return s_sqrt(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[2], 3) == 0) { //! sin()
+                SAFE_FREE(test);
+                return s_sin(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[3], 3) == 0) { //! cos()
+                SAFE_FREE(test);
+                return s_cos(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[4], 3) == 0) { //! tan()
+                SAFE_FREE(test);
+                return s_tan(operation);
+            } else if (test[2] == '(' && strncmp(operation, functions[5], 2) == 0) { //! ln()
+                SAFE_FREE(test);
+                return s_ln(operation);
+            } else if (test[5] == '(' && strncmp(operation, functions[6], 5) == 0) { //! log10()
+                SAFE_FREE(test);
+                return s_log10(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[7], 4) == 0) { //! log2()
+                SAFE_FREE(test);
+                return s_log2(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[8], 3) == 0) { //! log()
+                SAFE_FREE(test);
+                return s_log(operation);
+            } else if (test[5] == '(' && strncmp(operation, functions[9], 5) == 0) { //! floor()
+                SAFE_FREE(test);
+                return s_floor(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[10], 4) == 0) { //! ceil()
+                SAFE_FREE(test);
+                return s_ceil(operation);
+            } else if (test[5] == '(' && strncmp(operation, functions[11], 5) == 0) { //! round()
+                SAFE_FREE(test);
+                return s_round(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[12], 4) == 0) { //! fact()
+                SAFE_FREE(test);
+                return s_fact(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[13], 4) == 0) { //! sign()
+                SAFE_FREE(test);
+                return s_sign(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[14], 3) == 0) { //! sum()
+                SAFE_FREE(test);
+                return s_sum(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[15], 3) == 0) { //! rad()
+                SAFE_FREE(test);
+                return s_rad(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[16], 3) == 0) { //! deg()
+                SAFE_FREE(test);
+                return s_deg(operation);
+            } else if (test[5] == '(' && strncmp(operation, functions[17], 5) == 0) { //! trunc()
+                SAFE_FREE(test);
+                return s_trunc(operation);
+            } else if (test[5] == '(' && strncmp(operation, functions[18], 5) == 0) { //! randf()
+                SAFE_FREE(test);
+                return s_randFloat(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[19], 3) == 0) { //! fah()
+                SAFE_FREE(test);
+                return s_fah(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[20], 3) == 0) { //! cel()
+                SAFE_FREE(test);
+                return s_cel(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[21], 4) == 0) { //! root()
+                SAFE_FREE(test);
+                return s_root(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[22], 4) == 0) { //! rand()
+                SAFE_FREE(test);
+                return s_randInt(operation);
+            } else if (test[2] == '(' && strncmp(operation, functions[23], 2) == 0) { //! mi()
+                SAFE_FREE(test);
+                return s_miles(operation);
+            } else if (test[2] == '(' && strncmp(operation, functions[24], 2) == 0) { //! km()
+                SAFE_FREE(test);
+                return s_km(operation);
+            } else if (test[2] == '(' && strncmp(operation, functions[25], 2) == 0) { //! lb()
+                SAFE_FREE(test);
+                return s_pounds(operation);
+            } else if (test[2] == '(' && strncmp(operation, functions[26], 2) == 0) { //! kg()
+                SAFE_FREE(test);
+                return s_kg(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[27], 3) == 0) { //! oct()
+                SAFE_FREE(test);
+                return parse_double(operation, functions[27]);
+            } else if (test[3] == '(' && strncmp(operation, functions[28], 3) == 0) { //! hex()
+                SAFE_FREE(test);
+                return parse_double(operation, functions[28]);
+            } else if (test[3] == '(' && strncmp(operation, functions[29], 3) == 0) { //! hex()
+                SAFE_FREE(test);
+                return parse_double(operation, functions[29]);
+            } else if (test[3] == '(' && strncmp(operation, functions[30], 3) == 0) { //! abs()
+                SAFE_FREE(test);
+                return s_fabs_or_abs(operation, false);
+            } else if (test[4] == '(' && strncmp(operation, functions[31], 4) == 0) { //! fabs()
+                SAFE_FREE(test);
+                return s_fabs_or_abs(operation, true);
+            } else if (test[3] == '(' && strncmp(operation, functions[32], 3) == 0) { //! len()
+                SAFE_FREE(test);
+                return bc_len(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[33], 3) == 0) { //! bmi()
+                SAFE_FREE(test);
+                return s_bmi(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[34], 4) == 0) { //! feet()
+                SAFE_FREE(test);
+                return s_feet(operation);
+            } else if (test[5] == '(' && strncmp(operation, functions[35], 5) == 0) { //! meter()
+                SAFE_FREE(test);
+                return s_meter(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[36], 3) == 0) { //! cot()
+                SAFE_FREE(test);
+                return s_cot(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[37], 3) == 0) { //! gon()
+                SAFE_FREE(test);
+                return s_gon(operation);
+            } else if (test[3] == '(' && strncmp(operation, functions[38], 3) == 0) { //! chr()
+                SAFE_FREE(test);
+                return parse_double(operation, functions[38]);
+            } else if (test[4] == '(' && strncmp(operation, functions[39], 4) == 0) { //! asin()
+                SAFE_FREE(test);
+                return s_asin(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[40], 4) == 0) { //! acos()
+                SAFE_FREE(test);
+                return s_acos(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[41], 4) == 0) { //! atan()
+                SAFE_FREE(test);
+                return s_atan(operation);
+            } else if (test[4] == '(' && strncmp(operation, functions[42], 4) == 0) { //! acot()
+                SAFE_FREE(test);
+                return s_acot(operation);
+            }
+
+            SAFE_FREE(test);    
+
+            return h_atof(operation, mathlib);
+        }
     }
 
     char buffer[0x100];
