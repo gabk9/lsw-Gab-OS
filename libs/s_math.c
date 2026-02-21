@@ -222,7 +222,7 @@ double h_atof(const char *str, bool mathlib) {
 
         if (isAns)
             num = Ans;
-        else  {
+        else {
             num = eval(buf, mathlib);
         }
             
