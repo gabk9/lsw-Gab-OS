@@ -353,9 +353,8 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
         }
     }
 
-    if (flags & BASH_VERSION) {
-        printf("LSW - Gab-OS  %s\n", VERSION);
-    }
+    if (flags & BASH_VERSION)
+        puts("LSW - Gab-OS  "VERSION"");
 
     if (flags & BASH_HELP) {
         printf("LSW - Gab OS, a Linux like shell (Linux Subsystem for Windows)\n\n");
@@ -2064,7 +2063,7 @@ void neofetchCmd(char *lswrc_path) {
 
 
     printc("VERSION: ", label_color, WHITE);
-    printf("LSW - Gab-OS  %s\n", VERSION);
+    puts("LSW - Gab-OS  "VERSION"");
 
 
     printc("CREATION DATE: ", label_color, WHITE);
