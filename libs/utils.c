@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8600
+#define PROJ_LINES_APPROX 8500
 #define PROJ_SIZE_APPROX_BYTES 252500
 
 #define RC_FILE "lswrc.txt"
@@ -2440,40 +2440,6 @@ double eval(char *operation, bool mathlib) {
 
         return NAN;
     }
-
-    if (!mathlib) {
-        for (uint16_t i = 0; operation[i]; i++) {
-            if (operation[i] == ' ' || operation[i] == '(' ||
-                operation[i] == ')')
-                continue;
-            if (isalpha((unsigned char)operation[i]))
-            return 0.0;
-        }
-    }
-
-    char *tmp = strdup(operation);
-    charRm(tmp, ' ');
-
-    if (isHex(tmp) || isOct(tmp)) {
-        double val = h_atof(tmp, mathlib);
-        SAFE_FREE(tmp);
-        return val;
-    }
-
-    int16_t ok = 0;
-    double val = parse_bin_hex_oct_ans_e_pi(tmp, &ok);
-    if (ok) {
-        SAFE_FREE(tmp);
-        return val;
-    }
-
-    if (is_pi_or_e_expression(tmp)) {
-        val = h_atof(tmp, mathlib);
-        SAFE_FREE(tmp);
-        return val;
-    }
-
-    SAFE_FREE(tmp);
 
     return CheckOperation(operation, functions, uniOps, multiOps, mathlib);
 }

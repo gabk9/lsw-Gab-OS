@@ -6,11 +6,11 @@
 
 double parse_double(char *str, char *funcName) {    
     char *test;
-    uint8_t heap = 0;
+    bool heap = false;
     if (funcName) {
         test = functionHandler(str, funcName);
         if (strcmp(test, BC_ERROR) == 0) return (double)U64_NAN;
-        heap = 1;
+        heap = true;
     } else 
         test = str;
 
@@ -165,8 +165,8 @@ double h_atof(const char *str, bool mathlib) {
 
     trim(buf);
     trimEnd(buf);
-    
-    if (isBcVariable(buf)) {
+
+    if (mathlib && isBcVariable(buf)) {
         printf("Warning: variables are currently unsupported\n\n");
         return NAN;
     }
@@ -184,13 +184,17 @@ double h_atof(const char *str, bool mathlib) {
         trim(buf);
     }
 
-    if (strcasecmp(buf, "inf") == 0)
+    if (strcasecmp(buf, "inf") == 0) {
+        if (!mathlib)
+            return 0.0;
+
         return isUnaryNeg ? -INFINITY : INFINITY;
+    }
 
     if (strcasecmp(buf, "nan") == 0)
         return 0.0;
 
-    bool isAns = strcasecmp(buf, OLD_ANSWER_STR) == 0;
+    bool isAns = mathlib && strcasecmp(buf, OLD_ANSWER_STR) == 0;
 
     if (isUnaryNeg) {
 
@@ -218,7 +222,7 @@ double h_atof(const char *str, bool mathlib) {
 
         if (isAns)
             num = Ans;
-        else {
+        else  {
             num = eval(buf, mathlib);
         }
             
@@ -239,84 +243,87 @@ double h_atof(const char *str, bool mathlib) {
 
     if (*buf == '\'' && buf[2] == '\'' && buf[3] == '\0')
         return (double)buf[1];
-    
-    int16_t ok = 0;
-    double hex_pi_e = parse_bin_hex_oct_ans_e_pi(buf, &ok);
-    if (ok)
-        return hex_pi_e;
+
+    if (mathlib) {            
+        int16_t ok = 0;
+        double hex_pi_e = parse_bin_hex_oct_ans_e_pi(buf, &ok);
+        if (ok)
+            return hex_pi_e;
+    }
 
     uint16_t len = strlen(buf);
 
-    bool is_hex = false;
-    if (len > 2 && buf[0] == '0' && (buf[1] == 'x' || buf[1] == 'X'))
-        is_hex = true;
+    if (mathlib) {
 
-    bool has_exp = (strchr(buf, 'e') != NULL || strchr(buf, 'E') != NULL);
-
-    bool is_octal = isOct(buf);
-
-    bool is_bin = isBin(buf);
-
-    bool allow_suffix = (!is_hex && !has_exp);
-
-    const struct {
-        char suffix;
-        double mult;
-    } suffix[] = {
-        {'k', 1e3},
-        {'m', 1e6},
-        {'b', 1e9},
-        {'t', 1e12},
-    };
-
-    if (allow_suffix || (*buf == 'e' || *buf == 'E')) {
-        for (size_t mi = 0; mi < sizeof(suffix) / sizeof(suffix[0]); mi++) {
-            if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
-                buf[len - 1] = '\0';
-                double num = eval(buf, mathlib);
-                return (num == QUICK_EVAL_FIX) ? 0.0 : num * suffix[mi].mult;
+        bool is_hex = isHex(buf);
+    
+        bool has_exp = (strchr(buf, 'e') != NULL || strchr(buf, 'E') != NULL);
+    
+        bool is_octal = isOct(buf);
+    
+        bool is_bin = isBin(buf);
+    
+        bool allow_suffix = (!is_hex && !has_exp);
+    
+        const struct {
+            char suffix;
+            double mult;
+        } suffix[] = {
+            {'k', 1e3},
+            {'m', 1e6},
+            {'b', 1e9},
+            {'t', 1e12},
+        };
+    
+        if (allow_suffix || (*buf == 'e' || *buf == 'E')) {
+            for (size_t mi = 0; mi < sizeof(suffix) / sizeof(suffix[0]); mi++) {
+                if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
+                    buf[len - 1] = '\0';
+                    double num = eval(buf, mathlib);
+                    return (num == QUICK_EVAL_FIX) ? 0.0 : num * suffix[mi].mult;
+                }
             }
         }
+    
+        if (strcasecmp(buf, "pi") == 0) return PI;
+        if (strcasecmp(buf, "-pi") == 0) return -PI;
+        if (strcasecmp(buf, "e") == 0)  return E;
+        if (strcasecmp(buf, "-e") == 0) return -E;
+    
+        uint16_t i = 0;
+        while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))
+            i++;
+    
+        if (i > 0 && strcasecmp(buf + i, "pi") == 0) {
+            char temp[0x40];
+            strncpy(temp, buf, i);
+            temp[i] = '\0';
+            return eval(temp, mathlib) * PI;
+        }
+    
+        if (i > 0 && strcasecmp(buf + i, "e") == 0) {
+            char temp[0x40];
+            strncpy(temp, buf, i);
+            temp[i] = '\0';
+            double num = eval(temp, mathlib);
+            return (num == QUICK_EVAL_FIX) ? 0.0 : num * E;
+        }
+    
+        if (is_hex)
+            return (double)hex_to_long(buf);
+    
+        if (is_octal) {
+            return (double)strtol(buf+2, NULL, 8);
+        }
+    
+        if (is_bin)
+            return parseBinToInt(buf);
     }
-
-    if (strcasecmp(buf, "pi") == 0) return PI;
-    if (strcasecmp(buf, "-pi") == 0) return -PI;
-    if (strcasecmp(buf, "e") == 0)  return E;
-    if (strcasecmp(buf, "-e") == 0) return -E;
-
-    uint16_t i = 0;
-    while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))
-        i++;
-
-    if (i > 0 && strcasecmp(buf + i, "pi") == 0) {
-        char temp[0x40];
-        strncpy(temp, buf, i);
-        temp[i] = '\0';
-        return eval(temp, mathlib) * PI;
-    }
-
-    if (i > 0 && strcasecmp(buf + i, "e") == 0) {
-        char temp[0x40];
-        strncpy(temp, buf, i);
-        temp[i] = '\0';
-        double num = eval(temp, mathlib);
-        return (num == QUICK_EVAL_FIX) ? 0.0 : num * E;
-    }
-
-    if (is_hex)
-        return (double)hex_to_long(buf);
-
-    if (is_octal) {
-        return (double)strtol(buf+2, NULL, 8);
-    }
-
-    if (is_bin)
-        return parseBinToInt(buf);
 
     if (!isalldigit(buf))
         return QUICK_EVAL_FIX;
 
-    return atof(buf);
+    return (!mathlib && isHex(buf)) ? 0.0 : atof(buf);
 }
 
 int64_t parseBinToInt(const char *str) {

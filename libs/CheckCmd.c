@@ -1120,7 +1120,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
     if (op_pos == -1) {
 
-        if (strcasecmp(operation, OLD_ANSWER_STR) == 0) {
+        if (mathlib && strcasecmp(operation, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
                 puts("Warning: Ans is undefined");
                 return (double)U64_NAN;
@@ -1263,11 +1263,10 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
                 SAFE_FREE(test);
                 return s_acot(operation);
             }
-
             SAFE_FREE(test);    
-
-            return h_atof(operation, mathlib);
         }
+
+        return h_atof(operation, mathlib);
     }
 
     char buffer[0x100];
@@ -1281,7 +1280,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
     trim(num1); trimEnd(num1);
     trim(num2); trimEnd(num2);
 
-    if (isBcVariable(num1) || isBcVariable(num2)) {
+    if (mathlib && (isBcVariable(num1) || isBcVariable(num2))) {
         printf("Warning: variables are currently unsupported\n\n");
         return NAN;
     }

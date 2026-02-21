@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.8.86"
+#define VERSION "r1.9.00"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1707,7 +1707,8 @@ void updatehistory(void) {
         "r1.8.65 - minor changes\n\tFixed: eval() returning nan instead of 0 at some point\n",
         "r1.8.69 - minor changes\n\tEdited: improved options behavior\n",
         "r1.8.74 - small changes\n\tFixed: eval() returning the wrong value at some point\n",
-        "r1.8.86 - big changes\n\tRemoved: useless code\n\tEdited: improved the parenthesis balance analyzer\n"
+        "r1.8.86 - big changes\n\tRemoved: useless code\n\tEdited: improved the parenthesis balance analyzer\n",
+        "r1.9.00 - big changes\n\tEdited: huge eval() refactor\n",
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
