@@ -126,7 +126,7 @@ winget install --id MSYS2.MSYS2 -e
 
 **Note:** the `data/` folder must remain in the same directory as the executable.
 
-### Linux (bash)
+### Linux
 
 ```bash
 git clone https://github.com/gabk9/lsw-Gab-OS.git
