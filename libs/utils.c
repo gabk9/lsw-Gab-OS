@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8500
-#define PROJ_SIZE_APPROX_BYTES 252000
+#define PROJ_SIZE_APPROX_BYTES 252500
 
 #define RC_FILE "lswrc.txt"
 

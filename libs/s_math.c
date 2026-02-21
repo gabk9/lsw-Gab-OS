@@ -206,8 +206,11 @@ double h_atof(const char *str, bool mathlib) {
         double num;
         if (isAns)
             num = Ans;
-        else
+        else {
             num = eval(buf, mathlib);
+            if (num == QUICK_EVAL_FIX)
+                return QUICK_EVAL_FIX;
+        }
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("Error: numeric overflow (too large)\n\n");
@@ -224,9 +227,11 @@ double h_atof(const char *str, bool mathlib) {
             num = Ans;
         else {
             num = eval(buf, mathlib);
+            if (num == QUICK_EVAL_FIX)
+                return QUICK_EVAL_FIX;
         }
-            
-            if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
+
+        if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("Error: numeric overflow (too large)\n\n");
             return NAN;
         }
