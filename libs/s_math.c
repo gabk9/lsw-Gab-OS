@@ -120,15 +120,15 @@ char *functionHandler(char *operation, const char *function) {
 
         switch (result) {
             case PAREN_MISSING_CLOSE:
-                printf("Error: expected ')'\n\n");
+                printf("eval: expected ')'\n\n");
                 break;
 
             case PAREN_MISSING_OPEN:
-                printf("Error: unexpected ')'\n\n");
+                printf("eval: unexpected ')'\n\n");
                 break;
 
             case PAREN_UNCLOSED_QUOTE:
-                printf("Error: unclosed quote\n\n");
+                printf("eval: unclosed quote\n\n");
                 break;
 
             default:
@@ -262,28 +262,60 @@ double h_atof(const char *str, bool mathlib) {
 
         bool is_hex = isHex(buf);
     
-        bool has_exp = (strchr(buf, 'e') != NULL || strchr(buf, 'E') != NULL);
-    
+        
         bool is_octal = isOct(buf);
-    
+        
         bool is_bin = isBin(buf);
-    
-        bool allow_suffix = (!is_hex && !has_exp);
-    
+        
+        
         const struct {
             char suffix;
             double mult;
         } suffix[] = {
-            {'k', 1e3},
-            {'m', 1e6},
-            {'b', 1e9},
-            {'t', 1e12},
+            {.suffix = 'k', .mult = 1e3},
+            {.suffix = 'm', .mult = 1e6},
+            {.suffix = 'b', .mult = 1e9},
+            {.suffix = 't', .mult = 1e12},
         };
-    
-        if (allow_suffix || (*buf == 'e' || *buf == 'E')) {
-            for (size_t mi = 0; mi < sizeof(suffix) / sizeof(suffix[0]); mi++) {
+
+        uint8_t suffixCount = sizeof(suffix) / sizeof(*suffix);
+
+        
+        size_t lastIndex = len - 1;
+        
+        for (size_t i = len - 1; i >= 0; i--) {
+            bool found = false;
+            for (size_t j = 0; j < suffixCount; j++)
+                if (buf[i] == suffix[j].suffix)
+                    found = true;
+
+            if (!found) {
+                lastIndex = i;
+                break;
+            }
+        }
+
+        bool has_exp = false;
+        
+        if (lastIndex != len - 1 && len > 1) {
+            char *test = strdup(buf);
+            test[lastIndex+1] = '\0';
+
+            if (isHex(test) || strcasecmp(test, "0x") == 0)
+                has_exp = true;
+
+            SAFE_FREE(test);
+
+        } else
+            has_exp = true;
+        
+
+        bool allow_suffix = (!is_hex && !has_exp);
+        
+        if (allow_suffix) {
+            for (size_t mi = 0; mi < suffixCount; mi++) {
                 if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
-                    buf[len - 1] = '\0';
+                    buf[len-1] = '\0';
                     double num = eval(buf, mathlib);
                     return (num == QUICK_EVAL_FIX) ? 0.0 : num * suffix[mi].mult;
                 }
@@ -291,9 +323,7 @@ double h_atof(const char *str, bool mathlib) {
         }
     
         if (strcasecmp(buf, "pi") == 0) return PI;
-        if (strcasecmp(buf, "-pi") == 0) return -PI;
-        if (strcasecmp(buf, "e") == 0)  return E;
-        if (strcasecmp(buf, "-e") == 0) return -E;
+        else if (strcasecmp(buf, "e") == 0)  return E;
     
         uint16_t i = 0;
         while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))

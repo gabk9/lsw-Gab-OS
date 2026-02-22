@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8500
-#define PROJ_SIZE_APPROX_BYTES 252500
+#define PROJ_LINES_APPROX 8600
+#define PROJ_SIZE_APPROX_BYTES 253500
 
 #define RC_FILE "lswrc.txt"
 
@@ -2421,15 +2421,15 @@ double eval(char *operation, bool mathlib) {
 
         switch (result) {
             case PAREN_MISSING_CLOSE:
-                printf("Error: expected ')'\n\n");
+                printf("eval: expected ')'\n\n");
                 break;
 
             case PAREN_MISSING_OPEN:
-                printf("Error: unexpected ')'\n\n");
+                printf("eval: unexpected ')'\n\n");
                 break;
 
             case PAREN_UNCLOSED_QUOTE:
-                printf("Error: unclosed quote\n\n");
+                printf("eval: unclosed quote\n\n");
                 break;
 
             default:
@@ -2575,16 +2575,12 @@ char **copyMat(char **dest, const char **src, uint16_t size) {
 bool isalldigit(const char *s) {
     if (!s || !*s) return false;
 
-    const char *validSuffixes = "kmbt";
-
     if (*s == '-')
         s++;
 
     bool hex = isHex(s);
     bool oct = isOct(s);
     bool bin = isBin(s);
-
-    bool hasExponent = (strchr(s, 'e') || strchr(s, 'E'));
 
     if (hex)
         return true;
@@ -2605,16 +2601,18 @@ bool isalldigit(const char *s) {
                 return false;
         }
         else if (*p == 'e' || *p == 'E') {
-            p++;
-            if (*p == '+' || *p == '-')
-                p++;
-            if (!isdigit((unsigned char)*p))
-                return false;
+            //* i'll keep it that way
+            // p++;
+            // if (*p == '+' || *p == '-')
+            //     p++;
+            // if (!isdigit((unsigned char)*p))
+            //     return false;
 
-            while (isdigit((unsigned char)*p))
-                p++;
+            // while (isdigit((unsigned char)*p))
+            //     p++;
 
-            return *p == '\0';
+            // return *p == '\0';
+            return false;
         }
         else if (!isdigit((unsigned char)*p)) {
             break;
@@ -2622,9 +2620,6 @@ bool isalldigit(const char *s) {
     }
 
     if (!*p)
-        return true;
-
-    if (!hasExponent && p[1] == '\0' && strchr(validSuffixes, tolower(*p)))
         return true;
 
     return false;
