@@ -992,8 +992,18 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     else if (strcmp(instruction, cmds[12]) == 0) //! mkdir
         mkdirCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[13]) == 0) //! rmdir
-        rmdirCmd(args ? args : "");
+    else if (strcmp(instruction, cmds[13]) == 0) { //! rmdir
+        uint16_t argc_rmdir;
+        char **argv_rmdir = extract_args(args, &argc_rmdir, "rmdir");
+
+        rmdirCmd(args ? argc_rmdir : 1, argv_rmdir);
+
+        if (args) {
+            for (uint16_t i = 0; i < argc_rmdir; i++)
+                SAFE_FREE(argv_rmdir[i]);
+            SAFE_FREE(argv_rmdir);
+        }
+    }
 
     else if (strcmp(instruction, cmds[14]) == 0) //! cat
         catCmd(args ? args : "", EOF, "cat");

@@ -334,24 +334,40 @@ char **extract_args(char *args, uint16_t *argc, char *firstArg) {
     char **argv = malloc(sizeof(char*) * MAX_ARGS);
     if (!argv) return NULL;
 
-    *argc = 1;
-    argv[0] = strdup(firstArg);
+    *argc = 0;
 
-    if (!argv[0]) {
+    argv[*argc] = strdup(firstArg);
+    if (!argv[*argc]) {
         SAFE_FREE(argv);
         return NULL;
     }
+    (*argc)++;
 
-    uint16_t count = 0;
     if (args) {
+        uint16_t count = 0;
         char **list = parseData(args, &count);
-
-        for (uint16_t i = 0; i < count && *argc < MAX_ARGS; i++) {
-            argv[(*argc)++] = list[i];
+        if (!list) {
+            SAFE_FREE(argv[0]);
+            SAFE_FREE(argv);
+            return NULL;
         }
 
+        for (uint16_t i = 0; i < count && *argc < MAX_ARGS; i++) {
+            argv[*argc] = strdup(list[i]);
+            if (!argv[*argc]) {
+                for (uint16_t j = 0; j < *argc; j++)
+                    SAFE_FREE(argv[j]);
+                SAFE_FREE(argv);
+                break;
+            }
+            (*argc)++;
+        }
+
+        for (uint16_t i = 0; i < count; i++)
+            SAFE_FREE(list[i]);
         SAFE_FREE(list);
     }
+
     return argv;
 }
 

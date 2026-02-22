@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.9.14"
+#define VERSION "r1.9.25"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1211,90 +1211,64 @@ void tailCmd(char *instruction, uint32_t max_lines) {
     SAFE_FCLOSE(f);
 }
 
-void rmdirCmd(char *instruction) {
+void rmdirCmd(uint16_t argc, char **argv) {
 
     uint8_t flags = 0;
-    
-    char *args = instruction;
-    
-    if (args[0] == '-' && args[1]) {
-        char *end = args;
+    uint16_t objCount = 0;
+    char *objects[MAX_ARGS];
 
-        while (*end && *end != ' ')
-            end++;
+    if (argc < 2) {
+        puts("rmdir: missing operand\nUse \"man rmdir\" to check the manual");
+        return;
+    }
 
-        size_t len = end - args;
+    for (uint16_t i = 1; i < argc; i++) {
+        char *arg = argv[i];
 
-        char option[0x40];
-        if (len >= sizeof(option)) len = sizeof(option) - 1;
-        memcpy(option, args, len);
-        option[len] = '\0';
-
-        if (option[1] == '-') {
-            if (strcasecmp(option, "recycle-bin") == 0)
-                flags |= RM_BIN;
-            else if (strcasecmp(option, "--erase") == 0)
-                flags &= ~RM_BIN;
-            else {
-                printf("rmdir: invalid option: '%s'\n", option);
-                return;
-            }
-        } else {
-            for (uint16_t i = 1; i < option[i]; i++) {
-                char opt = tolower((unsigned char)option[i]);
-                switch (opt) {
-                    case 'b': flags |= RM_BIN; break;
-                    case 'e': flags &= ~RM_BIN; break;
-                    default:
-                        printf("rmdir: invalid option: '-%c'\n", option[i]);
-                        return;
+        if (arg[0] == '-' && arg[1]) {
+            if (arg[1] == '-') {
+                if (strcasecmp(arg, "--recycle-bin") == 0)
+                    flags |= RM_BIN;
+                else if (strcasecmp(arg, "--erase") == 0)
+                    flags &= ~RM_BIN;
+                else {
+                    printf("rmdir: invalid option: '%s'\n", arg);
+                    return;
+                }
+            } else {
+                for (size_t j = 1; arg[j]; j++) {
+                    char c = tolower((unsigned char)arg[j]);
+                    switch (c) {
+                        case 'b': flags |= RM_BIN; break;
+                        case 'e': flags &= ~RM_BIN; break;
+                        default:
+                            printf("rmdir: invalid option: '-%c'\n", c);
+                            return;
+                    }
                 }
             }
         }
-
-        args = end;
-        while (*args == ' ') args++;
+        else {
+            objects[objCount++] = arg;
+        }
     }
 
-    char buffer[MAX_CHAR];
-    strncpy(buffer, args, sizeof(buffer));
-    buffer[sizeof(buffer)-1] = '\0';
-
-    char *rest = buffer;
-
-    if (!*rest) {
+    if (!objCount) {
         puts("rmdir: missing operand\nUse \"man rmdir\" to check the manual");
         return;
     }
 
-    uint16_t fileCount = 0;
-    char **files = parseData(rest, &fileCount);
-
-    if (fileCount == 0) {
-        puts("rmdir: missing operand\nUse \"man rmdir\" to check the manual");
-        return;
+    for (uint16_t i = 0; i < objCount; i++) {
+        if (rm_delete(objects[i], flags) != 0) {
+            perror(objects[i]);
+        }
+        else {
+            if (flags & RM_BIN)
+                printf("rmdir: '%s' moved to recycle bin\n", objects[i]);
+            else
+                printf("rmdir: '%s' deleted successfully\n", objects[i]);
+        }
     }
-
-    if (flags & RM_BIN)
-        for (uint16_t i = 0; i < fileCount; i++) {
-            if (!move_to_trash(files[i])) {
-                printf("rmdir: cannot move '%s' to the recycle bin: operation failed\n", files[i]);
-            } else {
-                printf("rmdir: '%s' moved to recycle bin\n", files[i]);
-            }
-            SAFE_FREE(files[i]);
-        }
-    else
-        for (uint16_t i = 0; i < fileCount; i++) {
-            if (rmdir(files[i]) != 0) {
-                perror(files[i]);
-            } else {
-                printf("rmdir: '%s' deleted successfully\n", files[i]);
-            }
-            SAFE_FREE(files[i]);
-        }
-
-    SAFE_FREE(files);
 }
 
 void mkdirCmd(char *command) {
@@ -1711,7 +1685,9 @@ void updatehistory(void) {
         "r1.9.03 - minor changes\n\tEdited: improved unary parser with invalid numbers\n",
         "r1.9.05 - minor changes\n\tEdited: those imbalanced error strings\n",
         "r1.9.10 - small changes\n\tFixed: euler not working with the suffixes\n",
-        "r1.9.14 - minor changes\n\tRemoved: scientific notation, since I only managed it to work with only positive and without the plus sign on the power\n"
+        "r1.9.14 - minor changes\n\tRemoved: scientific notation, since I only managed it to work with only positive and without the plus sign on the power\n",
+        "r1.9.19 - small changes\n\tEdited: more error strings\n",
+        "r1.9.25 - small changes\n\tEdited: rmdir now works by argc and argv correctly\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
