@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.9.25"
+#define VERSION "r1.9.30"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1687,7 +1687,8 @@ void updatehistory(void) {
         "r1.9.10 - small changes\n\tFixed: euler not working with the suffixes\n",
         "r1.9.14 - minor changes\n\tRemoved: scientific notation, since I only managed it to work with only positive and without the plus sign on the power\n",
         "r1.9.19 - small changes\n\tEdited: more error strings\n",
-        "r1.9.25 - small changes\n\tEdited: rmdir now works by argc and argv correctly\n"
+        "r1.9.25 - small changes\n\tEdited: rmdir now works by argc and argv correctly\n",
+        "r1.9.30 - small changes\n\tEdited: attempted to fix permission being denied when removing folders/files on windows\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

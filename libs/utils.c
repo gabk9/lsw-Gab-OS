@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8600
-#define PROJ_SIZE_APPROX_BYTES 253500
+#define PROJ_SIZE_APPROX_BYTES 254000
 
 #define RC_FILE "lswrc.txt"
 
@@ -652,6 +652,15 @@ int16_t rm_delete(char *path, uint8_t flags) {
     if (flags & RM_BIN) {
         return move_to_trash(path) ? 0 : -1;
     }
+
+#ifdef _WIN32
+    if (RemoveDirectoryA(path))
+        return 0;
+
+    if (DeleteFileA(path))
+        return 0;
+#endif
+
     return remove(path);
 }
 
