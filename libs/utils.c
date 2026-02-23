@@ -2453,15 +2453,15 @@ double eval(char *operation, bool mathlib) {
 
         switch (result) {
             case PAREN_MISSING_CLOSE:
-                printf("eval: expected ')'\n\n");
+                printf("eval: expected ')'\n");
                 break;
 
             case PAREN_MISSING_OPEN:
-                printf("eval: unexpected ')'\n\n");
+                printf("eval: unexpected ')'\n");
                 break;
 
             case PAREN_UNCLOSED_QUOTE:
-                printf("eval: unclosed quote\n\n");
+                printf("eval: unclosed quote\n");
                 break;
 
             default:
