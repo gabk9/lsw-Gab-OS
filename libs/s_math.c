@@ -150,7 +150,7 @@ char *functionHandler(char *operation, const char *function) {
     trimEnd(copy);
 
     if (isBcVariable(copy)) {
-        printf("Warning: variables are currently unsupported\n\n");
+        printf("Warning: variables are currently unsupported\n");
         SAFE_FREE(copy);
         return BC_ERROR;
     }
@@ -167,7 +167,7 @@ double h_atof(const char *str, bool mathlib) {
     trimEnd(buf);
 
     if (mathlib && isBcVariable(buf)) {
-        printf("Warning: variables are currently unsupported\n\n");
+        printf("Warning: variables are currently unsupported\n");
         return NAN;
     }
     
@@ -184,9 +184,12 @@ double h_atof(const char *str, bool mathlib) {
         trim(buf);
     }
 
-    if (strcasecmp(buf, "inf") == 0) {
-        if (!mathlib)
-            return 0.0;
+    if (mathlib && strcasecmp(buf, "inf") == 0) {
+
+        if (isUnaryNot) {
+            printf("eval: to use the not(~) operator the number must be integer\n");
+            return NAN;
+        }
 
         return isUnaryNeg ? -INFINITY : INFINITY;
     }
@@ -199,8 +202,8 @@ double h_atof(const char *str, bool mathlib) {
     if (isUnaryNeg) {
 
         if (isAns && isnan(Ans)) {
-            puts("Warning: Ans is undefined\n");
-            return (double)U64_NAN;
+            puts("Warning: Ans is undefined");
+            return NAN;
         }
 
         double num;
@@ -213,7 +216,7 @@ double h_atof(const char *str, bool mathlib) {
         }
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
-            printf("eval: numeric overflow (too large)\n\n");
+            printf("eval: numeric overflow (too large)\n");
             return NAN;
         }
 
@@ -232,12 +235,12 @@ double h_atof(const char *str, bool mathlib) {
         }
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
-            printf("eval: numeric overflow (too large)\n\n");
+            printf("eval: numeric overflow (too large)\n");
             return NAN;
         }
 
         if (num != (int64_t)num) {
-            printf("eval: to use the not(~) operator the number must be integer\n\n");
+            printf("eval: to use the not(~) operator the number must be integer\n");
             return NAN;
         }
 
@@ -386,19 +389,19 @@ static uint8_t validPtrFuncArgs(char *arg) {
     if (arg[0] != '"' || arg[len-1] != '"') {
 
         if (arg[len-1] == '\'' && arg[0] == '\'') {
-            printf("eval: must be a string\n\n");
+            printf("eval: must be a string\n");
             return 0;
         }
 
         if (arg[len-1] != '"' && arg[0] == '"') {
-            printf("eval: missing closing quote\n\n");
+            printf("eval: missing closing quote\n");
             return 0;
         }
 
         if (arg[len-1] == '"' && arg[0] != '"') {
             char *tmp = strdup(arg);
             tmp[len-1] = '\0';
-            printf("eval: invalid argument: '%s'\n\n", tmp);
+            printf("eval: invalid argument: '%s'\n", tmp);
             SAFE_FREE(tmp);
             return 0;
         }
@@ -406,12 +409,12 @@ static uint8_t validPtrFuncArgs(char *arg) {
         if (isdigit((uint8_t)arg[0])) {
 
             if (isOct(arg) || isHex(arg) || isBin(arg)) {
-                printf("eval: must be a string\n\n");
+                printf("eval: must be a string\n");
                 return 0;
             }
         }
 
-        printf("eval: invalid argument: '%s'\n\n", arg);
+        printf("eval: invalid argument: '%s'\n", arg);
         return 0;
     }
 
@@ -503,7 +506,7 @@ double bc_len(char *operation) {
     double len = strlen(test);
 
     if (!len || countCommaOutsideQuotesAndParenthesis(test, '"') != 0) {
-        printf("eval: strlen() requires exactly 1 argument\n\n");
+        printf("eval: strlen() requires exactly 1 argument\n");
         SAFE_FREE(test);
         return NAN;
     }
@@ -542,7 +545,7 @@ double s_fabs_or_abs(char *operation, bool enable_single_point) {
 
     if (!enable_single_point) {
         if (value != (int64_t)value) {
-            printf("eval: abs() requires an integer\n\n");
+            printf("eval: %s() requires an integer\n", function);
             return NAN;
         }
     }
@@ -719,12 +722,12 @@ char *s_oct(char *operation) {
     }
 
     if (num != (int64_t)num) {
-        printf("eval: oct() requires an integer!\n\n");
+        printf("eval: oct() requires an integer!\n");
         return NULL;
     }
 
     if (num < 0) {
-        printf("eval: oct() requires non negative numbers\n\n");
+        printf("eval: oct() requires non negative numbers\n");
         return NULL;
     }
 
@@ -755,19 +758,19 @@ char *s_chr(char *operation) {
         return NULL;
 
     if (num != (int64_t)num) {
-        printf("eval: chr() requires an integer\n\n");
+        printf("eval: chr() requires an integer\n");
         return NULL;
     }
 
     int64_t value = (int64_t)num;
 
     if (value < 0 || value > 127) {
-        printf("eval: chr() requires an integer between 0 and 127 (inclusive)\n\n");
+        printf("eval: chr() requires an integer between 0 and 127 (inclusive)\n");
         return NULL;
     }
 
     if (value < 32 || value == 127) {
-        printf("eval: chr() does not allow control characters\n\n");
+        printf("eval: chr() does not allow control characters\n");
         return NULL;
     }
 
@@ -800,7 +803,7 @@ char *s_hex(char *operation) {
     }
 
     if (val != (int64_t)val) {
-        printf("eval: hex() requires an integer!\n\n");
+        printf("eval: hex() requires an integer!\n");
         return NULL;
     }
 
@@ -839,7 +842,7 @@ char *s_bin(char *operation) {
     }
 
     if (val != (int64_t)val) {
-        printf("Bin: bin() requires an integer!\n\n");
+        printf("Bin: bin() requires an integer!\n");
         return NULL;
     }
 
@@ -964,7 +967,7 @@ double s_sqrt(char *operation) {
     }
 
     if (num < 0) {
-        puts("eval: sqrt() requires a non negative!\n");
+        puts("eval: sqrt() requires a non negative!");
         return NAN;
     }
 
@@ -1052,7 +1055,7 @@ double s_asin(char *operation) {
     }    
     
     if (num < -1.0 || num > 1.0) {
-        puts("eval: asin() is defined only for -1 <= x <= 1\n");
+        puts("eval: asin() is defined only for -1 <= x <= 1");
         return NAN;
     }
     
@@ -1078,7 +1081,7 @@ double s_cot(char *operation) {
     double t = tan(num);
 
     if (fabs(t) < 1e-12) {
-        printf("eval: cot() undefined for %.10g rad\n\n", num);
+        printf("eval: cot() undefined for %.10g rad\n", num);
         return NAN;
     }
     
@@ -1145,7 +1148,7 @@ double s_acos(char *operation) {
     }    
 
     if (num < -1.0 || num > 1.0) {
-        puts("eval: acos() is defined only for -1 <= x <= 1\n");
+        puts("eval: acos() is defined only for -1 <= x <= 1");
         return NAN;
     }
 
@@ -1171,7 +1174,7 @@ double s_tan(char *operation) {
 
     double modPi = fmod(fabs(angle), PI);
     if (fabs(modPi - PI / 2.0) < 1e-8) {
-        printf("eval: tan() undefined for %.10g rad\n\n", angle);
+        printf("eval: tan() undefined for %.10g rad\n", angle);
         return NAN;
     }
 
@@ -1267,7 +1270,7 @@ double s_root(char *operation) {
     char *comma = find_top_level_comma(test);
     
     if (!comma) {
-        printf("eval: root() requires exactly 2 arguments\n\n");
+        printf("eval: root() requires exactly 2 arguments\n");
         return NAN;
     }
 
@@ -1277,7 +1280,7 @@ double s_root(char *operation) {
     
     uint8_t nullCount = isnull(2, indexStr, rootingStr);
     if (nullCount) {
-        printf("eval: root() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        printf("eval: root() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
         SAFE_FREE(test);
         return NAN;
     }
@@ -1316,12 +1319,12 @@ double s_root(char *operation) {
     bool invert = false;
 
     if (index == 0) {
-        printf("eval: root() requires an index that is not 0\n\n");
+        printf("eval: root() requires an index that is not 0\n");
         return NAN;
     }
 
     if (floor(index) != index) {
-        printf("eval: troot() requires an integer index\n\n");
+        printf("eval: troot() requires an integer index\n");
         return NAN;
     }
 
@@ -1330,8 +1333,8 @@ double s_root(char *operation) {
         index = -index;
     }
 
-    if (rooting < 0 && ((int32_t)index % 2 == 0)) {
-        printf("eval: root() requires an odd index when there is a negative number\n\n");
+    if (rooting < 0 && (((int64_t)index & 1) == 0)) {
+        printf("eval: root() requires an odd index when there is a negative number\n");
         return NAN;
     }
 
@@ -1356,7 +1359,7 @@ double s_bmi(char *operation) {
     char *comma = find_top_level_comma(test);
     
     if (!comma) {
-        printf("eval: bmi() requires exactly 2 arguments\n\n");
+        printf("eval: bmi() requires exactly 2 arguments\n");
         return NAN;
     }
 
@@ -1366,7 +1369,7 @@ double s_bmi(char *operation) {
     
     uint8_t nullCount = isnull(2, weightStr, heightStr);
     if (nullCount) {
-        printf("eval: bmi() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        printf("eval: bmi() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
         SAFE_FREE(test);
         return NAN;
     }
@@ -1412,7 +1415,7 @@ double s_log(char *operation) {
     char *comma = find_top_level_comma(test);
 
     if (!comma) {
-        printf("eval: log() requires exactly 2 arguments\n\n");
+        printf("eval: log() requires exactly 2 arguments\n");
         return NAN;
     }
     
@@ -1422,7 +1425,7 @@ double s_log(char *operation) {
 
     uint8_t nullCount = isnull(2, baseStr, numStr);
     if (nullCount) {
-        printf("eval: log() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        printf("eval: log() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
         SAFE_FREE(test);
         return NAN;
     }
@@ -1459,7 +1462,7 @@ double s_log(char *operation) {
     SAFE_FREE(test);
 
     if (base <= 1 || num <= 0) {
-        printf("eval: invalid values for log()\n\n");
+        printf("eval: invalid values for log()\n");
         return NAN;
     }
 
@@ -1473,7 +1476,7 @@ double s_randFloat(char *operation) {
     char *comma = find_top_level_comma(test);
 
     if (!comma) {
-        printf("eval: randf() requires exactly 2 arguments\n\n");
+        printf("eval: randf() requires exactly 2 arguments\n");
         return NAN;
     }
     
@@ -1484,7 +1487,7 @@ double s_randFloat(char *operation) {
     
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
-        printf("eval: randf() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        printf("eval: randf() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
         SAFE_FREE(test);
         return NAN;
     }
@@ -1541,7 +1544,7 @@ double s_randInt(char *operation) {
     char *comma = find_top_level_comma(test);
 
     if (!comma) {
-        printf("eval: rand() requires exactly 2 arguments\n\n");
+        printf("eval: rand() requires exactly 2 arguments\n");
         return NAN;
     }
     
@@ -1551,7 +1554,7 @@ double s_randInt(char *operation) {
     
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
-        printf("eval: rand() requires exactly 2 arguments (missing %"PRIu8")\n\n", nullCount);
+        printf("eval: rand() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
         SAFE_FREE(test);
         return NAN;
     }
@@ -1599,7 +1602,7 @@ double s_randInt(char *operation) {
     SAFE_FREE(test);
 
     if (minInt != (int64_t)minInt || maxInt != (int64_t)maxInt) {
-        printf("eval: rand() requires an integer!\n\n");
+        printf("eval: rand() requires an integer!\n");
         return NAN;
     }
 
@@ -1680,6 +1683,45 @@ double tetration(double base, int32_t height) {
     return result;
 }
 
+bool isprime(int64_t n) {
+    if (n < 2) return false;
+    
+    for (int64_t i = 2; i * i <= n; i++)
+        if (n % i == 0) return false;
+    
+    return true;
+}
+
+double s_isprime(char *operation) {
+    char *test = functionHandler(operation, "isprime");
+    if (strcmp(test, BC_ERROR) == 0) return NAN;
+
+    double num = eval(test, true);
+
+    SAFE_FREE(test);
+
+    if (num == QUICK_EVAL_FIX)
+        return 0.0;
+
+
+    if (num == (double)U64_NAN) {
+        putchar('\n');
+        return NAN;
+    }   
+
+    if (num <= 1) {
+        printf("eval: isprime() requires a number greater than 1\n");
+        return NAN;
+    }
+
+    if (num != (int64_t)num) {
+        printf("eval: isprime() requires an integer!\n");
+        return NAN;
+    }
+
+    return isprime((int64_t)num);
+}
+
 uint64_t fact(int64_t num) {
     if (num < 0)
         return U64_NAN;
@@ -1710,12 +1752,12 @@ double s_fact(char *operation) {
     }   
 
     if (num < 0) {
-        printf("eval: fact() requires a non negative value\n\n");
+        printf("eval: fact() requires a non negative value\n");
         return NAN;
     }
 
     if (num != (int64_t)num) {
-        printf("eval: fact() requires an integer!\n\n");
+        printf("eval: fact() requires an integer!\n");
         return NAN;
     }
 
@@ -1760,7 +1802,7 @@ double s_sum(char *operation) {
 
     if (commaCount < 1 || commaCount > 2) {
         printf(
-            "eval: sum() function requires at least 2 arguments and at most 3 arguments\n\n"
+            "eval: sum() function requires at least 2 arguments and at most 3 arguments\n"
         );
         SAFE_FREE(test);
         return NAN;
@@ -1793,7 +1835,7 @@ double s_sum(char *operation) {
         nullCount = isnull(2, initStr, endStr);
 
     if (nullCount) {
-        printf("eval: sum() missing %"PRIu8" argument(s)\n\n", nullCount);
+        printf("eval: sum() missing %"PRIu8" argument(s)\n", nullCount);
         SAFE_FREE(test);
         return NAN;
     }

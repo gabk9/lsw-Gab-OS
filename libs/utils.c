@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8600
-#define PROJ_SIZE_APPROX_BYTES 254000
+#define PROJ_LINES_APPROX 8700
+#define PROJ_SIZE_APPROX_BYTES 255500
 
 #define RC_FILE "lswrc.txt"
 
@@ -438,6 +438,9 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
             count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
         }
 
+        if (isnan(count))
+            return 0;
+
         if (count != (int64_t)count) {
             printf("echo: the multiplier must be an integer\n");
             return 0;
@@ -548,6 +551,9 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
             count = eval(star, true);
             count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
         }
+
+        if (isnan(count))
+            return 0;
 
         if (count != (int64_t)count) {
             puts("echo: the multiplier must be an integer");
@@ -2289,7 +2295,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
         mult = E;
     else if (strcasecmp(cpy + pos, "ans") == 0) {
         if (isnan(Ans))
-            puts("Warning: Ans is undefined\n");
+            puts("Warning: Ans is undefined");
         mult = Ans;
     } else {
         SAFE_FREE(cpy);
@@ -2430,7 +2436,8 @@ double eval(char *operation, bool mathlib) {
         "fact", "sign", "sum", "rad", "deg", "trunc", "randf",
         "fah", "cel", "root", "rand", "mi", "km", "lb", "kg",
         "oct", "hex", "bin", "abs", "fabs", "len", "bmi", "feet",
-        "meter", "cot", "gon", "chr", "asin", "acos", "atan", "acot"
+        "meter", "cot", "gon", "chr", "asin", "acos", "atan", "acot",
+        "isprime"
     };
 
     const char uniOps[] = "+-/*^%%&|<>";

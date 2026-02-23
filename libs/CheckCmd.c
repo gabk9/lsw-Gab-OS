@@ -245,7 +245,7 @@ double calc(double num1, char *operation, double num2, bool mathLib) {
         if (num2 == 0.0) {
 
             if (!mathLib) {
-                printf("eval: can't divide by 0\n\n");
+                printf("eval: can't divide by 0\n");
                 return NAN;
             }
 
@@ -260,14 +260,14 @@ double calc(double num1, char *operation, double num2, bool mathLib) {
         result = num1 / num2;
     } else if (strcmp(operation, "%") == 0) {
         if (num2 == 0) {
-            printf("eval: can't divide by 0\n\n");
+            printf("eval: can't divide by 0\n");
             return NAN;
         }
 
         result = fmod(num1, num2);
     } else if (strcmp(operation, "^") == 0) {
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
-            printf("eval: must be integers\n\n");
+            printf("eval: must be integers\n");
             return NAN;
         }
 
@@ -275,7 +275,7 @@ double calc(double num1, char *operation, double num2, bool mathLib) {
     }
     else if (strcmp(operation, "&") == 0) {
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
-            printf("eval: must be integers\n\n");
+            printf("eval: must be integers\n");
             return NAN;
         }
 
@@ -283,7 +283,7 @@ double calc(double num1, char *operation, double num2, bool mathLib) {
     }
     else if (strcmp(operation, "|") == 0) {
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
-            printf("eval: must be integers\n\n");
+            printf("eval: must be integers\n");
             return NAN;
         }
 
@@ -296,7 +296,7 @@ double calc(double num1, char *operation, double num2, bool mathLib) {
 
     else if (strcmp(operation, "**") == 0) {
         if (num1 < 0 && (int64_t)num2 != num2) {
-            printf("eval: negative base with non-integer exponent\n\n");
+            printf("eval: negative base with non-integer exponent\n");
             return NAN;
         }
         else
@@ -306,33 +306,33 @@ double calc(double num1, char *operation, double num2, bool mathLib) {
     else if (strcmp(operation, "^^") == 0) {
 
         if (num2 != (int64_t)num2) {
-            printf("eval: tetration height must be an integer\n\n");
+            printf("eval: tetration height must be an integer\n");
             return NAN;
         } else if (num2 < 0) {
-            printf("eval: tetration height must be non-negative\n\n");
+            printf("eval: tetration height must be non-negative\n");
             return NAN;
         } else if (num1 == 0.0 && num2 == 0.0) {
-            printf("eval: 0^^0 is undefined\n\n");
+            printf("eval: 0^^0 is undefined\n");
             return NAN;
         } else {
 
             result = tetration(num1, (int32_t)num2);
 
             if (isnan(result))
-                printf("eval: invalid input for tetration\n\n");
+                printf("eval: invalid input for tetration\n");
         }
     }
 
     else if (strcmp(operation, "<<") == 0) {
         if (num2 < 0 || num2 >= sizeof(long long) * 8) {
-            printf("eval: shift amount must be between 0 and %zu\n\n", sizeof(uint64_t) * 8 - 1);
+            printf("eval: shift amount must be between 0 and %zu\n", sizeof(uint64_t) * 8 - 1);
             return NAN;
         }
         result = (uint64_t)num1 << (uint64_t)num2;
     }
     else if (strcmp(operation, ">>") == 0) {
         if (num2 < 0 || num2 >= sizeof(long long) * 8) {
-            printf("eval: shift amount must be between 0 and %zu\n\n", sizeof(int64_t) * 8 - 1);
+            printf("eval: shift amount must be between 0 and %zu\n", sizeof(int64_t) * 8 - 1);
             return NAN;
         }
 
@@ -354,12 +354,12 @@ double calc(double num1, char *operation, double num2, bool mathLib) {
 
 
     else {
-        printf("eval: Unknown operator '%s'\n\n", operation);
+        printf("eval: Unknown operator '%s'\n", operation);
         return NAN;
     }
 
     if (isinf(result)) {
-        printf("eval: numeric overflow (too large)\n\n");
+        printf("eval: numeric overflow (too large)\n");
         return NAN;
     }
 
@@ -749,6 +749,10 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\n"
             "\tbmi(X, Y)      : Returns your BMI with wight (X) in kg and height (Y) in meters\n"
             "\t                 Example: bmi(91, 1.78) = 28.7211\n"
+            "\n"
+            "\tisprime(X)     : Returns 1 if X is prime, otherwise it returns 0\n"
+            "\t                 Example: isprime(5) = 1\n"
+            "\t                 Note: it requires an integer which is greater 1\n"
 
             "\nBuiltin Variables: (mathlib must be on to grant access)\n"
             "\tAns   : stores the result of the last operation\n"
@@ -1132,8 +1136,8 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
         if (mathlib && strcasecmp(operation, OLD_ANSWER_STR) == 0) {
             if (isnan(Ans)) {
-                puts("Warning: Ans is undefined");
-                return (double)U64_NAN;
+                printf("Warning: Ans is undefined\n");
+                return NAN;
             }
 
             return Ans;
@@ -1272,6 +1276,9 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
             } else if (test[4] == '(' && strncmp(operation, functions[42], 4) == 0) { //! acot()
                 SAFE_FREE(test);
                 return s_acot(operation);
+            } else if (test[7] == '(' && strncmp(operation, functions[43], 7) == 0) { //! acot()
+                SAFE_FREE(test);
+                return s_isprime(operation);
             }
             SAFE_FREE(test);    
         }
@@ -1291,7 +1298,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
     trim(num2); trimEnd(num2);
 
     if (mathlib && (isBcVariable(num1) || isBcVariable(num2))) {
-        printf("Warning: variables are currently unsupported\n\n");
+        printf("Warning: variables are currently unsupported\n");
         return NAN;
     }
 

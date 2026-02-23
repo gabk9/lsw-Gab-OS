@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.9.30"
+#define VERSION "r1.9.45"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -613,8 +613,10 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                 printf("%s\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
-            } else
+            } else {
+                putchar('\n');
                 Ans = NAN;
+            }
 
             SAFE_FREE(value);
             continue;
@@ -625,8 +627,10 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                 printf("%s\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
-            } else
+            } else {
+                putchar('\n');
                 Ans = NAN;
+            }
 
             SAFE_FREE(value);
             continue;
@@ -637,8 +641,10 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                 printf("%s\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
-            } else 
+            } else {
+                putchar('\n');
                 Ans = NAN;
+            }
 
             SAFE_FREE(value);
             continue;
@@ -649,8 +655,10 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
                 printf("%s\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
-            } else
+            } else {
+                putchar('\n');
                 Ans = NAN;
+            }
 
             SAFE_FREE(value);
             continue; 
@@ -663,7 +671,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
 
         if (!isnan(result) && result != (double)U64_NAN)
             printf("%g\n\n", result);
-        if (result == (double)U64_NAN)
+        if (isnan(result) || result == (double)U64_NAN)
             putchar('\n');
 
         fflush(stdout);
@@ -1688,7 +1696,9 @@ void updatehistory(void) {
         "r1.9.14 - minor changes\n\tRemoved: scientific notation, since I only managed it to work with only positive and without the plus sign on the power\n",
         "r1.9.19 - small changes\n\tEdited: more error strings\n",
         "r1.9.25 - small changes\n\tEdited: rmdir now works by argc and argv correctly\n",
-        "r1.9.30 - small changes\n\tEdited: attempted to fix permission being denied when removing folders/files on windows\n"
+        "r1.9.30 - small changes\n\tEdited: attempted to fix permission being denied when removing folders/files on windows\n",
+        "r1.9.34 - minor changes\n\tAdded: error when trying to use the bitwise not with inf\n",
+        "r1.9.45 - big changes\n\tAdded: isprime() to bc\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

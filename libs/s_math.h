@@ -26,6 +26,7 @@
     #define RAND_MAX 0x7FFFFFFF
 #endif
 
+bool isprime(int64_t n);
 uint64_t fact(int64_t num);
 double tetration(double base, int32_t height);
 double parse_double(char *str, char *funcName);
@@ -69,6 +70,7 @@ double s_log10(char *operation)__attribute__((nonnull));
 double s_scale(char *operation)__attribute__((nonnull));
 double s_pounds(char *operation)__attribute__((nonnull));
 double s_randInt(char *operation)__attribute__((nonnull));
+double s_isprime(char *operation)__attribute__((nonnull));
 char *find_top_level_comma(char *s)__attribute__((nonnull));
 double s_randFloat(char *operation)__attribute__((nonnull));
 int64_t parseBinToInt(const char *str)__attribute__((nonnull));
