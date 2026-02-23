@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.9.45"
+#define VERSION "r1.9.66"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1698,7 +1698,9 @@ void updatehistory(void) {
         "r1.9.25 - small changes\n\tEdited: rmdir now works by argc and argv correctly\n",
         "r1.9.30 - small changes\n\tEdited: attempted to fix permission being denied when removing folders/files on windows\n",
         "r1.9.34 - minor changes\n\tAdded: error when trying to use the bitwise not with inf\n",
-        "r1.9.45 - big changes\n\tAdded: isprime() to bc\n"
+        "r1.9.45 - big changes\n\tAdded: isprime() to bc\n",
+        "r1.9.54 - big changes\n\tEdited: improved the behavior with lsw argv and argc\n",
+        "r1.9.66 - big changes\n\tEdited: improved the main argv and argc, optimized the suffix analyzer and improved the bc oct() function\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
@@ -1957,7 +1959,7 @@ void neofetchCmd(char *lswrc_path) {
 
 
 
-    uint8_t lines = sizeof(ascii_art) / sizeof(*ascii_art);
+    const uint8_t lines = sizeof(ascii_art) / sizeof(*ascii_art);
     
     const enum color4 title_color = YELLOW;
     const enum color4 label_color = LIGHT_CYAN;

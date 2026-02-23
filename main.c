@@ -26,7 +26,7 @@ int32_t main(int32_t argc, char **argv) {
         "randstr", "rev"
     };
 
-    uint16_t cmdCount = sizeof(cmds) / sizeof(*cmds);
+    const uint16_t cmdCount = sizeof(cmds) / sizeof(*cmds);
 
     char *input = calloc(MAX_CHAR, sizeof(char));
     if (!input) {
@@ -45,47 +45,25 @@ int32_t main(int32_t argc, char **argv) {
     
     if (argc > 1) {
         checkLswrcSyntax(data_folder);
-        uint16_t total_len = 0;
         for (uint16_t i = 1; i < argc; i++) {
-            total_len += strlen(argv[i]) + 1;
+            removeComments(argv[i]);
+            trimEnd(argv[i]);
         }
 
         SAFE_FREE(input);
-        input = calloc(total_len + 1, sizeof(char));
 
-        for (uint16_t i = 1; i < argc; i++) {
-            strcat(input, argv[i]);
-            if (i + 1 < argc) strcat(input, " ");
+        for (size_t i = 1; i < argc; i++) {
+            if (argv[i][0] == '-')
+                bashCmd(2, (char *[]){"bash", argv[i]}, cmds, cmdCount, false);
+            else {
+                saveHist(argv[i], history_path, data_folder);
+                processCommand(argv[i], cmds, cmdCount, &address, history_path, data_folder, false, false);
+            }
         }
-        
-        if (*input != '-') {
-            saveHist(input, history_path, data_folder);
-        }
-
-        char *arguments = strchr(input, ' ');
-        if (arguments) {
-            while (*arguments == ' ') arguments++;
-            if (*arguments == '\0') arguments = NULL;
-        }
-
-        removeComments(arguments);
-        removeComments(input);
-        
-        trim(input); trimEnd(input);
-
-        if (arguments) {
-            trim(arguments); trimEnd(arguments);
-        }
-        
-        if (input[0] == '-') 
-            bashCmd(argc, argv, cmds, cmdCount, false);
-        else
-            processCommand(input, arguments, cmds, cmdCount, &address, history_path, data_folder, false, false);
 
         SAFE_FREE(data_folder);
         SAFE_FREE(program_root);
         SAFE_FREE(history_path);
-        SAFE_FREE(input);
         SAFE_FREE(address);
         return 0;
     }
@@ -131,7 +109,7 @@ int32_t main(int32_t argc, char **argv) {
 
         saveHist(input, history_path, data_folder);
 
-        processCommand(input, NULL, cmds, cmdCount, &address, history_path, data_folder, true, false);
+        processCommand(input, cmds, cmdCount, &address, history_path, data_folder, true, false);
     }
     
     SAFE_FREE(data_folder);

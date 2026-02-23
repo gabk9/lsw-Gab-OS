@@ -281,42 +281,11 @@ double h_atof(const char *str, bool mathlib) {
             {.suffix = 't', .mult = 1e12},
         };
 
-        uint8_t suffixCount = sizeof(suffix) / sizeof(*suffix);
-
-        
-        size_t lastIndex = len - 1;
-        
-        for (size_t i = len - 1; i >= 0; i--) {
-            bool found = false;
-            for (size_t j = 0; j < suffixCount; j++)
-                if (buf[i] == suffix[j].suffix)
-                    found = true;
-
-            if (!found) {
-                lastIndex = i;
-                break;
-            }
-        }
-
-        bool has_exp = false;
-        
-        if (lastIndex != len - 1 && len > 1) {
-            char *test = strdup(buf);
-            test[lastIndex+1] = '\0';
-
-            if (isHex(test) || strcasecmp(test, "0x") == 0)
-                has_exp = true;
-
-            SAFE_FREE(test);
-
-        } else
-            has_exp = true;
-        
-
+        bool has_exp = strncasecmp(buf, "0x", 2) == 0;
         bool allow_suffix = (!is_hex && !has_exp);
         
         if (allow_suffix) {
-            for (size_t mi = 0; mi < suffixCount; mi++) {
+            for (size_t mi = 0; mi < sizeof(suffix) / sizeof(*suffix); mi++) {
                 if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
                     buf[len-1] = '\0';
                     double num = eval(buf, mathlib);
@@ -726,22 +695,19 @@ char *s_oct(char *operation) {
         return NULL;
     }
 
-    if (num < 0) {
-        printf("eval: oct() requires non negative numbers\n");
-        return NULL;
-    }
-
     char temp[0x80];
-    snprintf(temp, sizeof(temp), "%.0lf", num);
+
+    bool isNeg = num < 0;
+
+    snprintf(temp, sizeof(temp), "%.0lf", isNeg ? -num : num);
 
     int64_t value = strtol(temp, NULL, 0);
 
-    char *buffer = malloc(64);
+    char *buffer = malloc(0x40);
     if (!buffer)
         return NULL;
 
-
-    snprintf(buffer, 64, "0o%" PRIo64, value);
+    snprintf(buffer, 64, isNeg ? "-0o%"PRIo64 : "0o%"PRIo64, value);
 
     return buffer;
 }

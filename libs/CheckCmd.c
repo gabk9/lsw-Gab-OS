@@ -855,7 +855,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
 }
 
-void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCount,
+void processCommand(char *input, const char **cmds, uint16_t cmdCount,
                     char **address, char *history_path,
                     char *data_folder, bool isInsideBash, bool isFromAlias) {
     char *temp = strdup(input);
@@ -883,12 +883,12 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
 
             trim(segment);
             trimEnd(segment);
+            trimBetween(segment);
 
             if (*segment) {
-                processCommand(segment, NULL,
-                            cmds, cmdCount,
-                            address, history_path,
-                            data_folder, isInsideBash, false);
+                processCommand(segment, cmds, cmdCount,
+                                address, history_path,
+                                data_folder, isInsideBash, false);
             }
 
             if (!pos)
@@ -913,6 +913,7 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
         }
     #endif
 
+    char *args;
     char *instruction = extract_instruction(temp, &args);
 
     if (!instruction) {
@@ -923,7 +924,6 @@ void processCommand(char *input, char *args, const char **cmds, uint16_t cmdCoun
     trim(instruction);
     trimEnd(instruction);
     trimBetween(instruction);
-
 
     if (!isFromAlias && isalias(instruction, args ? args : "", cmds, cmdCount, address, 
     history_path, data_folder, isInsideBash)) {

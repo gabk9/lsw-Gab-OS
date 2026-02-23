@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8700
-#define PROJ_SIZE_APPROX_BYTES 255500
+#define PROJ_LINES_APPROX 8600
+#define PROJ_SIZE_APPROX_BYTES 254500
 
 #define RC_FILE "lswrc.txt"
 
@@ -2089,7 +2089,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
             if (!*args)
                 args = strtok_r(NULL, " ", &save);
 
-            processCommand(fullAction, NULL, cmds, cmdCount, address, history_path, data_folder, isInsideBash, true);
+            processCommand(fullAction, cmds, cmdCount, address, history_path, data_folder, isInsideBash, true);
             SAFE_FREE(fullAction);
             SAFE_FREE(line);
             SAFE_FCLOSE(f);
