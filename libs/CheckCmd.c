@@ -855,8 +855,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
 }
 
-void processCommand(char *input, const char **cmds, uint16_t cmdCount,
-                    char **address, char *history_path,
+void processCommand(char *input, const char **cmds, char **address, char *history_path,
                     char *data_folder, bool isInsideBash, bool isFromAlias) {
     char *temp = strdup(input);
     if (!temp) {
@@ -886,8 +885,7 @@ void processCommand(char *input, const char **cmds, uint16_t cmdCount,
             trimBetween(segment);
 
             if (*segment) {
-                processCommand(segment, cmds, cmdCount,
-                                address, history_path,
+                processCommand(segment, cmds, address, history_path,
                                 data_folder, isInsideBash, false);
             }
 
@@ -925,7 +923,7 @@ void processCommand(char *input, const char **cmds, uint16_t cmdCount,
     trimEnd(instruction);
     trimBetween(instruction);
 
-    if (!isFromAlias && isalias(instruction, args ? args : "", cmds, cmdCount, address, 
+    if (!isFromAlias && isalias(instruction, args ? args : "", cmds, address, 
     history_path, data_folder, isInsideBash)) {
         SAFE_FREE(temp);
         return;
@@ -949,7 +947,7 @@ void processCommand(char *input, const char **cmds, uint16_t cmdCount,
         updatehistory();
 
     else if (strcmp(instruction, cmds[5]) == 0) //! cmds
-        cmdsCommand(cmds, cmdCount, isInsideBash);
+        cmdsCommand(cmds, isInsideBash);
 
     else if (strcmp(instruction, cmds[6]) == 0) { //! cd
     #ifdef _WIN32           
@@ -1081,7 +1079,7 @@ void processCommand(char *input, const char **cmds, uint16_t cmdCount,
         uint16_t argc_bash;
         char **argv_bash = extract_args(args, &argc_bash, "bash");
 
-        bashCmd(argc_bash, argv_bash, cmds, cmdCount, true);
+        bashCmd(argc_bash, argv_bash, cmds, true);
 
         if (args) {
             for (uint16_t i = 1; i < argc_bash; i++)

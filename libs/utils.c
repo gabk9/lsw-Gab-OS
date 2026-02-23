@@ -1989,7 +1989,7 @@ void removeComments(char *str) {
     }
 }
 
-bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, char **address, char *history_path, char *data_folder, uint16_t isInsideBash) {
+bool isalias(char *operation, char *args, const char **cmds, char **address, char *history_path, char *data_folder, uint16_t isInsideBash) {
     char *aliasPath = buildLswRcPath(data_folder);
     FILE *f = fopen(aliasPath, "r");
     SAFE_FREE(aliasPath);
@@ -2061,7 +2061,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
             uint16_t argc_bash;
             char **argv_bash = extract_args(args, &argc_bash, "bash");
 
-            bashCmd(argc_bash, argv_bash, cmds, cmdCount, true);
+            bashCmd(argc_bash, argv_bash, cmds, true);
             
             if (args) {
                 for (uint16_t i = 1; i < argc_bash; i++)
@@ -2089,7 +2089,7 @@ bool isalias(char *operation, char *args, const char **cmds, uint16_t cmdCount, 
             if (!*args)
                 args = strtok_r(NULL, " ", &save);
 
-            processCommand(fullAction, cmds, cmdCount, address, history_path, data_folder, isInsideBash, true);
+            processCommand(fullAction, cmds, address, history_path, data_folder, isInsideBash, true);
             SAFE_FREE(fullAction);
             SAFE_FREE(line);
             SAFE_FCLOSE(f);

@@ -8,6 +8,6 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash);
 double CheckOperation(char *operation, char **functions, const char *uniOps, const char **multiOps, bool mathlib);
 
 __attribute__((hot))
-void processCommand(char *input, const char **cmds, uint16_t cmdCount, char **address, char *history_path, char *data_folder, bool isInsideBash, bool isFromAlias);
+void processCommand(char *input, const char **cmds, char **address, char *history_path, char *data_folder, bool isInsideBash, bool isFromAlias);
 
 #endif

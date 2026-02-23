@@ -314,7 +314,7 @@ int32_t lcCmd(char *instruction) {
     return lines;
 }
 
-void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, bool insideBash) {
+void bashCmd(uint16_t argc, char **argv, const char **cmds, bool insideBash) {
     if (argc < 2) 
         return;
 
@@ -381,7 +381,13 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
             static int8_t initialized = 0;
     
             if (!initialized) {
+                
+                uint16_t cmdCount = 0;
+                for (uint16_t i = 0; cmds[i]; i++)
+                    cmdCount++;
+
                 copy = malloc(cmdCount * sizeof(char *));
+
                 for (uint16_t i = 0; i < cmdCount; i++)
                     copy[i] = strdup(cmds[i]);
     
@@ -389,10 +395,10 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, b
                 initialized = 1;
             }
     
-            for (uint16_t i = 0; i < cmdCount; i++)
+            for (uint16_t i = 0; cmds[i]; i++)
                 printf("\t%s\n", copy[i]);
     
-            for (uint16_t i = 0; i < cmdCount; i++)
+            for (uint16_t i = 0; cmds[i]; i++)
                 SAFE_FREE(copy[i]);
             SAFE_FREE(copy);
         }
@@ -1422,29 +1428,34 @@ void listDrives(void) {
 #endif
 }
 
-void cmdsCommand(const char **cmds, uint16_t count, uint8_t isInsideBash) {
+void cmdsCommand(const char **cmds, uint8_t isInsideBash) {
     static char **copy = NULL;
     static int8_t initialized = 0;
+    
+    uint16_t cmdCount = 0;
+
+    for (uint16_t i = 0; cmds[i]; i++)
+        cmdCount++;
 
     if (!initialized) {
-        copy = malloc(count * sizeof(char *));
-        for (uint16_t i = 0; i < count; i++)
+        copy = malloc(cmdCount * sizeof(char *));
+        for (uint16_t i = 0; i < cmdCount; i++)
             copy[i] = strdup(cmds[i]);
 
-        bsort(copy, count);
+        bsort(copy, cmdCount);
         initialized = 1;
     }
 
-    for (uint16_t i = 0; i < count; i++) {
+    for (uint16_t i = 0; i < cmdCount; i++) {
         if (strcmp(copy[i], "bash") == 0 && !isInsideBash)
             continue;
 
         puts(copy[i]);
     }
 
-    count = isInsideBash ? count : count - 1;
+    cmdCount = isInsideBash ? cmdCount : cmdCount - 1;
 
-    printf("\n\nTotal commands: %"PRIu16"\n", count);
+    printf("\n\nTotal commands: %"PRIu16"\n", cmdCount);
 }
 
 void updatehistory(void) {

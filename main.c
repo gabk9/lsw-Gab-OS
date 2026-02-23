@@ -23,10 +23,8 @@ int32_t main(int32_t argc, char **argv) {
         "mkdir", "rmdir", "cat", "touch", "rm", "history", 
         "uname", "grep", "bc", "drives", "clearhistory", "rand",
         "alias", "rename", "bash", "head", "tail", "lc", "sleep",
-        "randstr", "rev"
+        "randstr", "rev", NULL
     };
-
-    const uint16_t cmdCount = sizeof(cmds) / sizeof(*cmds);
 
     char *input = calloc(MAX_CHAR, sizeof(char));
     if (!input) {
@@ -54,10 +52,10 @@ int32_t main(int32_t argc, char **argv) {
 
         for (size_t i = 1; i < argc; i++) {
             if (argv[i][0] == '-')
-                bashCmd(2, (char *[]){"bash", argv[i]}, cmds, cmdCount, false);
+                bashCmd(2, (char *[]){"bash", argv[i]}, cmds, false);
             else {
                 saveHist(argv[i], history_path, data_folder);
-                processCommand(argv[i], cmds, cmdCount, &address, history_path, data_folder, false, false);
+                processCommand(argv[i], cmds, &address, history_path, data_folder, false, false);
             }
         }
 
@@ -109,7 +107,7 @@ int32_t main(int32_t argc, char **argv) {
 
         saveHist(input, history_path, data_folder);
 
-        processCommand(input, cmds, cmdCount, &address, history_path, data_folder, true, false);
+        processCommand(input, cmds, &address, history_path, data_folder, true, false);
     }
     
     SAFE_FREE(data_folder);

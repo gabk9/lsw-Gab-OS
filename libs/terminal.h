@@ -23,10 +23,10 @@ void historyCmd(char *operation, const char *path);
 void tailCmd(char *instruction, uint32_t max_lines);
 char *cdCmd(const char *instruction, char *address);
 void bcCmd(uint16_t argc, char **argv, const char **cmds);
+void cmdsCommand(const char **cmds, uint8_t isInsideBash);
 void lsCmd(char **argv, uint16_t argc, const char *address);
 void catCmd(char *instruction, uint32_t max_lines, const char *cmdName);
-void cmdsCommand(const char **cmds, uint16_t count, uint8_t isInsideBash);
 void manCmdMulti(char *instruction, const char **cmds, uint8_t isInsideBash);
-void bashCmd(uint16_t argc, char **argv, const char **cmds, uint16_t cmdCount, bool insideBash);
+void bashCmd(uint16_t argc, char **argv, const char **cmds, bool insideBash);
 
 #endif
