@@ -40,17 +40,14 @@ int32_t main(int32_t argc, char **argv) {
 
     GetProjDir(program_root, MAX_CHAR, data_folder, MAX_CHAR, history_path, 0x4B0);
 
-    
     if (argc > 1) {
         checkLswrcSyntax(data_folder);
-        for (uint16_t i = 1; i < argc; i++) {
-            removeComments(argv[i]);
-            trimEnd(argv[i]);
-        }
-
         SAFE_FREE(input);
 
         for (size_t i = 1; i < argc; i++) {
+            if (strncmp(argv[i], "//", 2) == 0)
+                break;
+
             if (argv[i][0] == '-')
                 bashCmd(2, (char *[]){"bash", argv[i]}, cmds, false);
             else {
@@ -65,7 +62,7 @@ int32_t main(int32_t argc, char **argv) {
         SAFE_FREE(address);
         return 0;
     }
-    
+
     char *userName;
     userName = get_user();
 
@@ -81,12 +78,14 @@ int32_t main(int32_t argc, char **argv) {
     #ifdef _WIN32
         charReplace(wd, '/', '\\');
     #endif
-        
+
         printc("❯ lsw ❮ ", CYAN, WHITE);
         printc("%s@%s", LIGHT_GREEN, WHITE, userName, hostName);
         putchar(':');
         printc("%s", LIGHT_BLUE, WHITE, wd);
         printf("$ ");
+
+        SAFE_FREE(wd);
 
         if (!fgets(input, MAX_CHAR, stdin))
             break;
@@ -109,7 +108,7 @@ int32_t main(int32_t argc, char **argv) {
 
         processCommand(input, cmds, &address, history_path, data_folder, true, false);
     }
-    
+
     SAFE_FREE(data_folder);
     SAFE_FREE(program_root);
     SAFE_FREE(history_path);

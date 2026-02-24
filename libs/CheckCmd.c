@@ -349,8 +349,14 @@ double calc(double num1, char *operation, double num2, bool mathLib) {
         result = num1 >= num2;
     else if (strcmp(operation, "!=") == 0)
         result = num1 != num2;
-    else if (strcmp(operation, "==") == 0)
-        result = fabs(num1 - num2) < EPS;
+    else if (strcmp(operation, "==") == 0) {
+        if (isnan(num1) || isnan(num2))
+            return 0.0;
+        else if (isinf(num1) || isinf(num2))
+            result = (num1 == num2);
+        else
+            result = fabs(num1 - num2) < EPS;
+    }
 
 
     else {
