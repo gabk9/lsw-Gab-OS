@@ -907,10 +907,10 @@ char *defaultAddressReplace(const char *address) {
         return strdup(address);
     }
 
-    char *buffer = malloc(strlen(copy) + 2);
-    buffer[0] = '~';
-    buffer[1] = '\0';
-    strcat(buffer, copy);
+    size_t extra = strlen(copy) + 2;
+    char *buffer = malloc(extra);
+    *buffer = '\0';
+    snprintf(buffer, extra, "~%s", copy);
 
     SAFE_FREE(copy);
     SAFE_FREE(Default);

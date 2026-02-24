@@ -180,7 +180,7 @@ double h_atof(const char *str, bool mathlib) {
         else
             isUnaryNeg = true;
 
-        memmove(buf, buf+1, strlen(buf)+1);
+        *buf = ' ';
         trim(buf);
     }
 

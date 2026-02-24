@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.9.77"
+#define VERSION "r1.9.85"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1361,16 +1361,16 @@ char *cdCmd(const char *instruction, char *address) {
 
     char *buffer = NULL;
 
-    if (path[0] == '~') {
+    if (*path == '~') {
         char *Default = get_default_address();
 
-        path[0] = ' ';
+        *path = ' ';
         trim(path);
 
-        buffer = malloc(strlen(Default) + strlen(path) + 1);
-        buffer[0] = '\0';
-        strcat(buffer, Default);
-        strcat(buffer, path);
+        size_t extra = strlen(Default) + strlen(path) + 1;
+        buffer = malloc(extra);
+        *buffer = '\0';
+        snprintf(buffer, extra, "%s%s", Default, path);
 
         SAFE_FREE(Default);
     }
@@ -1713,7 +1713,8 @@ void updatehistory(void) {
         "r1.9.54 - big changes\n\tEdited: improved the behavior with lsw argv and argc\n",
         "r1.9.66 - big changes\n\tEdited: improved the main argv and argc, optimized the suffix analyzer and improved the bc oct() function\n",
         "r1.9.73 - small changes\n\tEdited: improved the main argv and argc behavior with comments\n",
-        "r1.9.77 - small changes\n\tEdited: improved '==' operand\n"
+        "r1.9.77 - small changes\n\tEdited: improved '==' operand\n",
+        "r1.9.85 - small changes\n\tEdited: replaced strcat uses with snprintf\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
