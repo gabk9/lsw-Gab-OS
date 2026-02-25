@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.0.09"
+#define VERSION "r2.0.15"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -820,10 +820,7 @@ void historyCmd(char *operation, const char *path) {
 
 
     if (!*operation) {
-        fseek(f, 0, SEEK_END);
-        long size = ftell(f);
-        fseek(f, 0, SEEK_SET);
-    
+        uint32_t size = getFileLength(f);
         char *fileBuffer = malloc(size + 1);
         fread(fileBuffer, 1, size, f);
         fileBuffer[size] = '\0';
@@ -1703,7 +1700,8 @@ void updatehistory(void) {
         "r1.9.91 - small changes\n\tEdited: improved the behavior with comments\n\tRemoved: '//' comments\n",
         "r2.0.00 - big changes\n\tEdited: improved bc parser and edited its variables syntax\n",
         "r2.0.03 - minor changes\n\tRemoved: unnecessary error messages\n",
-        "r2.0.09 - small changes\n\tEdited: bc initial message\n"
+        "r2.0.09 - small changes\n\tEdited: bc initial message\n",
+        "r2.0.15 - small changes\n\tEdited: improved the variable analyzer\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8600
-#define PROJ_SIZE_APPROX_BYTES 254000
+#define PROJ_SIZE_APPROX_BYTES 254500
 
 #define RC_FILE "lswrc.txt"
 
@@ -31,6 +31,13 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+uint32_t getFileLength(FILE *stream) {
+    fseek(stream, 0, SEEK_END);
+    uint32_t size = (uint32_t)ftell(stream);
+    fseek(stream, 0, SEEK_SET);
+    return size;
+}
 
 bool validStrBcFuncException(char *str, char *funcname) {
     char *test = strdup(str);
@@ -84,18 +91,22 @@ bool validStrBcFuncException(char *str, char *funcname) {
     return true;
 }
 
-bool isBcVariable(const char *str) {
+bool isBcVariable(const char *str, bool *shouldError) {
+    *shouldError = true;
 
-    if (isBetweenQuotes(str))
+    if (isBetweenQuotes(str)) {
+        *shouldError = false;
         return false;
+    }
 
-    if (!isalpha(*str))
+    if (!isalpha((unsigned char)*str))
         return false;
 
     for (size_t i = 1; str[i]; i++) {
-        if (!isalpha(str[i]) && !isdigit(str[i]) && str[i] != '_')
+        if (!isalnum((unsigned char)str[i]) && str[i] != '_')
             return false;
     }
+
     return true;
 }
 
@@ -1226,16 +1237,20 @@ char *charNumber(void) {
     for (uint16_t i = 0; i < fileCount; i++) {
         FILE *f = fopen(buildPath(files[i]), "rb");
         if (!f) {
-            snprintf(result, sizeof(result), "%d B / %.2lf KiB / %.2lf Mib", PROJ_SIZE_APPROX_BYTES, (double)PROJ_SIZE_APPROX_BYTES / 0x400, (double)PROJ_SIZE_APPROX_BYTES / 0x100000);
+            snprintf(result, sizeof(result), "%d B / %.2lf KiB / %.2lf Mib",
+                    PROJ_SIZE_APPROX_BYTES, (double)PROJ_SIZE_APPROX_BYTES / 0x400, 
+                    (double)PROJ_SIZE_APPROX_BYTES / 0x100000);
+
             return result;
         }
 
-        fseek(f, 0, SEEK_END);
-        totalSize += ftell(f);
+        totalSize += getFileLength(f);
         SAFE_FCLOSE(f);
     }
 
-    snprintf(result, sizeof(result), "%"PRIu32" B / %.2lf KiB / %.2lf Mib", totalSize, (double)totalSize / 0x400, (double)totalSize / 0x100000);
+    snprintf(result, sizeof(result), "%"PRIu32" B / %.2lf KiB / %.2lf Mib",
+            totalSize, (double)totalSize / 0x400, (double)totalSize / 0x100000);
+
     return result;
 }
 
@@ -1886,11 +1901,15 @@ char *findFirstEqualOutsideQuotes(char *s) {
 
 bool isBetweenQuotes(const char *action) {
     size_t len = strlen(action);
-    if ((action[0] != '\'' || action[len-1] != '\'') &&
-        (action[0] != '\"' || action[len-1] != '\"'))
-        return 0;
 
-    return 1;
+    if (len < 2)
+        return false;
+
+    if ((*action == '\'' && action[len-1] == '\'') ||
+        (*action == '\"' && action[len-1] == '\"'))
+        return true;
+
+    return false;
 }
 
 void createShortcut(char *instruction, char *path) {    

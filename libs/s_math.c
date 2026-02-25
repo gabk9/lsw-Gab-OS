@@ -317,7 +317,16 @@ double h_atof(const char *str, bool mathlib) {
     }
 
     if (!isalldigit(buf)) {
-        if (!isBcVariable(buf)) {
+        bool shouldError;
+        bool isValid = isBcVariable(buf, &shouldError);
+
+        if (!isValid && shouldError) {
+
+            if (!isalpha((unsigned char)*buf)) {
+                printf("eval: illegal character: '%c'\n", *buf);
+                return NAN;
+            }
+
             printf("eval: invalid syntax for variables (and it is not implemented yet)\n");
             return NAN;
         }
