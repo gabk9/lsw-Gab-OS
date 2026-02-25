@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8600
-#define PROJ_SIZE_APPROX_BYTES 255000
+#define PROJ_SIZE_APPROX_BYTES 254500
 
 #define RC_FILE "lswrc.txt"
 
@@ -89,15 +89,14 @@ bool isBcVariable(const char *str) {
     if (isBetweenQuotes(str))
         return false;
 
-    for (size_t i = 0; str[i]; i++) {
-        if (str[i] == '$') {
-            if (i > 0 && isdigit((unsigned char)str[i-1]))
-                continue;
-            if (isalpha((unsigned char)str[i+1]) || str[i+1] == '_')
-                return true;
-        }
+    if (!isalpha(*str))
+        return false;
+
+    for (size_t i = 1; str[i]; i++) {
+        if (!isalpha(str[i]) && !isdigit(str[i]) && str[i] != '_')
+            return false;
     }
-    return false;
+    return true;
 }
 
 bool isKeyRepeated(char *data_folder, const char *key_name) {

@@ -1284,6 +1284,7 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
                 SAFE_FREE(test);
                 return s_isprime(operation);
             }
+
             SAFE_FREE(test);    
         }
 
@@ -1301,23 +1302,14 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
     trim(num1); trimEnd(num1);
     trim(num2); trimEnd(num2);
 
-    if (mathlib && (isBcVariable(num1) || isBcVariable(num2))) {
-        printf("Warning: variables are currently unsupported\n");
-        return NAN;
-    }
-
     double num1_double = eval(num1, mathlib);
 
-    if (num1_double == (double)U64_NAN)
-        return (double)U64_NAN;
-    else if (num1_double == QUICK_EVAL_FIX)
+    if (num1_double == QUICK_EVAL_FIX)
         return 0.0;
 
     double num2_double = eval(num2, mathlib);
 
-    if (num2_double == (double)U64_NAN)
-        return (double)U64_NAN;
-    else if (num2_double == QUICK_EVAL_FIX)
+    if (num2_double == QUICK_EVAL_FIX)
         return 0.0;
 
     return calc(num1_double, op, num2_double, mathlib);

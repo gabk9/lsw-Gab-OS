@@ -9,7 +9,7 @@ double parse_double(char *str, char *funcName) {
     bool heap = false;
     if (funcName) {
         test = functionHandler(str, funcName);
-        if (strcmp(test, BC_ERROR) == 0) return (double)U64_NAN;
+        if (strcmp(test, BC_ERROR) == 0) NAN;
         heap = true;
     } else 
         test = str;
@@ -149,12 +149,6 @@ char *functionHandler(char *operation, const char *function) {
     trim(copy);
     trimEnd(copy);
 
-    if (isBcVariable(copy)) {
-        printf("Warning: variables are currently unsupported\n");
-        SAFE_FREE(copy);
-        return BC_ERROR;
-    }
-
     return copy;
 }
 
@@ -165,11 +159,6 @@ double h_atof(const char *str, bool mathlib) {
 
     trim(buf);
     trimEnd(buf);
-
-    if (mathlib && isBcVariable(buf)) {
-        printf("Warning: variables are currently unsupported\n");
-        return NAN;
-    }
     
     bool isUnaryNot = false;
     bool isUnaryNeg = false;
@@ -327,8 +316,12 @@ double h_atof(const char *str, bool mathlib) {
             return parseBinToInt(buf);
     }
 
-    if (!isalldigit(buf))
-        return QUICK_EVAL_FIX;
+    if (!isalldigit(buf)) {
+        if (!isBcVariable(buf)) {
+            printf("eval: invalid syntax for variables (and it is not implemented yet)\n");
+            return NAN;
+        }
+    }
 
     return (!mathlib && isHex(buf)) ? 0.0 : atof(buf);
 }
