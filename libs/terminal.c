@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r1.9.85"
+#define VERSION "r1.9.91"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1714,7 +1714,8 @@ void updatehistory(void) {
         "r1.9.66 - big changes\n\tEdited: improved the main argv and argc, optimized the suffix analyzer and improved the bc oct() function\n",
         "r1.9.73 - small changes\n\tEdited: improved the main argv and argc behavior with comments\n",
         "r1.9.77 - small changes\n\tEdited: improved '==' operand\n",
-        "r1.9.85 - small changes\n\tEdited: replaced strcat uses with snprintf\n"
+        "r1.9.85 - small changes\n\tEdited: replaced strcat uses with snprintf\n",
+        "r1.9.91 - small changes\n\tEdited: improved the behavior with comments\n\tRemoved: '//' comments\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

@@ -45,10 +45,10 @@ int32_t main(int32_t argc, char **argv) {
         SAFE_FREE(input);
 
         for (size_t i = 1; i < argc; i++) {
-            if (strncmp(argv[i], "//", 2) == 0)
+            if (*argv[i] == '#')
                 break;
 
-            if (argv[i][0] == '-')
+            if (*argv[i] == '-')
                 bashCmd(2, (char *[]){"bash", argv[i]}, cmds, false);
             else {
                 saveHist(argv[i], history_path, data_folder);

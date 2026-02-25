@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8600
-#define PROJ_SIZE_APPROX_BYTES 254500
+#define PROJ_SIZE_APPROX_BYTES 255000
 
 #define RC_FILE "lswrc.txt"
 
@@ -1979,13 +1979,28 @@ void createShortcut(char *instruction, char *path) {
 }
 
 void removeComments(char *str) {
-    if (!str || *str == '\0') return;
+    if (!str) return;
 
-    for (int32_t i = 0; str[i] != '\0'; i++) {
-        if ((str[i] == '/' && str[i+1] == '/') || str[i] == '#') {
-            str[i] = '\0';
-            break;
+    bool in_double = false;
+    bool in_single = false;
+
+    for (size_t i = 0; str[i]; i++) {
+
+        if (str[i] == '"' && !in_single) {
+            in_double = !in_double;
         }
+        else if (str[i] == '\'' && !in_double) {
+            in_single = !in_single;
+        }
+        else if (str[i] == '#' && !in_double && !in_single) {
+            str[i] = '\0';
+            return;
+        }
+    }
+
+    if (in_double || in_single) {
+        char *p = strchr(str, '#');
+        if (p) *p = '\0';
     }
 }
 
