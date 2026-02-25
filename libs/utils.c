@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8600
-#define PROJ_SIZE_APPROX_BYTES 254500
+#define PROJ_SIZE_APPROX_BYTES 254000
 
 #define RC_FILE "lswrc.txt"
 
@@ -429,13 +429,8 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
     double count;
     
     if (!QuoteAfterStar) {
-        if (isBcVariable(num)) {
-            printf("Warning: variables are currently unsupported\n");
-            count = 0;
-        } else {
-            count = eval(num, true);
-            count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
-        }
+        count = eval(num, true);
+        count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
 
         if (isnan(count))
             return 0;
@@ -543,13 +538,8 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
         trim(text);
         trimEnd(text);
 
-        if (isBcVariable(star)) {
-            printf("Warning: variables are currently unsupported\n");
-            count = 0;
-        } else {
-            count = eval(star, true);
-            count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
-        }
+        count = eval(star, true);
+        count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
 
         if (isnan(count))
             return 0;

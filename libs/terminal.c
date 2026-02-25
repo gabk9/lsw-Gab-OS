@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.0.00"
+#define VERSION "r2.0.09"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -252,13 +252,8 @@ void sleepCmd(char *instruction) {
     }
 
     double time;
-    if (isBcVariable(instruction)) {
-        printf("Warning: variables are currently unsupported\n");
-        time = 0;
-    } else {
-        time = eval(instruction, true);
-        time = (time == QUICK_EVAL_FIX) ? 0.0 : time;
-    }
+    time = eval(instruction, true);
+    time = (time == QUICK_EVAL_FIX) ? 0.0 : time;
 
     if (isnan(time) || time == (double)U64_NAN)
         return;
@@ -557,10 +552,10 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         if (!appear) {
             if (!quiet) {
                 printf("A simple calculator command, apparently it works with more than 2 numbers, but without operand precedence,\n");
-                printf("type 'quit' or 'exit' to exit, 'man' to check the manual inside the calculator, otherwise use 'man bc'\n");
-                printf("it no longer supports comma instead of dots and type 'clear' or 'cls' to clear the screen and scrollback buffer");
-                printf("\nPS: mathlib is off by default, type 'mathlib' to turn it on/off "
-                    "if you're inside the terminal, otherwise use 'bc -l' or 'bc --mathlib', look at the manual to see in details what it does\n");
+                printf("type 'quit' or 'exit' to exit, 'man' to check the manual inside the calculator, otherwise use 'man bc'");
+                printf("type 'clear' or 'cls' to clear the screen and scrollback buffer\nPS: mathlib is off by default, ");
+                printf("type 'mathlib' to turn it on/off if you're inside the terminal, otherwise use "
+                    "'bc -l' or 'bc --mathlib', look at the manual to see in details what it does\n");
             }
             printf("Mathlib status: ");
             if (mathlib)
@@ -845,13 +840,8 @@ void historyCmd(char *operation, const char *path) {
     }
 
     double num;
-    if (isBcVariable(operation)) {
-        printf("Warning: variables are currently unsupported\n");
-        num = 0;
-    } else {
-        num = eval(operation, true);
-        num = (num == QUICK_EVAL_FIX) ? 0.0 : num;
-    }
+    num = eval(operation, true);
+    num = (num == QUICK_EVAL_FIX) ? 0.0 : num;
 
 
     if (isnan(num) || num == (double)U64_NAN) {
@@ -1061,13 +1051,8 @@ void touchCmd(char *instruction) {
         double count;
 
         if (!QuoteAfterStar) {
-            if (isBcVariable(num)) {
-                printf("Warning: variables are currently unsupported\n");
-                count = 0;
-            } else {
-                count = eval(num, true);
-                count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
-            }
+            count = eval(num, true);
+            count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
 
     
             if (count != (int64_t)count) {
@@ -1716,7 +1701,9 @@ void updatehistory(void) {
         "r1.9.77 - small changes\n\tEdited: improved '==' operand\n",
         "r1.9.85 - small changes\n\tEdited: replaced strcat uses with snprintf\n",
         "r1.9.91 - small changes\n\tEdited: improved the behavior with comments\n\tRemoved: '//' comments\n",
-        "r2.0.00 - big changes\n\tEdited: improved bc parser and edited its variables syntax\n"
+        "r2.0.00 - big changes\n\tEdited: improved bc parser and edited its variables syntax\n",
+        "r2.0.03 - minor changes\n\tRemoved: unnecessary error messages\n",
+        "r2.0.09 - small changes\n\tEdited: bc initial message\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
