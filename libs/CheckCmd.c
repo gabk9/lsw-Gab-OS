@@ -1187,100 +1187,97 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
             } else if (test[5] == '(' && strncmp(operation, functions[11], 5) == 0) { //! round()
                 SAFE_FREE(test);
                 return s_round(operation);
-            } else if (test[4] == '(' && strncmp(operation, functions[12], 4) == 0) { //! fact()
-                SAFE_FREE(test);
-                return s_fact(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[13], 4) == 0) { //! sign()
+            } else if (test[3] == '(' && strncmp(operation, functions[12], 4) == 0) { //! sign()
                 SAFE_FREE(test);
                 return s_sign(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[14], 3) == 0) { //! sum()
+            } else if (test[3] == '(' && strncmp(operation, functions[13], 3) == 0) { //! sum()
                 SAFE_FREE(test);
                 return s_sum(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[15], 3) == 0) { //! rad()
+            } else if (test[3] == '(' && strncmp(operation, functions[14], 3) == 0) { //! rad()
                 SAFE_FREE(test);
                 return s_rad(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[16], 3) == 0) { //! deg()
+            } else if (test[3] == '(' && strncmp(operation, functions[15], 3) == 0) { //! deg()
                 SAFE_FREE(test);
                 return s_deg(operation);
-            } else if (test[5] == '(' && strncmp(operation, functions[17], 5) == 0) { //! trunc()
+            } else if (test[5] == '(' && strncmp(operation, functions[16], 5) == 0) { //! trunc()
                 SAFE_FREE(test);
                 return s_trunc(operation);
-            } else if (test[5] == '(' && strncmp(operation, functions[18], 5) == 0) { //! randf()
+            } else if (test[5] == '(' && strncmp(operation, functions[17], 5) == 0) { //! randf()
                 SAFE_FREE(test);
                 return s_randFloat(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[19], 3) == 0) { //! fah()
+            } else if (test[3] == '(' && strncmp(operation, functions[18], 3) == 0) { //! fah()
                 SAFE_FREE(test);
                 return s_fah(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[20], 3) == 0) { //! cel()
+            } else if (test[3] == '(' && strncmp(operation, functions[19], 3) == 0) { //! cel()
                 SAFE_FREE(test);
                 return s_cel(operation);
-            } else if (test[4] == '(' && strncmp(operation, functions[21], 4) == 0) { //! root()
+            } else if (test[4] == '(' && strncmp(operation, functions[20], 4) == 0) { //! root()
                 SAFE_FREE(test);
                 return s_root(operation);
-            } else if (test[4] == '(' && strncmp(operation, functions[22], 4) == 0) { //! rand()
+            } else if (test[4] == '(' && strncmp(operation, functions[21], 4) == 0) { //! rand()
                 SAFE_FREE(test);
                 return s_randInt(operation);
-            } else if (test[2] == '(' && strncmp(operation, functions[23], 2) == 0) { //! mi()
+            } else if (test[2] == '(' && strncmp(operation, functions[22], 2) == 0) { //! mi()
                 SAFE_FREE(test);
                 return s_miles(operation);
-            } else if (test[2] == '(' && strncmp(operation, functions[24], 2) == 0) { //! km()
+            } else if (test[2] == '(' && strncmp(operation, functions[23], 2) == 0) { //! km()
                 SAFE_FREE(test);
                 return s_km(operation);
-            } else if (test[2] == '(' && strncmp(operation, functions[25], 2) == 0) { //! lb()
+            } else if (test[2] == '(' && strncmp(operation, functions[24], 2) == 0) { //! lb()
                 SAFE_FREE(test);
                 return s_pounds(operation);
-            } else if (test[2] == '(' && strncmp(operation, functions[26], 2) == 0) { //! kg()
+            } else if (test[2] == '(' && strncmp(operation, functions[25], 2) == 0) { //! kg()
                 SAFE_FREE(test);
                 return s_kg(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[27], 3) == 0) { //! oct()
+            } else if (test[3] == '(' && strncmp(operation, functions[26], 3) == 0) { //! oct()
                 SAFE_FREE(test);
                 return parse_double(operation, functions[27]);
-            } else if (test[3] == '(' && strncmp(operation, functions[28], 3) == 0) { //! hex()
+            } else if (test[3] == '(' && strncmp(operation, functions[27], 3) == 0) { //! hex()
                 SAFE_FREE(test);
                 return parse_double(operation, functions[28]);
-            } else if (test[3] == '(' && strncmp(operation, functions[29], 3) == 0) { //! hex()
+            } else if (test[3] == '(' && strncmp(operation, functions[28], 3) == 0) { //! hex()
                 SAFE_FREE(test);
                 return parse_double(operation, functions[29]);
-            } else if (test[3] == '(' && strncmp(operation, functions[30], 3) == 0) { //! abs()
+            } else if (test[3] == '(' && strncmp(operation, functions[29], 3) == 0) { //! abs()
                 SAFE_FREE(test);
                 return s_fabs_or_abs(operation, false);
-            } else if (test[4] == '(' && strncmp(operation, functions[31], 4) == 0) { //! fabs()
+            } else if (test[4] == '(' && strncmp(operation, functions[30], 4) == 0) { //! fabs()
                 SAFE_FREE(test);
                 return s_fabs_or_abs(operation, true);
-            } else if (test[3] == '(' && strncmp(operation, functions[32], 3) == 0) { //! len()
+            } else if (test[3] == '(' && strncmp(operation, functions[31], 3) == 0) { //! len()
                 SAFE_FREE(test);
                 return bc_len(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[33], 3) == 0) { //! bmi()
+            } else if (test[3] == '(' && strncmp(operation, functions[32], 3) == 0) { //! bmi()
                 SAFE_FREE(test);
                 return s_bmi(operation);
-            } else if (test[4] == '(' && strncmp(operation, functions[34], 4) == 0) { //! feet()
+            } else if (test[4] == '(' && strncmp(operation, functions[33], 4) == 0) { //! feet()
                 SAFE_FREE(test);
                 return s_feet(operation);
-            } else if (test[5] == '(' && strncmp(operation, functions[35], 5) == 0) { //! meter()
+            } else if (test[5] == '(' && strncmp(operation, functions[34], 5) == 0) { //! meter()
                 SAFE_FREE(test);
                 return s_meter(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[36], 3) == 0) { //! cot()
+            } else if (test[3] == '(' && strncmp(operation, functions[35], 3) == 0) { //! cot()
                 SAFE_FREE(test);
                 return s_cot(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[37], 3) == 0) { //! gon()
+            } else if (test[3] == '(' && strncmp(operation, functions[36], 3) == 0) { //! gon()
                 SAFE_FREE(test);
                 return s_gon(operation);
-            } else if (test[3] == '(' && strncmp(operation, functions[38], 3) == 0) { //! chr()
+            } else if (test[3] == '(' && strncmp(operation, functions[37], 3) == 0) { //! chr()
                 SAFE_FREE(test);
                 return parse_double(operation, functions[38]);
-            } else if (test[4] == '(' && strncmp(operation, functions[39], 4) == 0) { //! asin()
+            } else if (test[4] == '(' && strncmp(operation, functions[38], 4) == 0) { //! asin()
                 SAFE_FREE(test);
                 return s_asin(operation);
-            } else if (test[4] == '(' && strncmp(operation, functions[40], 4) == 0) { //! acos()
+            } else if (test[4] == '(' && strncmp(operation, functions[39], 4) == 0) { //! acos()
                 SAFE_FREE(test);
                 return s_acos(operation);
-            } else if (test[4] == '(' && strncmp(operation, functions[41], 4) == 0) { //! atan()
+            } else if (test[4] == '(' && strncmp(operation, functions[40], 4) == 0) { //! atan()
                 SAFE_FREE(test);
                 return s_atan(operation);
-            } else if (test[4] == '(' && strncmp(operation, functions[42], 4) == 0) { //! acot()
+            } else if (test[4] == '(' && strncmp(operation, functions[41], 4) == 0) { //! acot()
                 SAFE_FREE(test);
                 return s_acot(operation);
-            } else if (test[7] == '(' && strncmp(operation, functions[43], 7) == 0) { //! acot()
+            } else if (test[7] == '(' && strncmp(operation, functions[42], 7) == 0) { //! acot()
                 SAFE_FREE(test);
                 return s_isprime(operation);
             }
@@ -1301,6 +1298,11 @@ double CheckOperation(char *operation, char **functions, const char *uniOps, con
 
     trim(num1); trimEnd(num1);
     trim(num2); trimEnd(num2);
+
+    if (!*num1 || !*num2) {
+        printf("eval: invalid syntax\n");
+        return NAN;
+    }
 
     double num1_double = eval(num1, mathlib);
 

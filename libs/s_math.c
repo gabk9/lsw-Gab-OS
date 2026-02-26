@@ -159,9 +159,14 @@ double h_atof(const char *str, bool mathlib) {
 
     trim(buf);
     trimEnd(buf);
-    
+
+
     bool isUnaryNot = false;
     bool isUnaryNeg = false;
+
+    const int32_t end = (int32_t)strlen(buf) - 1;
+    if (mathlib && buf[end] == '!')
+        return s_fact(buf);
 
     if (*buf == '~' || *buf == '-') {
         if (*buf == '~')
@@ -188,10 +193,14 @@ double h_atof(const char *str, bool mathlib) {
 
     bool isAns = mathlib && strcasecmp(buf, OLD_ANSWER_STR) == 0;
 
-    if (isUnaryNeg) {
+    if (isAns && isnan(Ans)) {
+        puts("Warning: Ans is undefined");
+        return NAN;
+    }
 
-        if (isAns && isnan(Ans)) {
-            puts("Warning: Ans is undefined");
+    if (isUnaryNeg) {
+        if (!*buf) {
+            printf("eval: missing value for unary negative(-)\n");
             return NAN;
         }
 
@@ -203,6 +212,9 @@ double h_atof(const char *str, bool mathlib) {
             if (num == QUICK_EVAL_FIX)
                 return QUICK_EVAL_FIX;
         }
+
+        if (isnan(num))
+            return NAN;
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("eval: numeric overflow (too large)\n");
@@ -213,6 +225,11 @@ double h_atof(const char *str, bool mathlib) {
     }
 
     if (isUnaryNot) {
+        if (!*buf) {
+            printf("eval: missing value for unary not(~)\n");
+            return NAN;
+        }
+        
         double num;
 
         if (isAns)
@@ -222,6 +239,9 @@ double h_atof(const char *str, bool mathlib) {
             if (num == QUICK_EVAL_FIX)
                 return QUICK_EVAL_FIX;
         }
+
+        if (isnan(num))
+            return NAN;
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printf("eval: numeric overflow (too large)\n");
@@ -277,6 +297,9 @@ double h_atof(const char *str, bool mathlib) {
             for (size_t mi = 0; mi < sizeof(suffix) / sizeof(*suffix); mi++) {
                 if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
                     buf[len-1] = '\0';
+                    if (buf[len-2] == '!')
+                        return 0.0;
+
                     double num = eval(buf, mathlib);
                     return (num == QUICK_EVAL_FIX) ? 0.0 : num * suffix[mi].mult;
                 }
@@ -321,15 +344,18 @@ double h_atof(const char *str, bool mathlib) {
         bool isValid = isBcVariable(buf, &shouldError);
 
         if (!isValid && shouldError) {
-
             for (size_t i = 0; buf[i]; i++) {
-                if (!isalnum(buf[i])) {
+                if (buf[i] == 0 || buf[i] == '(' || buf[i] == ')' ||
+                    buf[i] == '"' || buf[i] == '\'')
+                    continue;
+
+                if (!isIn(buf[i], "+-/*^%%&|<>") && !isalnum(buf[i])) {
                     printf("eval: illegal character: '%c'\n", buf[i]);
                     return NAN;
                 }
             }
 
-            printf("eval: invalid syntax for variables (and it is not implemented yet)\n");
+            printf("eval: invalid syntax\n");
             return NAN;
         }
     }
@@ -1692,21 +1718,64 @@ double s_isprime(char *operation) {
     return isprime((int64_t)num);
 }
 
-uint64_t fact(int64_t num) {
+uint64_t fact(int64_t num, int32_t steps) {
+
     if (num < 0)
         return U64_NAN;
-    else if (num == 0)
+
+    if (steps <= 0)
+        return U64_NAN;
+
+    if (num == 0)
         return 1;
 
-    for (uint16_t i = num - 1; i >= 1; i--)
-        num *= i;
+    uint64_t result = 1;
 
-    return num;
+    for (int64_t i = num; i >= 1; i -= steps)
+        result *= i;
+
+    return result;
 }
 
 double s_fact(char *operation) {
-    char *test = functionHandler(operation, "fact");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *test = strdup(operation);
+
+    if (!test) {
+        printf("eval: strdup failed\n");
+        return NAN;
+    }
+
+    size_t len = strlen(test);
+    if (len == 0) {
+        SAFE_FREE(test);
+        return NAN;
+    }
+
+    size_t stepsCount = 0;
+    for (int32_t i = len-1; i >= 0; i--) {
+        if (test[i] != '!')
+            break;
+
+        if (test[i] == '!')
+            stepsCount++;
+    }
+
+    if (stepsCount == len)
+        *test = '\0';
+    else if (stepsCount == 0) {
+        printf("eval: to factor you need '!' as a suffix\n");
+        SAFE_FREE(test);
+        return NAN;
+    } else if (stepsCount > 0)
+        test[len-stepsCount] = '\0';
+
+    trimEnd(test);
+
+    if (strlen(test) < 1) {
+        printf("eval: missing a value to factor\n");
+        SAFE_FREE(test);
+        return NAN;
+    }
 
     double num = eval(test, true);
 
@@ -1715,23 +1784,22 @@ double s_fact(char *operation) {
     if (num == QUICK_EVAL_FIX)
         return 0.0;
 
-
     if (num == (double)U64_NAN) {
         putchar('\n');
         return NAN;
     }   
 
     if (num < 0) {
-        printf("eval: fact() requires a non negative value\n");
+        printf("eval: can not factor negative values\n");
         return NAN;
     }
 
     if (num != (int64_t)num) {
-        printf("eval: fact() requires an integer!\n");
+        printf("eval: can not factor a floating point number\n");
         return NAN;
     }
 
-    return fact((int64_t)num);
+    return (double)fact((int64_t)num, stepsCount);
 }
 
 double s_sign(char *operation) {

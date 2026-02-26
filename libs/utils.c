@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8600
-#define PROJ_SIZE_APPROX_BYTES 255000
+#define PROJ_LINES_APPROX 8700
+#define PROJ_SIZE_APPROX_BYTES 256500
 
 #define RC_FILE "lswrc.txt"
 
@@ -31,6 +31,14 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+bool isIn(char needle, char *haystack) {
+    for (size_t i = 0; haystack[i]; i++)
+        if (needle == haystack[i])
+            return true;
+
+    return false;
+}
 
 uint32_t getFileLength(FILE *stream) {
     fseek(stream, 0, SEEK_END);
@@ -2456,11 +2464,10 @@ double eval(char *operation, bool mathlib) {
     char *functions[] = {
         "scale", "sqrt", "sin", "cos", "tan", "ln",
         "log10", "log2", "log", "floor", "ceil", "round",
-        "fact", "sign", "sum", "rad", "deg", "trunc", "randf",
-        "fah", "cel", "root", "rand", "mi", "km", "lb", "kg",
-        "oct", "hex", "bin", "abs", "fabs", "len", "bmi", "feet",
-        "meter", "cot", "gon", "chr", "asin", "acos", "atan", "acot",
-        "isprime"
+        "sign", "sum", "rad", "deg", "trunc", "randf", "fah", 
+        "cel", "root", "rand", "mi", "km", "lb", "kg","oct", "hex",
+        "bin", "abs", "fabs", "len", "bmi", "feet", "meter", "cot",
+        "gon", "chr", "asin", "acos", "atan", "acot", "isprime"
     };
 
     const char uniOps[] = "+-/*^%%&|<>";

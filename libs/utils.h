@@ -148,6 +148,7 @@ uint32_t getFileLength(FILE *stream);
 char* findStarOutsideQuotes(char *s);
 uint16_t getSavedHistSize(char *path);
 uint16_t getSavedHistSize(char *path);
+bool isIn(char needle, char *haystack);
 bool isBetweenQuotes(const char *action);
 char *find_andand_outside_quotes(char *s);
 void update_last_directory(char *address);

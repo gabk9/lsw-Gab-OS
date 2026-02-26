@@ -27,7 +27,7 @@
 #endif
 
 bool isprime(int64_t n);
-uint64_t fact(int64_t num);
+uint64_t fact(int64_t num, int32_t steps);
 double tetration(double base, int32_t height);
 double parse_double(char *str, char *funcName);
 double s_ln(char *operation)__attribute__((nonnull));
