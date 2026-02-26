@@ -326,7 +326,6 @@ double h_atof(const char *str, bool mathlib) {
                 if (!isalnum(buf[i])) {
                     printf("eval: illegal character: '%c'\n", buf[i]);
                     return NAN;
-
                 }
             }
 
