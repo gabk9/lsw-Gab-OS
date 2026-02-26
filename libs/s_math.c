@@ -1790,12 +1790,12 @@ double s_fact(char *operation) {
     }   
 
     if (num < 0) {
-        printf("eval: can not factor negative values\n");
+        printf("eval: cannot factor negative values\n");
         return NAN;
     }
 
     if (num != (int64_t)num) {
-        printf("eval: can not factor a floating point number\n");
+        printf("eval: cannot factor a floating point number\n");
         return NAN;
     }
 
