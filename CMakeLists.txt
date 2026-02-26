@@ -27,5 +27,7 @@ else()
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(lsw PRIVATE)
+    target_compile_options(lsw PRIVATE -Wall)
+elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(lsw PRIVATE /W4)
 endif()
