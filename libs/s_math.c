@@ -345,7 +345,7 @@ double h_atof(const char *str, bool mathlib) {
 
         if (!isValid && shouldError) {
             for (size_t i = 0; buf[i]; i++) {
-                if (buf[i] == 0 || buf[i] == '(' || buf[i] == ')' ||
+                if (buf[i] == ' ' || buf[i] == '(' || buf[i] == ')' ||
                     buf[i] == '"' || buf[i] == '\'')
                     continue;
 
