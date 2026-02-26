@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.0.40"
+#define VERSION "r2.0.42"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1705,7 +1705,8 @@ void updatehistory(void) {
         "r2.0.17 - minor changes\n\tEdited: improved the variable analyzer again\n",
         "r2.0.21 - minor changes\n\tFixed: the variable analyzer not skipping spaces\n",
         "r2.0.32 - big changes\n\tRemoved: fact()\n\tAdded: now to factor numbers you will just use '!'\n",
-        "r2.0.40 - small changes\n\tEdited: improved eval() parser\n"
+        "r2.0.40 - small changes\n\tEdited: improved eval() parser\n",
+        "r2.0.42 - minor changes\n\tEdited: bc manual\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

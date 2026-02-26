@@ -787,6 +787,9 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\n"
             "\tT   : 1.000.000.000.000   (1e+12)\n"
             "\t      Example: 1T = 1.000.000.000.000\n"
+            "\n"
+            "\t'!' : factorial\n"
+            "\t      Example: 5! = 120 / 5!! = 15\n"
 
             "\nNumeric systems: (mathlib must be on to grant full access)\n"
             "\tBinary: (prefix: '0b')        base 2 numbers e.g. 0b010000000000 = 1024\n"
