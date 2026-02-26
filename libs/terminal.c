@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.0.15"
+#define VERSION "r2.0.17"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1701,7 +1701,8 @@ void updatehistory(void) {
         "r2.0.00 - big changes\n\tEdited: improved bc parser and edited its variables syntax\n",
         "r2.0.03 - minor changes\n\tRemoved: unnecessary error messages\n",
         "r2.0.09 - small changes\n\tEdited: bc initial message\n",
-        "r2.0.15 - small changes\n\tEdited: improved the variable analyzer\n"
+        "r2.0.15 - small changes\n\tEdited: improved the variable analyzer\n",
+        "r2.0.17 - minor changes\n\tEdited: improved the variable analyzer again\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

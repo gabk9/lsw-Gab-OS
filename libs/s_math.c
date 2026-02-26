@@ -322,9 +322,12 @@ double h_atof(const char *str, bool mathlib) {
 
         if (!isValid && shouldError) {
 
-            if (!isalpha((unsigned char)*buf)) {
-                printf("eval: illegal character: '%c'\n", *buf);
-                return NAN;
+            for (size_t i = 0; buf[i]; i++) {
+                if (!isalnum(buf[i])) {
+                    printf("eval: illegal character: '%c'\n", buf[i]);
+                    return NAN;
+
+                }
             }
 
             printf("eval: invalid syntax for variables (and it is not implemented yet)\n");
