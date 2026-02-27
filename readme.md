@@ -3,7 +3,7 @@
 <h3>LSW in action</h3>
 
 <p>
-  <img src="docs/lsw-bc.png" style="border-radius:20px;" width="85%" alt="LSW calculator example"><br><br>
+  <img src="docs/lsw-bc.png" style="border-radius:20px;" width="95%" alt="LSW calculator example"><br><br>
   <img src="docs/lsw-neofetch.png" style="border-radius:20px;" width="65%" alt="LSW system info screen">
 </p>
 
