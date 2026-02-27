@@ -4,25 +4,6 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
-double parse_double(char *str, char *funcName) {    
-    char *test;
-    bool heap = false;
-    if (funcName) {
-        test = functionHandler(str, funcName);
-        if (strcmp(test, BC_ERROR) == 0) NAN;
-        heap = true;
-    } else 
-        test = str;
-
-    double num = eval(test, true);
-    num = (num == QUICK_EVAL_FIX) ? 0.0 : num;
-
-    if (heap)
-        SAFE_FREE(test);
-
-    return num;
-}
-
 static uint8_t isnull(int32_t count, ...) {
 
     if (count < 1) {
@@ -43,46 +24,6 @@ static uint8_t isnull(int32_t count, ...) {
 
     va_end(args);
     return nullCount;
-}
-
-enum paren_result parenthesis_check(const char *s) {
-
-    int32_t level = 0;
-    bool in_double_quotes = false;
-    bool in_single_quotes = false;
-
-    for (; *s; s++) {
-
-        if (*s == '"' && !in_single_quotes) {
-            in_double_quotes = !in_double_quotes;
-            continue;
-        }
-
-        if (*s == '\'' && !in_double_quotes) {
-            in_single_quotes = !in_single_quotes;
-            continue;
-        }
-
-        if (in_double_quotes || in_single_quotes)
-            continue;
-
-        if (*s == '(') {
-            level++;
-        }
-        else if (*s == ')') {
-            level--;
-            if (level < 0)
-                return PAREN_MISSING_OPEN;
-        }
-    }
-
-    if (in_double_quotes || in_single_quotes)
-        return PAREN_UNCLOSED_QUOTE;
-
-    if (level > 0)
-        return PAREN_MISSING_CLOSE;
-
-    return PAREN_OK;
 }
 
 //! unused
@@ -188,9 +129,6 @@ double h_atof(const char *str, bool mathlib) {
         return isUnaryNeg ? -INFINITY : INFINITY;
     }
 
-    if (strcasecmp(buf, "nan") == 0)
-        return 0.0;
-
     bool isAns = mathlib && strcasecmp(buf, OLD_ANSWER_STR) == 0;
 
     if (isAns && isnan(Ans)) {
@@ -207,11 +145,8 @@ double h_atof(const char *str, bool mathlib) {
         double num;
         if (isAns)
             num = Ans;
-        else {
+        else
             num = eval(buf, mathlib);
-            if (num == QUICK_EVAL_FIX)
-                return QUICK_EVAL_FIX;
-        }
 
         if (isnan(num))
             return NAN;
@@ -234,11 +169,8 @@ double h_atof(const char *str, bool mathlib) {
 
         if (isAns)
             num = Ans;
-        else {
+        else
             num = eval(buf, mathlib);
-            if (num == QUICK_EVAL_FIX)
-                return QUICK_EVAL_FIX;
-        }
 
         if (isnan(num))
             return NAN;
@@ -268,18 +200,15 @@ double h_atof(const char *str, bool mathlib) {
             return hex_pi_e;
     }
 
-    uint16_t len = strlen(buf);
+    size_t len = strlen(buf);
 
     if (mathlib) {
-
         bool is_hex = isHex(buf);
-    
-        
+
         bool is_octal = isOct(buf);
         
         bool is_bin = isBin(buf);
-        
-        
+
         const struct {
             char suffix;
             double mult;
@@ -292,7 +221,7 @@ double h_atof(const char *str, bool mathlib) {
 
         bool has_exp = strncasecmp(buf, "0x", 2) == 0;
         bool allow_suffix = (!is_hex && !has_exp);
-        
+
         if (allow_suffix) {
             for (size_t mi = 0; mi < sizeof(suffix) / sizeof(*suffix); mi++) {
                 if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
@@ -301,40 +230,46 @@ double h_atof(const char *str, bool mathlib) {
                         return 0.0;
 
                     double num = eval(buf, mathlib);
-                    return (num == QUICK_EVAL_FIX) ? 0.0 : num * suffix[mi].mult;
+                    return (isnan(num)) ? NAN : num * suffix[mi].mult;
                 }
             }
         }
-    
+
+        if (*buf == '"' && buf[len-1] == '"') {
+            printf("eval: cannot operate with string type values\n");
+            return NAN;
+        }
+
         if (strcasecmp(buf, "pi") == 0) return PI;
         else if (strcasecmp(buf, "e") == 0)  return E;
-    
+
         uint16_t i = 0;
         while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))
             i++;
-    
+
         if (i > 0 && strcasecmp(buf + i, "pi") == 0) {
             char temp[0x40];
             strncpy(temp, buf, i);
             temp[i] = '\0';
-            return eval(temp, mathlib) * PI;
+            double num = eval(temp, mathlib);
+            return (isnan(num)) ? NAN : num * PI;
         }
-    
+
         if (i > 0 && strcasecmp(buf + i, "e") == 0) {
             char temp[0x40];
             strncpy(temp, buf, i);
             temp[i] = '\0';
             double num = eval(temp, mathlib);
-            return (num == QUICK_EVAL_FIX) ? 0.0 : num * E;
+            return (isnan(num)) ? NAN : num * E;
         }
-    
+
         if (is_hex)
             return (double)hex_to_long(buf);
-    
+
         if (is_octal) {
             return (double)strtol(buf+2, NULL, 8);
         }
-    
+
         if (is_bin)
             return parseBinToInt(buf);
     }
@@ -346,7 +281,8 @@ double h_atof(const char *str, bool mathlib) {
         if (!isValid && shouldError) {
             for (size_t i = 0; buf[i]; i++) {
                 if (buf[i] == ' ' || buf[i] == '(' || buf[i] == ')' ||
-                    buf[i] == '"' || buf[i] == '\'')
+                    buf[i] == '"' || buf[i] == '\'' || buf[i] == '!'
+                )
                     continue;
 
                 if (!isIn(buf[i], "+-/*^%%&|<>") && !isalnum(buf[i])) {
@@ -360,7 +296,8 @@ double h_atof(const char *str, bool mathlib) {
         }
     }
 
-    return (!mathlib && isHex(buf)) ? 0.0 : atof(buf);
+    double result = (!mathlib && isHex(buf)) ? 0.0 : atof(buf);
+    return isnan(result) ? 0.0 : result;
 }
 
 int64_t parseBinToInt(const char *str) {
@@ -534,8 +471,8 @@ double s_fabs_or_abs(char *operation, bool enable_single_point) {
 
     SAFE_FREE(test);
 
-    if (value == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(value))
+        return NAN;
 
     if (value == (double)U64_NAN) {
         putchar('\n');
@@ -560,8 +497,8 @@ double s_miles(char *operation) {
 
     SAFE_FREE(test);
 
-    if (km == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(km))
+        return NAN;
 
     if (km == (double)U64_NAN) {
         putchar('\n');
@@ -579,8 +516,8 @@ double s_km(char *operation) {
 
     SAFE_FREE(test);
 
-    if (miles == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(miles))
+        return NAN;
 
     if (miles == (double)U64_NAN) {
         putchar('\n');
@@ -598,8 +535,8 @@ double s_pounds(char *operation) {
 
     SAFE_FREE(test);
 
-    if (kg == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(kg))
+        return NAN;
 
     if (kg == (double)U64_NAN) {
         putchar('\n');
@@ -617,8 +554,8 @@ double s_kg(char *operation) {
 
     SAFE_FREE(test);
 
-    if (lbs == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(lbs))
+        return NAN;
 
     if (lbs == (double)U64_NAN) {
         putchar('\n');
@@ -636,8 +573,8 @@ double s_feet(char *operation) {
 
     SAFE_FREE(test);
 
-    if (meters == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(meters))
+        return NAN;
 
     if (meters == (double)U64_NAN) {
         putchar('\n');
@@ -655,8 +592,8 @@ double s_meter(char *operation) {
 
     SAFE_FREE(test);
 
-    if (feet == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(feet))
+        return NAN;
 
     if (feet == (double)U64_NAN) {
         putchar('\n');
@@ -674,8 +611,8 @@ double s_fah(char *operation) {
 
     SAFE_FREE(test);
 
-    if (cel == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(cel))
+        return NAN;
 
     if (cel == (double)U64_NAN) {
         putchar('\n');
@@ -693,8 +630,8 @@ double s_cel(char *operation) {
 
     SAFE_FREE(test);
 
-    if (fah == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(fah))
+        return NAN;
 
     if (fah == (double)U64_NAN) {
         putchar('\n');
@@ -712,7 +649,7 @@ char *s_oct(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
+    if (isnan(num))
         return NULL;
 
     if (num == (double)U64_NAN) {
@@ -750,7 +687,7 @@ char *s_chr(char *operation) {
     double num = eval(test, true);
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
+    if (isnan(num))
         return NULL;
 
     if (num != (int64_t)num) {
@@ -790,7 +727,7 @@ char *s_hex(char *operation) {
 
     SAFE_FREE(test);
 
-    if (val == QUICK_EVAL_FIX)
+    if (isnan(val))
         return NULL;
 
     if (val == (double)U64_NAN) {
@@ -829,7 +766,7 @@ char *s_bin(char *operation) {
     double val = eval(test, true);
     SAFE_FREE(test);
 
-    if (val == QUICK_EVAL_FIX)
+    if (isnan(val))
         return NULL;
 
     if (val == (double)U64_NAN) {
@@ -878,8 +815,8 @@ double s_trunc(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -897,8 +834,8 @@ double s_rad(char *operation) {
 
     SAFE_FREE(test);
 
-    if (deg == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(deg))
+        return NAN;
 
     if (deg == (double)U64_NAN) {
         putchar('\n');
@@ -916,8 +853,8 @@ double s_gon(char *operation) {
 
     SAFE_FREE(test);
 
-    if (deg == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(deg))
+        return NAN;
 
     if (deg == (double)U64_NAN) {
         putchar('\n');
@@ -935,8 +872,8 @@ double s_deg(char *operation) {
 
     SAFE_FREE(test);
 
-    if (rad == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(rad))
+        return NAN;
 
     if (rad == (double)U64_NAN) {
         putchar('\n');
@@ -954,8 +891,8 @@ double s_sqrt(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -979,8 +916,8 @@ double s_scale(char *operation) {
 
     SAFE_FREE(test);
 
-    if (value == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(value))
+        return NAN;
 
     if (value == (double)U64_NAN) {
         putchar('\n');
@@ -1018,8 +955,8 @@ double s_sin(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1042,8 +979,8 @@ double s_asin(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1066,8 +1003,8 @@ double s_cot(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1092,8 +1029,8 @@ double s_acot(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1111,8 +1048,8 @@ double s_cos(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1135,8 +1072,8 @@ double s_acos(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1160,8 +1097,8 @@ double s_tan(char *operation) {
 
     SAFE_FREE(test);
 
-    if (angle == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(angle))
+        return NAN;
 
     if (angle == (double)U64_NAN) {
         putchar('\n');
@@ -1191,8 +1128,8 @@ double s_atan(char *operation) {
 
     SAFE_FREE(test);
 
-    if (angle == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(angle))
+        return NAN;
 
     if (angle == (double)U64_NAN) {
         putchar('\n');
@@ -1210,8 +1147,8 @@ double s_ln(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1229,8 +1166,8 @@ double s_log10(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1248,8 +1185,8 @@ double s_log2(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1286,9 +1223,9 @@ double s_root(char *operation) {
 
     double index = eval(indexStr, true);
 
-    if (index == QUICK_EVAL_FIX) {
+    if (isnan(index)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (index == (double)U64_NAN) {
@@ -1299,9 +1236,9 @@ double s_root(char *operation) {
     
     double rooting = eval(rootingStr, true);
 
-    if (rooting == QUICK_EVAL_FIX) {
+    if (isnan(rooting)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (rooting == (double)U64_NAN) {
@@ -1319,7 +1256,7 @@ double s_root(char *operation) {
         return NAN;
     }
 
-    if (floor(index) != index) {
+    if (index != (int64_t)index) {
         printf("eval: troot() requires an integer index\n");
         return NAN;
     }
@@ -1375,9 +1312,9 @@ double s_bmi(char *operation) {
 
     double weight = eval(weightStr, true);
 
-    if (weight == QUICK_EVAL_FIX) {
+    if (isnan(weight)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (weight == (double)U64_NAN) {
@@ -1388,9 +1325,9 @@ double s_bmi(char *operation) {
     
     double height = eval(heightStr, true);
 
-    if (height == QUICK_EVAL_FIX) {
+    if (isnan(height)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (height == (double)U64_NAN) {
@@ -1431,9 +1368,9 @@ double s_log(char *operation) {
 
     double base = eval(baseStr, true);
 
-    if (base == QUICK_EVAL_FIX) {
+    if (isnan(base)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (base == (double)U64_NAN) {
@@ -1444,9 +1381,9 @@ double s_log(char *operation) {
 
     double num = eval(numStr, true);
 
-    if (num == QUICK_EVAL_FIX) {
+    if (isnan(num)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (num == (double)U64_NAN) {
@@ -1480,7 +1417,6 @@ double s_randFloat(char *operation) {
     char *str_min = test;
     char *str_max = comma + 1;
 
-    
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
         printf("eval: randf() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
@@ -1501,9 +1437,9 @@ double s_randFloat(char *operation) {
     else 
         maxLf = eval(str_max, true);
 
-    if (maxLf == QUICK_EVAL_FIX) {
+    if (isnan(maxLf)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (maxLf == (double)U64_NAN) {
@@ -1517,9 +1453,9 @@ double s_randFloat(char *operation) {
     else 
         minLf = eval(str_min, true);
     
-    if (minLf == QUICK_EVAL_FIX) {
+    if (isnan(minLf)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (minLf == (double)U64_NAN) {
@@ -1568,9 +1504,9 @@ double s_randInt(char *operation) {
     else 
         maxInt = eval(str_max, true);
 
-    if (maxInt == QUICK_EVAL_FIX) {
+    if (isnan(maxInt)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (maxInt == (double)U64_NAN) {
@@ -1584,9 +1520,9 @@ double s_randInt(char *operation) {
     else 
         minInt = eval(str_min, true);
 
-    if (minInt == QUICK_EVAL_FIX) {
+    if (isnan(minInt)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (minInt == (double)U64_NAN) {
@@ -1613,8 +1549,8 @@ double s_floor(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1633,8 +1569,8 @@ double s_ceil(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1652,8 +1588,8 @@ double s_round(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1696,9 +1632,8 @@ double s_isprime(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
-
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1781,8 +1716,8 @@ double s_fact(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1810,8 +1745,8 @@ double s_sign(char *operation) {
 
     SAFE_FREE(test);
 
-    if (num == QUICK_EVAL_FIX)
-        return 0.0;
+    if (isnan(num))
+        return NAN;
 
     if (num == (double)U64_NAN) {
         putchar('\n');
@@ -1885,9 +1820,9 @@ double s_sum(char *operation) {
 
     double init = eval(initStr, true);
 
-    if (init == QUICK_EVAL_FIX) {
+    if (isnan(init)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (init == (double)U64_NAN) {
@@ -1898,9 +1833,9 @@ double s_sum(char *operation) {
 
     double end  = eval(endStr, true);
 
-    if (end == QUICK_EVAL_FIX) {
+    if (isnan(end)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (end == (double)U64_NAN) {
@@ -1912,9 +1847,9 @@ double s_sum(char *operation) {
     char defaultDiff[] = "1";
     double diff = eval(diffStr ? diffStr : defaultDiff, true);
 
-    if (diff == QUICK_EVAL_FIX) {
+    if (isnan(diff)) {
         SAFE_FREE(test);
-        return 0.0;
+        return NAN;
     }
 
     if (diff == (double)U64_NAN) {

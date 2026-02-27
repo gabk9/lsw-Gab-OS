@@ -15,6 +15,14 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include "terminal.h"
+
+typedef double (*MathFunc)(char *);
+
+typedef struct Functions {
+    const char *name;
+    MathFunc func;
+} FuncEntry;
+
 #include "CheckCmd.h"
 
 #ifdef _WIN32
@@ -50,7 +58,6 @@ extern double Ans;
 #define MAX_SAFE_INT64_D  9223372036854775807.0
 #define MIN_SAFE_INT64_D -9223372036854775808.0
 #define U64_NAN ((uint64_t)(UINT64_MAX - 1ULL))
-#define QUICK_EVAL_FIX ((double)(DBL_MAX - 2ULL))
 
 #define RM_FORCE 0b00000001
 #define RM_BIN   0b00000010
@@ -142,6 +149,7 @@ char *tolowerstr(const char *str);
 int16_t move_to_trash(char *path);
 char *unameCmdLinux(uint8_t flags);
 char *get_env_var(const char *name);
+bool isValidBcFunc(const char *str);
 void charRm(char *str, int8_t targ);
 char *handle_cd_dash(char *address);
 uint32_t getFileLength(FILE *stream);
@@ -165,6 +173,7 @@ int16_t rm_delete(char *path, uint8_t flags);
 int16_t strchar(const char *str, int8_t chr);
 uint16_t getHistSizeConfig(char *lswrc_path);
 int16_t strrchar(const char *str, int8_t chr);
+bool is_wrapped_by_parentheses(const char *s);
 bool isValidFolderOrFileName(const char *name);
 bool isValidBcCommand(char *str, char *command);
 char *extractCommandOrKey(char *src, char **arg);
@@ -173,6 +182,7 @@ uint16_t countIndex(const char *str, int8_t chr);
 char* findCharOutsideQuotes(char *s, char target);
 char *extract_instruction(char *str, char **args);
 void createShortcut(char *instruction, char *path);
+enum paren_result parenthesis_check(const char *s);
 char **parseData(const char *str, uint16_t *count);
 void lsCmdWin(const char *dirPath, uint8_t showAll);
 bool isBcVariable(const char *str, bool *shouldError);

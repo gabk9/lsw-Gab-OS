@@ -29,7 +29,6 @@
 bool isprime(int64_t n);
 uint64_t fact(int64_t num, int32_t steps);
 double tetration(double base, int32_t height);
-double parse_double(char *str, char *funcName);
 double s_ln(char *operation)__attribute__((nonnull));
 char *s_chr(char *operation)__attribute__((nonnull));
 char *s_oct(char *operation)__attribute__((nonnull));
@@ -77,7 +76,6 @@ int64_t parseBinToInt(const char *str)__attribute__((nonnull));
 
 uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
 double h_atof(const char *str, bool mathlib)__attribute__((nonnull(1)));
-enum paren_result parenthesis_check(const char *s)__attribute__((nonnull));
 double s_fabs_or_abs(char *operation, bool enable_single_point)__attribute__((nonnull));
 char *functionHandler(char *operation, const char *function)__attribute__((warn_unused_result));
 

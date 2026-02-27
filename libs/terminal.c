@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.0.42"
+#define VERSION "r2.1.00"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -190,6 +190,9 @@ char *randstrCmd(char *instruction) {
         }
     }
 
+    if (isnan(len))
+        return NULL;
+
     if (len == (double)U64_NAN)
         return NULL;
 
@@ -253,7 +256,6 @@ void sleepCmd(char *instruction) {
 
     double time;
     time = eval(instruction, true);
-    time = (time == QUICK_EVAL_FIX) ? 0.0 : time;
 
     if (isnan(time) || time == (double)U64_NAN)
         return;
@@ -551,11 +553,9 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
     while (true) {
         if (!appear) {
             if (!quiet) {
-                printf("A simple calculator command, apparently it works with more than 2 numbers, but without operand precedence,\n");
-                printf("type 'quit' or 'exit' to exit, 'man' to check the manual inside the calculator, otherwise use 'man bc'");
-                printf("type 'clear' or 'cls' to clear the screen and scrollback buffer\nPS: mathlib is off by default, ");
-                printf("type 'mathlib' to turn it on/off if you're inside the terminal, otherwise use "
-                    "'bc -l' or 'bc --mathlib', look at the manual to see in details what it does\n");
+                printf("A simple calculator, note that without parenthesis operand precedence does not work,\n");
+                printf("type 'quit' or 'exit' to exit and type 'clear' or 'cls' to clear the screen and scrollback buffer\n");
+                printf("PS: mathlib is off by default, type 'mathlib' to turn it on/off if you're inside bc\n");
             }
             printf("Mathlib status: ");
             if (mathlib)
@@ -599,19 +599,11 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
             appear = 0;
             continue;
 
-        } else if (isValidBcCommand(operation, "man")) {
-            puts("\n────────────────────────────────────────────────────────────────────────────────\n");
-
-            manCmdMulti("bc", cmds, true);
-
-            puts("\n────────────────────────────────────────────────────────────────────────────────\n");
-
-            continue;
         }
         else if (mathlib && validStrBcFuncException(operation, "hex")) {
             char *value = s_hex(operation);
             if (value) {
-                printf("%s\n\n", value);
+                printf("'%s'\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
             } else {
@@ -625,7 +617,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         else if (mathlib && validStrBcFuncException(operation, "oct")) {
             char *value = s_oct(operation);
             if (value) {
-                printf("%s\n\n", value);
+                printf("'%s'\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
             } else {
@@ -639,7 +631,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         else if (mathlib && validStrBcFuncException(operation, "bin")) {
             char *value = s_bin(operation);
             if (value) {
-                printf("%s\n\n", value);
+                printf("'%s'\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
             } else {
@@ -666,8 +658,6 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         }
 
         result = eval(operation, mathlib);        
-        result = (result == QUICK_EVAL_FIX) ? 0.0 : result;
-
         Ans = (result == (double)U64_NAN) ? NAN : result;
 
         if (!isnan(result) && result != (double)U64_NAN)
@@ -838,8 +828,6 @@ void historyCmd(char *operation, const char *path) {
 
     double num;
     num = eval(operation, true);
-    num = (num == QUICK_EVAL_FIX) ? 0.0 : num;
-
 
     if (isnan(num) || num == (double)U64_NAN) {
         SAFE_FCLOSE(f);
@@ -1049,9 +1037,13 @@ void touchCmd(char *instruction) {
 
         if (!QuoteAfterStar) {
             count = eval(num, true);
-            count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
 
-    
+            if (isnan(count)) {
+                SAFE_FREE(copy);
+                SAFE_FREE(test);
+                return;
+            }
+
             if (count != (int64_t)count) {
                 printf("touch: the multiplier must be an integer\n");
                 SAFE_FREE(copy);
@@ -1706,7 +1698,11 @@ void updatehistory(void) {
         "r2.0.21 - minor changes\n\tFixed: the variable analyzer not skipping spaces\n",
         "r2.0.32 - big changes\n\tRemoved: fact()\n\tAdded: now to factor numbers you will just use '!'\n",
         "r2.0.40 - small changes\n\tEdited: improved eval() parser\n",
-        "r2.0.42 - minor changes\n\tEdited: bc manual\n"
+        "r2.0.42 - minor changes\n\tEdited: bc manual\n",
+        "r2.0.50 - small changes\n\tRemoved: useless math code\n\tEdited: made the bc parser safer\n",
+        "r2.0.70 - huge changes\n\tEdited: refactored the function parser\n\tAdded: error messages to string types values/functions\n",
+        "r2.0.95 - huge changes\n\tAdded: parenthesis support, you can use it when you are having unexpected result with the lack of precedence\n",
+        "r2.1.00 - small changes\n\tEdited: bc initial message\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

@@ -75,10 +75,6 @@ int32_t main(int32_t argc, char **argv) {
         checkLswrcSyntax(data_folder);
         char *wd = defaultAddressReplace(address);
 
-    #ifdef _WIN32
-        charReplace(wd, '/', '\\');
-    #endif
-
         printc("❯ lsw ❮ ", CYAN, WHITE);
         printc("%s@%s", LIGHT_GREEN, WHITE, userName, hostName);
         putchar(':');
@@ -101,7 +97,7 @@ int32_t main(int32_t argc, char **argv) {
         trim(input);
         trimEnd(input);
 
-        if (!strlen(input))
+        if (!*input)
             continue;
 
         saveHist(input, history_path, data_folder);

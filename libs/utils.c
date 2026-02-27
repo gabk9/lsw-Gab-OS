@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8700
-#define PROJ_SIZE_APPROX_BYTES 257000
+#define PROJ_SIZE_APPROX_BYTES 251000
 
 #define RC_FILE "lswrc.txt"
 
@@ -31,6 +31,69 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+bool isValidBcFunc(const char *str) {
+    if (!str || !*str)
+        return false;
+
+    if (parenthesis_check(str) != PAREN_OK)
+        return false;
+
+    if (!isalpha((unsigned char)str[0]) && *str != '_')
+        return false;
+
+
+    size_t i = 1;
+    while (str[i] && str[i] != '(') {
+        if (!isalnum((unsigned char)str[i]) && str[i] != '_')
+            return false;
+        i++;
+    }
+
+    if (str[i] != '(')
+        return false;
+
+    return true;
+}
+
+enum paren_result parenthesis_check(const char *s) {
+
+    int32_t level = 0;
+    bool in_double_quotes = false;
+    bool in_single_quotes = false;
+
+    for (; *s; s++) {
+        if (*s == '"' && !in_single_quotes) {
+            in_double_quotes = !in_double_quotes;
+            continue;
+        }
+
+        if (*s == '\'' && !in_double_quotes) {
+            in_single_quotes = !in_single_quotes;
+            continue;
+        }
+
+        if (in_double_quotes || in_single_quotes)
+            continue;
+
+        if (*s == '(') {
+            level++;
+        }
+        else if (*s == ')') {
+            level--;
+            if (level < 0)
+                return PAREN_MISSING_OPEN;
+        }
+    }
+
+    if (in_double_quotes || in_single_quotes)
+        return PAREN_UNCLOSED_QUOTE;
+
+    if (level > 0)
+        return PAREN_MISSING_CLOSE;
+
+    return PAREN_OK;
+}
 
 bool isIn(char needle, char *haystack) {
     for (size_t i = 0; haystack[i]; i++)
@@ -449,7 +512,6 @@ uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
     
     if (!QuoteAfterStar) {
         count = eval(num, true);
-        count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
 
         if (isnan(count))
             return 0;
@@ -558,7 +620,6 @@ uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t fi
         trimEnd(text);
 
         count = eval(star, true);
-        count = (count == QUICK_EVAL_FIX) ? 0.0 : count;
 
         if (isnan(count))
             return 0;
@@ -876,8 +937,7 @@ double parse_len(char *s) {
             s++;
     }
 
-    double result = eval(s, true);
-    return (result == QUICK_EVAL_FIX) ? 0.0 : result;
+    return eval(s, true);
 }
 
 char randChr(void) {
@@ -897,14 +957,15 @@ char *defaultAddressReplace(const char *address) {
     char *Default = get_default_address();
     size_t len = strlen(Default);
 
-#ifdef _WIN32
-    charReplace(copy, '\\', '/');
-    charReplace(Default, '\\', '/');
+#ifndef _WIN32
+    char slash = '/';
+#else
+    char slash = '\\';
 #endif
 
     if (
         strcmp(copy, Default) == 0 ||
-        (strncmp(copy, Default, len) == 0 && copy[len] == '/')
+        (strncmp(copy, Default, len) == 0 && copy[len] == slash)
     ) {
         char *tmp = strrm(copy, Default);
         SAFE_FREE(copy);
@@ -2379,69 +2440,85 @@ bool has_top_level_operator(const char *s, const char *uniOps, const char **mult
     return false;
 }
 
+bool is_wrapped_by_parentheses(const char *s) {
+    int len = strlen(s);
+
+    if (len < 2)
+        return false;
+
+    if (s[0] != '(' || s[len - 1] != ')')
+        return false;
+
+    int depth = 0;
+
+    for (int i = 0; i < len - 1; i++) {
+
+        if (s[i] == '(')
+            depth++;
+        else if (s[i] == ')')
+            depth--;
+
+        if (depth == 0 && i < len - 2)
+            return false;
+    }
+
+    return depth == 1;
+}
+
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp) {
     int32_t len = strlen(s);
 
+    int32_t depth = 0;
+    bool in_single = false;
+    bool in_double = false;
+
     for (int32_t i = len - 1; i >= 0; i--) {
 
-        int32_t depth = 0;
-        bool in_quotes = false;
+        char c = s[i];
 
-        for (int32_t k = 0; k <= i; k++) {
-            if (s[k] == '\'')
-                in_quotes = !in_quotes;
-
-            if (!in_quotes) {
-                if (s[k] == '(')
-                    depth++;
-                else if (s[k] == ')')
-                    depth--;
-            }
+        if (c == '"' && !in_single) {
+            in_double = !in_double;
+            continue;
+        }
+        else if (c == '\'' && !in_double) {
+            in_single = !in_single;
+            continue;
         }
 
-        if (depth != 0 || in_quotes)
+        if (in_single || in_double)
             continue;
 
-        for (int32_t j = 0; multiOps[j]; j++) {
+        if (c == ')') {
+            depth++;
+            continue;
+        }
+        else if (c == '(') {
+            depth--;
+            continue;
+        }
 
-            int32_t oplen = strlen(multiOps[j]);
-            int32_t start = i - oplen + 1;
+        if (depth != 0)
+            continue;
+
+        for (int j = 0; multiOps[j]; j++) {
+
+            int oplen = strlen(multiOps[j]);
+            int start = i - oplen + 1;
 
             if (start < 0)
                 continue;
 
             if (strncmp(&s[start], multiOps[j], oplen) == 0) {
 
-                strncpy(foundOp, multiOps[j], oplen);
-                foundOp[oplen] = '\0';
+                strcpy(foundOp, multiOps[j]);
                 return start;
             }
         }
-    }
 
-    for (int32_t i = len - 1; i >= 0; i--) {
-
-        int32_t depth = 0;
-        bool in_quotes = false;
-
-        for (int32_t k = 0; k <= i; k++) {
-            if (s[k] == '\'')
-                in_quotes = !in_quotes;
-
-            if (!in_quotes) {
-                if (s[k] == '(')
-                    depth++;
-                else if (s[k] == ')')
-                    depth--;
-            }
-        }
-
-        if (depth != 0 || in_quotes)
-            continue;
-
-        if (strchr(uniOps, s[i])) {
+        if (strchr(uniOps, c)) {
 
             int32_t k = i - 1;
+
             while (k >= 0 && isspace((unsigned char)s[k]))
                 k--;
 
@@ -2451,7 +2528,7 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
             if (strchr(uniOps, s[k]) || s[k] == '(')
                 continue;
 
-            foundOp[0] = s[i];
+            foundOp[0] = c;
             foundOp[1] = '\0';
             return i;
         }
@@ -2461,14 +2538,53 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 }
 
 double eval(char *operation, bool mathlib) {
-    char *functions[] = {
-        "scale", "sqrt", "sin", "cos", "tan", "ln",
-        "log10", "log2", "log", "floor", "ceil", "round",
-        "sign", "sum", "rad", "deg", "trunc", "randf", "fah", 
-        "cel", "root", "rand", "mi", "km", "lb", "kg","oct", "hex",
-        "bin", "abs", "fabs", "len", "bmi", "feet", "meter", "cot",
-        "gon", "chr", "asin", "acos", "atan", "acot", "isprime"
+    FuncEntry math_table[] = {
+        {"scale",   s_scale},
+        {"sqrt",    s_sqrt},
+        {"root",    s_root},
+        {"sin",     s_sin},
+        {"asin",    s_asin},
+        {"cos",     s_cos},
+        {"acos",    s_acos},
+        {"tan",     s_tan},
+        {"atan",    s_atan},
+        {"cot",     s_cot},
+        {"acot",    s_acot},
+        {"ln",      s_ln},
+        {"log10",   s_log10},
+        {"log2",    s_log2},
+        {"log",     s_log},
+        {"floor",   s_floor},
+        {"ceil",    s_ceil},
+        {"round",   s_round},
+        {"sign",    s_sign},
+        {"sum",     s_sum},
+        {"rad",     s_rad},
+        {"gon",     s_gon},
+        {"deg",     s_deg},
+        {"trunc",   s_trunc},
+        {"randf",   s_randFloat},
+        {"fah",     s_fah},
+        {"cel",     s_cel},
+        {"rand",    s_randInt},
+        {"mi",      s_miles},
+        {"km",      s_km},
+        {"lb",      s_pounds},
+        {"kg",      s_kg},
+        {"isprime", s_isprime},
+        {"bmi",     s_bmi},
+        {"len",     bc_len},
+        {"feet",    s_feet},
+        {"meter",   s_meter},
+        {"chr",     NULL}, // special case
+        {"bin",     NULL}, // special case
+        {"oct",     NULL}, // special case
+        {"hex",     NULL}, // special case
+        {"fabs",    NULL}, // special case
+        {"abs",     NULL}, // special case
     };
+
+    size_t funcCount = sizeof(math_table) / sizeof(*math_table);
 
     const char uniOps[] = "+-/*^%%&|<>";
     const char *multiOps[] = {
@@ -2501,7 +2617,7 @@ double eval(char *operation, bool mathlib) {
         return NAN;
     }
 
-    return CheckOperation(operation, functions, uniOps, multiOps, mathlib);
+    return CheckOperation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 }
 
 char *handle_cd_dash(char *address) {
