@@ -36,7 +36,7 @@ user-select: none;
 **LSW** is a lightweight terminal environment written in C, inspired by Linux systems.  
 It provides a custom shell with its own set of commands, behaviors and internal logic, designed for learning, experimentation and low-level programming practice.
 
-Although originally focused on Windows, **LSW runs perfectly on both Windows and Linux**.  
+Although originally focused on Windows, **LSW runs perfectly on Windows, Linux and Android**.  
 It is expected to also work on macOS, but this platform has not yet been officially tested.
 
 ---
