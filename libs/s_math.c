@@ -101,6 +101,8 @@ double h_atof(const char *str, bool mathlib) {
     trim(buf);
     trimEnd(buf);
 
+    if (!injectEscape(buf, "eval"))
+        return NAN;
 
     bool isUnaryNot = false;
     bool isUnaryNeg = false;
@@ -195,7 +197,7 @@ double h_atof(const char *str, bool mathlib) {
 
     size_t len = strlen(buf);
 
-    if (*buf == '\'' && buf[len-1] == '\'') {
+    if (len > 1 && *buf == '\'' && buf[len-1] == '\'') {
         if (len-2 > 1) {
             printf("eval: to use sigle quotes it must be a single character\n");
             return NAN;
@@ -688,7 +690,6 @@ char *s_chr(char *operation) {
     operation = p;
 
     double num = eval(operation, true);
-
     if (isnan(num))
         return NULL;
 
@@ -704,19 +705,38 @@ char *s_chr(char *operation) {
         return NULL;
     }
 
-    if (value < 32 || value == 127) {
-        printf("eval: chr() does not allow control characters\n");
-        return NULL;
-    }
-
-    char *buff = malloc(4);
+    char *buff = malloc(5);
     if (!buff)
         return NULL;
 
-    buff[0] = '\'';
-    buff[1] = (char)value;
-    buff[2] = '\'';
-    buff[3] = '\0';
+    *buff = '\'';
+
+    switch (value) {
+        case 7:  strcpy(buff + 1, "\\a"); break;
+        case 8:  strcpy(buff + 1, "\\b"); break;
+        case 9:  strcpy(buff + 1, "\\t"); break;
+        case 10: strcpy(buff + 1, "\\n"); break;
+        case 11: strcpy(buff + 1, "\\v"); break;
+        case 12: strcpy(buff + 1, "\\f"); break;
+        case 13: strcpy(buff + 1, "\\r"); break;
+        case 34: strcpy(buff + 1, "\\\""); break;
+        case 39: strcpy(buff + 1, "\\'"); break;
+        case 63: strcpy(buff + 1, "\\?"); break;
+        case 92: strcpy(buff + 1, "\\\\"); break;
+        default:
+            if (value < 32 || value == 127 || value == 1) {
+                printf("eval: chr() does not work with certain control and escape characters\n");
+                SAFE_FREE(buff);
+                return NULL;
+            }
+            buff[1] = (char)value;
+            buff[2] = '\0';
+            break;
+    }
+
+    int32_t len = (buff[2] == '\0') ? 2 : 3;
+    buff[len] = '\'';
+    buff[len + 1] = '\0';
 
     return buff;
 }

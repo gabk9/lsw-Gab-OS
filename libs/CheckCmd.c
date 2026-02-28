@@ -401,8 +401,6 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("\nUsage:\n");
         printf("\techo [STRING]                                     <-- print [STRING]\n");
         printf("\techo [STRING] [MODE] [FILE NAME]                  <-- print [STRING] inside [FILE NAME]\n");
-        printf("\techo [STRING] * [int: COUNT]                      <-- print [STRING] [COUNT] times\n");
-        printf("\techo [STRING] * [int: COUNT] [MODE] [FILE NAME]   <-- print [STRING] [COUNT] times inside [FILE NAME]\n");
 
         printf("\nEnvironment variables recognized: (not case sensitive)\n");
         printf("\t$PATH                     <-- system PATH\n");
@@ -475,7 +473,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'touch' displays a line of text in the terminal or in a file\n\nUsage:\n");
         printf("\ttouch [FILE NAME]                             <-- creates [FILE NAME]\n"
             "\ttouch [FILE NAME] < [STRING]                  <-- print the string into [FILE]\n"
-            "\ttouch [FILE NAME] < [STRING] * [int: COUNT]   <-- print the string in file [COUNT] times\n");
+        );
         
         printf("\nEnvironment variables recognized: (not case sensitive)\n");
         printf("\t$PATH                     <-- system PATH\n");

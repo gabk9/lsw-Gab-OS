@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8600
-#define PROJ_SIZE_APPROX_BYTES 250500
+#define PROJ_LINES_APPROX 8500
+#define PROJ_SIZE_APPROX_BYTES 247500
 
 #define RC_FILE "lswrc.txt"
 
@@ -32,6 +32,54 @@ LONG handler(EXCEPTION_POINTERS *e) {
 }
 #endif
 
+int16_t injectEscape(char *str, const char *error_str) {
+    bool inQuotes = false;
+
+    for (size_t i = 0; str[i]; i++) {
+        if ((str[i] == '"' || str[i] == '\'') && (i == 0 || str[i-1] != '\\')) {
+            inQuotes = !inQuotes;
+            continue;
+        }
+
+        if (!inQuotes)
+            continue;
+
+        if (str[i] == '\\' && str[i+1]) {
+            char next = str[i+1];
+            char replace = 0;
+
+            switch(next) {
+                case 'n':  replace = '\n'; break;
+                case 't':  replace = '\t'; break;
+                case 'b':  replace = '\b'; break;
+                case 'r':  replace = '\r'; break;
+                case 'a':  replace = '\a'; break;
+                case '\'': replace = '\''; break;
+                case '"':  replace = '"';  break;
+                case '?':  replace = '?';  break;
+                case '\\': replace = '\\'; break;
+                case 'f':  replace = '\f'; break;
+                case 'v':  replace = '\v'; break;
+                case '0':  replace = '\0'; break;
+                default: 
+                    printf("%s: invalid escape character: '\\%c'\n", error_str, next);
+                    return 0;
+            }
+
+            str[i] = replace;
+            shiftLeft_at(str, i+1);
+        }
+    }
+    return 1;
+}
+
+void shiftLeft_at(char *str, size_t pos) {
+    size_t len = strlen(str);
+    if (pos >= len) return;
+
+    memmove(&str[pos], &str[pos + 1], len - pos);
+}
+
 bool isValidBcFuncName(const char *str) {
     if (!str || !*str)
         return false;
@@ -52,19 +100,28 @@ bool isValidBcFuncName(const char *str) {
     return true;
 }
 
-enum paren_result parenthesis_check(const char *s) {
-
+enum paren_result parenthesis_check(const char *str) {
     int32_t level = 0;
     bool in_double_quotes = false;
     bool in_single_quotes = false;
 
-    for (; *s; s++) {
-        if (*s == '"' && !in_single_quotes) {
+    if (!str) return PAREN_OK;
+
+    for (const char *s = str; *s; s++) {
+        int32_t backslashes = 0;
+        const char *p = s - 1;
+        while (p >= str && *p == '\\') {
+            backslashes++;
+            p--;
+        }
+        bool escaped = (backslashes % 2 != 0);
+
+        if (*s == '"' && !in_single_quotes && !escaped) {
             in_double_quotes = !in_double_quotes;
             continue;
         }
 
-        if (*s == '\'' && !in_double_quotes) {
+        if (*s == '\'' && !in_double_quotes && !escaped) {
             in_single_quotes = !in_single_quotes;
             continue;
         }
@@ -72,9 +129,8 @@ enum paren_result parenthesis_check(const char *s) {
         if (in_double_quotes || in_single_quotes)
             continue;
 
-        if (*s == '(') {
+        if (*s == '(')
             level++;
-        }
         else if (*s == ')') {
             level--;
             if (level < 0)
@@ -487,62 +543,6 @@ int8_t isAppend(const char *str) {
     return found;
 }
 
-uint8_t echoNtimes(char *instruction, char *copy, uint16_t reps) {
-
-    char *save;
-
-    char *str = strtok_r(copy, "*", &save);
-    char *num = strtok_r(NULL, "*", &save);
-
-    if (!str || !num || (num[0] == '*' && num[1] == '\0')){
-        puts("echo: invalid syntax");
-        return 1;
-    }
-
-    trim(num); trimEnd(num);
-    trim(str); trimEnd(str);
-    bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
-                        reps < strrchar(instruction, '\''));
-
-    double count;
-    
-    if (!QuoteAfterStar) {
-        count = eval(num, true);
-
-        if (isnan(count))
-            return 0;
-
-        if (count != (int64_t)count) {
-            printf("echo: the multiplier must be an integer\n");
-            return 0;
-        }
-
-        if (count <= 0) {
-            printf("echo: the multiplier must be greater than 0\n");
-            return 0;
-        }
-    }
-
-    int32_t changed = 0;
-    char *new = stringToVariable(str, &changed);
-
-    if (!(changed && strcasecmp(str, "$path") == 0))
-        new = echoHandler(new);
-
-
-    if (QuoteAfterStar) {
-        echoHandler(instruction);
-        puts(instruction);
-    } else 
-        for (int32_t i = 0; i < count; i++)
-            puts(new);
-
-    SAFE_FREE(new);
-    SAFE_FREE(copy);
-
-    return 1;
-}
-
 char* findStarOutsideQuotes(char *s) {
     int32_t in_single = 0, in_double = 0;
 
@@ -564,114 +564,6 @@ char* findCharOutsideQuotes(char *s, char target) {
             return p;
     }
     return NULL;
-}
-
-uint8_t echoFileNtimes(char *instruction, char *copy) {
-
-    char *work = strdup(instruction);
-    if (!work) return 0;
-
-    char *redir = findCharOutsideQuotes(work, '>');
-
-    int32_t append = 0;
-    char *filename = NULL;
-
-    if (redir) {
-        *redir = '\0';
-        redir++;
-
-        if (*redir == '>') {
-            append = 1;
-            redir++;
-        }
-
-        while (*redir == ' ') redir++;
-
-        if (!*redir) {
-            puts("echo: invalid syntax");
-            goto fail;
-        }
-
-        filename = redir;
-
-        trim(filename);
-        trimEnd(filename);
-
-        if (!isValidFolderOrFileName(filename)) {
-            puts("echo: invalid file name");
-            goto fail;
-        }
-    }
-
-    char *star = findCharOutsideQuotes(work, '*');
-    char *text = work;
-    double count = 0;
-
-    if (star) {
-        *star = '\0';
-        star++;
-
-        trim(star);
-        trim(text);
-        trimEnd(text);
-
-        count = eval(star, true);
-
-        if (isnan(count))
-            return 0;
-
-        if (count != (int64_t)count) {
-            puts("echo: the multiplier must be an integer");
-            goto fail;
-        }
-
-        if (count <= 0) {
-            puts("echo: the multiplier must be greater than 0");
-            goto fail;
-        }
-    }
-    else {
-        trim(text);
-        trimEnd(text);
-    }
-
-    int32_t changed = 0;
-    char *new = stringToVariable(text, &changed);
-
-    if (!(changed && strcasecmp(text, "$path") == 0))
-        new = echoHandler(new);
-
-
-    FILE *f = NULL;
-
-    if (filename) {
-        f = fopen(filename, append ? "a" : "w");
-        if (!f) {
-            perror("echo");
-            goto fail;
-        }
-    }
-
-    for (uint64_t i = 0; i < (uint64_t)count; i++) {
-        if (f) {
-            fputs(new, f);
-            fputc('\n', f);
-        }
-        else {
-            puts(new);
-        }
-    }
-
-    if (f) SAFE_FCLOSE(f);
-
-    SAFE_FREE(work);
-    SAFE_FREE(copy);
-    return 1;
-
-fail:
-    SAFE_FREE(work);
-    SAFE_FREE(copy);
-    return 0;
 }
 
 char *extract_instruction(char *str, char **args) {
@@ -1856,6 +1748,9 @@ char *echoHandler(char *str) {
     char *out = malloc(len*2);
     if (!out) return str;
 
+    if (!injectEscape(str, "bash"))
+        return NULL;
+
     size_t o = 0;
     int32_t inQuotes = 0;
     char quoteChar = 0;
@@ -2608,6 +2503,9 @@ double eval(char *operation, bool mathlib) {
 
         return NAN;
     }
+
+    if (!injectEscape(operation, "eval"))
+        return NAN;
 
     return parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 }

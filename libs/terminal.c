@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.38"
+#define VERSION "r2.1.54"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -960,8 +960,6 @@ void touchCmd(char *instruction) {
     trim(instruction);
 
     int16_t string = strrchar(instruction, '<');
-    int16_t reps = strrchar(instruction, '*');
-
 
     char *copy = strdup(instruction);
     char *save;
@@ -976,7 +974,7 @@ void touchCmd(char *instruction) {
 
         FILE *f = fopen(instruction, "w");
         SAFE_FCLOSE(f);
-    } else if (string != -1 && reps ==  -1){
+    } else {
         char *filename = strtok_r(instruction, "<", &save);
         char *inFile = strtok_r(NULL, ">", &save);
 
@@ -997,6 +995,10 @@ void touchCmd(char *instruction) {
 
         if (!(changed && strcasecmp(inFile, "$path") == 0)) {
             new = echoHandler(new);
+
+            if (!new)
+                return;
+
         }
 
         FILE *f = fopen(filename, "w");
@@ -1004,79 +1006,6 @@ void touchCmd(char *instruction) {
         fprintf(f, "%s", new);
 
         SAFE_FCLOSE(f);
-    } else {
-        char *filename = strtok_r(copy, "<", &save);
-        char *inFile = strtok_r(NULL, "<", &save);
-
-        char *test = strdup(inFile);
-        trim(test);
-
-        char *str = strtok_r(inFile, "*", &save);
-        char *num = strchr(instruction, '*');
-
-        num = strtok(num, "<");
-
-        char *cpy = strdup(filename);
-
-        filename = strdup(cpy);
-
-        trim(str); trimEnd(str);    
-        trim(filename); trimEnd(filename);
-
-        if (!isValidFolderOrFileName(filename)) {
-            printf("touch: invalid file name\n");
-            SAFE_FREE(copy);
-            SAFE_FREE(test);
-            return;
-        }
-
-        bool QuoteAfterStar = (reps < strrchar(instruction, '\"') ||
-                            reps < strrchar(instruction, '\''));
-
-        double count;
-
-        if (!QuoteAfterStar) {
-            count = eval(num, true);
-
-            if (isnan(count)) {
-                SAFE_FREE(copy);
-                SAFE_FREE(test);
-                return;
-            }
-
-            if (count != (int64_t)count) {
-                printf("touch: the multiplier must be an integer\n");
-                SAFE_FREE(copy);
-                SAFE_FREE(test);
-                return;
-            }
-
-            if (count <= 0) {
-                printf("touch: the multiplier must be greater than 0\n");
-                SAFE_FREE(copy);
-                SAFE_FREE(test);
-                return;
-            }    
-        }
-
-        int32_t changed = 0;
-        char *new = stringToVariable(str, &changed);
-
-        if (!(changed && strcasecmp(str, "$path") == 0)) {
-            new = echoHandler(new);
-        }
-
-        FILE *f = fopen(filename, "w");
-
-        if (QuoteAfterStar) {
-            echoHandler(test);
-            fputs(new, f);
-        } else
-            printInFileNTimes(f, new, count);
-
-        SAFE_FCLOSE(f);
-
-        SAFE_FREE(test);
     }
 
     SAFE_FREE(copy);
@@ -1705,7 +1634,8 @@ void updatehistory(void) {
         "r2.1.00 - small changes\n\tEdited: bc initial message\n",
         "r2.1.26 - huge changes\n\tEdited: improved the bc parser by a lot and also refactored all of the function parser to depend less on heap\n",
         "r2.1.32 - small changes\n\tEdited: optimized the function parser and fixed the -Wextra and -Wpedantic compilation flags warnings\n",
-        "r2.1.38 - small changes\n\tEdited: renamed the angles functions\n"
+        "r2.1.38 - small changes\n\tEdited: renamed the angles functions\n",
+        "r2.1.54 - big changes\n\tRemoved: string multiplication with echo and touch\n\tAdded: support to escape characters to lsw, and bc of course\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
@@ -1796,7 +1726,6 @@ void echoCmd(char *instruction) {
     }
 
     int8_t file = strrchar(instruction, '>');
-    int8_t reps = strrchar(instruction, '*');
 
     char *copy = strdup(instruction);
     char *save;
@@ -1806,22 +1735,21 @@ void echoCmd(char *instruction) {
         return;
     }
 
-    if (reps != -1 && file == -1) {
-        if (!echoNtimes(instruction, copy, reps)) {
-            return;
-        }
-    } else if (file == -1 && reps == -1) {
+    if (file == -1) {
         int32_t changed = 0;
         char *new = stringToVariable(copy, &changed);
 
         if (!(changed && strcasecmp(copy, "$path") == 0)) {
             new = echoHandler(new);
+            if (!new)
+                return;
         }
 
         puts(new);
+        
         SAFE_FREE(new);
 
-    } else if (reps == -1 && file != -1) {
+    } else if (file != -1) {
 
         char *inFile = strtok_r(copy, ">", &save);
         char *filename = strtok_r(NULL, ">", &save);
@@ -1893,10 +1821,6 @@ void echoCmd(char *instruction) {
         SAFE_FREE(copy);
         return;
 
-    } else if (reps != -1 && file != -1) {
-        if (!echoFileNtimes(instruction, copy)) {
-            return;
-        }
     }
 }
 
