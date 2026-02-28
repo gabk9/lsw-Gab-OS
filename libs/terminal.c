@@ -646,7 +646,9 @@ void bcCmd(uint16_t argc, char **argv) {
             char *value = s_chr(operation);
             if (value) {
                 printf("%s\n\n", value);
-                Ans = h_atof(value, false);
+                injectEscape(value, "eval");
+
+                Ans = h_atof(value, false);                
                 fflush(stdout);
             } else {
                 putchar('\n');

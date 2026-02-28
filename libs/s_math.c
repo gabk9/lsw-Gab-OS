@@ -101,9 +101,6 @@ double h_atof(const char *str, bool mathlib) {
     trim(buf);
     trimEnd(buf);
 
-    if (!injectEscape(buf, "eval"))
-        return NAN;
-
     bool isUnaryNot = false;
     bool isUnaryNeg = false;
 
