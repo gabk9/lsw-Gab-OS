@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.26"
+#define VERSION "r2.1.38"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1704,7 +1704,8 @@ void updatehistory(void) {
         "r2.0.95 - huge changes\n\tAdded: parenthesis support, you can use it when you are having unexpected result with the lack of precedence\n",
         "r2.1.00 - small changes\n\tEdited: bc initial message\n",
         "r2.1.26 - huge changes\n\tEdited: improved the bc parser by a lot and also refactored all of the function parser to depend less on heap\n",
-        "r2.1.32 - small changes\n\tEdited: optimized the function parser and fixed the -Wextra and -Wpedantic compilation flags warnings\n"
+        "r2.1.32 - small changes\n\tEdited: optimized the function parser and fixed the -Wextra and -Wpedantic compilation flags warnings\n",
+        "r2.1.38 - small changes\n\tEdited: renamed the angles functions\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
