@@ -21,7 +21,12 @@ typedef double (*MathFunc)(char *);
 typedef struct Functions {
     const char *name;
     MathFunc func;
+    enum returns {
+        STRING, FLOAT,
+        INT, BOOL, CHAR
+    } returnType;
 } FuncEntry;
+
 
 #include "CheckCmd.h"
 

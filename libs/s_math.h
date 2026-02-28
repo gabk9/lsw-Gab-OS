@@ -19,8 +19,6 @@
 #define METERS_TO_FEET_FACTOR 3.28084
 #define FEET_TO_METERS_FACTOR 0.3048
 
-#define BC_ERROR "__LSW__CALC__ERROR__"
-
 #ifdef _WIN32
     #undef RAND_MAX
     #define RAND_MAX 0x7FFFFFFF
@@ -72,12 +70,11 @@ double s_randInt(char *operation)__attribute__((nonnull));
 double s_isprime(char *operation)__attribute__((nonnull));
 char *find_top_level_comma(char *s)__attribute__((nonnull));
 double s_randFloat(char *operation)__attribute__((nonnull));
+double parse_str_func(char *operation, const char *funcname); 
+double s_fabs_or_abs(char *operation)__attribute__((nonnull));
 int64_t parseBinToInt(const char *str)__attribute__((nonnull));
-
 uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
 double h_atof(const char *str, bool mathlib)__attribute__((nonnull(1)));
-double s_fabs_or_abs(char *operation, bool enable_single_point)__attribute__((nonnull));
-char *functionHandler(char *operation, const char *function)__attribute__((warn_unused_result));
 
 #define DEG_TO_RAD(x) ((x) * (PI / 180.0))
 #define RAD_TO_DEG(x) ((x) * (180.0 / PI))

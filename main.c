@@ -48,6 +48,11 @@ int32_t main(int32_t argc, char **argv) {
             if (*argv[i] == '#')
                 break;
 
+            if (parenthesis_check(argv[i]) == PAREN_UNCLOSED_QUOTE) {
+                printf("LSW: unclosed quote\n");
+                continue;
+            }
+
             if (*argv[i] == '-')
                 bashCmd(2, (char *[]){"bash", argv[i]}, cmds, false);
             else {
@@ -96,6 +101,11 @@ int32_t main(int32_t argc, char **argv) {
         input[strcspn(input, "\n")] = '\0';
         trim(input);
         trimEnd(input);
+
+        if (parenthesis_check(input) == PAREN_UNCLOSED_QUOTE) {
+            printf("bash: unclosed quote\n");
+            continue;
+        }
 
         if (!*input)
             continue;

@@ -1179,6 +1179,9 @@ double CheckOperation(char *operation, FuncEntry *functions, size_t funcCount, c
             if (*operation == '~' || *operation == '-')
                 return h_atof(operation, mathlib);
 
+            if (!*name)
+                return h_atof(operation, mathlib);
+
             if (!isValidBcFunc(operation)) {
                 printf("eval: invalid function name: '%s()'\n", name);
                 return NAN;
@@ -1191,12 +1194,12 @@ double CheckOperation(char *operation, FuncEntry *functions, size_t funcCount, c
                         return functions[i].func(operation);
                     }
 
-                    if (strcmp(name, "abs") == 0)
-                        return s_fabs_or_abs(operation, false);
-                    else if (strcmp(name, "fabs") == 0)
-                        return s_fabs_or_abs(operation, true);
+                    if (functions[i].returnType == CHAR) {
+                        if (strcmp(name, "chr") == 0)
+                            return parse_str_func(operation, "chr");
+                    }
 
-                    if (!functions[i].func) {
+                    if (functions[i].returnType == STRING) {
                         printf("eval: %s() is of type string, cannot operate with this function\n", name);
                         return NAN;
                     }

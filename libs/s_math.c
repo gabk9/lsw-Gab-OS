@@ -4,6 +4,34 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
+double parse_str_func(char *operation, const char *funcname) {    
+
+    char *buff;
+    bool isChr = false;
+
+    if (strcmp(funcname, "chr") == 0) {
+        buff = s_chr(operation);
+        isChr = true;
+    } else if (strcmp(funcname, "bin") == 0)
+        buff = s_bin(operation);
+    else if (strcmp(funcname, "hex") == 0)
+        buff = s_hex(operation);
+    else if (strcmp(funcname, "oct") == 0)
+        buff = s_oct(operation);
+
+    if (!isChr) {
+        const size_t len = strlen(buff);
+        memmove(buff, buff+1, len+1);
+        buff[len-2] = '\0';
+    }    
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
+
+    return num;
+}
+
 static uint8_t isnull(int32_t count, ...) {
 
     if (count < 1) {
@@ -49,48 +77,6 @@ uint16_t count_top_level_commas(const char *s) {
             count++;
     }
     return count;
-}
-
-char *functionHandler(char *operation, const char *function) {
-    operation = strrm(operation, function);    
-    trim(operation);
-
-    enum paren_result result = parenthesis_check(operation);
-
-    if (result != PAREN_OK) {
-
-        switch (result) {
-            case PAREN_MISSING_CLOSE:
-                printf("eval: expected ')'\n");
-                break;
-
-            case PAREN_MISSING_OPEN:
-                printf("eval: unexpected ')'\n");
-                break;
-
-            case PAREN_UNCLOSED_QUOTE:
-                printf("eval: unclosed quote\n");
-                break;
-
-            default:
-                break;
-        }
-
-        return BC_ERROR;
-    }
-
-    char *copy = strdup(operation);
-    if (!copy) {
-        return BC_ERROR;
-    }
-
-    copy[0] = ' ';
-    copy[strlen(copy) - 1] = '\0';
-
-    trim(copy);
-    trimEnd(copy);
-
-    return copy;
 }
 
 double h_atof(const char *str, bool mathlib) {
@@ -190,8 +176,18 @@ double h_atof(const char *str, bool mathlib) {
         return (double)value;
     }
 
-    if (*buf == '\'' && buf[2] == '\'' && buf[3] == '\0')
+    size_t len = strlen(buf);
+
+    if (*buf == '\'' && buf[len-1] == '\'') {
+        if (len-2 > 1) {
+            printf("eval: to use sigle quotes it must be a single character\n");
+            return NAN;
+        } else if (len-2 < 1) {
+            printf("eval: missing the character inside quotes\n");
+            return NAN;
+        }
         return (double)buf[1];
+    }
 
     if (mathlib) {            
         int16_t ok = 0;
@@ -199,8 +195,6 @@ double h_atof(const char *str, bool mathlib) {
         if (ok)
             return hex_pi_e;
     }
-
-    size_t len = strlen(buf);
 
     if (mathlib) {
         bool is_hex = isHex(buf);
@@ -433,43 +427,34 @@ static uint16_t countCommaOutsideParenthesis(const char *str) {
 }
 
 double bc_len(char *operation) {
-    char *test = functionHandler(operation, "len");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p+1;
 
-    trim(test);
-    trimEnd(test);
+    size_t len = strlen(operation);
+    operation[len-1] = '\0';
+    len--;
 
-    double len = strlen(test);
-
-    if (!len || countCommaOutsideQuotesAndParenthesis(test, '"') != 0) {
+    if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
         printf("eval: strlen() requires exactly 1 argument\n");
-        SAFE_FREE(test);
         return NAN;
     }
 
-    if (!validPtrFuncArgs(test)) {
-        SAFE_FREE(test);
+    if (!validPtrFuncArgs(operation))
         return NAN;
-    }
 
-    test[(size_t)len-1] = '\0';
-    len--;
-    memmove(test, test + 1, (size_t)len);
-    len--;
-
-    SAFE_FREE(test);
-
-    return len;
+    return (double)len - 2.0;
 }
 
-double s_fabs_or_abs(char *operation, bool enable_single_point) {
-    char *function = enable_single_point ? "fabs" : "abs"; 
-    char *test = functionHandler(operation, function);
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+double s_fabs_or_abs(char *operation) {
+    bool enable_single_point = *operation == 'f';
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double value = eval(test, true);
-
-    SAFE_FREE(test);
+    double value = eval(operation, true);
 
     if (isnan(value))
         return NAN;
@@ -481,7 +466,7 @@ double s_fabs_or_abs(char *operation, bool enable_single_point) {
 
     if (!enable_single_point) {
         if (value != (int64_t)value) {
-            printf("eval: %s() requires an integer\n", function);
+            printf("eval: abs() requires an integer\n");
             return NAN;
         }
     }
@@ -490,12 +475,12 @@ double s_fabs_or_abs(char *operation, bool enable_single_point) {
 }
 
 double s_miles(char *operation) {
-    char *test = functionHandler(operation, "mi");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double km = eval(test, true);
-
-    SAFE_FREE(test);
+    double km = eval(operation, true);
 
     if (isnan(km))
         return NAN;
@@ -509,12 +494,12 @@ double s_miles(char *operation) {
 }
 
 double s_km(char *operation) {
-    char *test = functionHandler(operation, "km");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double miles = eval(test, true);
-
-    SAFE_FREE(test);
+    double miles = eval(operation, true);
 
     if (isnan(miles))
         return NAN;
@@ -528,12 +513,12 @@ double s_km(char *operation) {
 }
 
 double s_pounds(char *operation) {
-    char *test = functionHandler(operation, "lb");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double kg = eval(test, true);
-
-    SAFE_FREE(test);
+    double kg = eval(operation, true);
 
     if (isnan(kg))
         return NAN;
@@ -547,12 +532,12 @@ double s_pounds(char *operation) {
 }
 
 double s_kg(char *operation) {
-    char *test = functionHandler(operation, "kg");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double lbs = eval(test, true);
-
-    SAFE_FREE(test);
+    double lbs = eval(operation, true);
 
     if (isnan(lbs))
         return NAN;
@@ -566,12 +551,12 @@ double s_kg(char *operation) {
 }
 
 double s_feet(char *operation) {
-    char *test = functionHandler(operation, "feet");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double meters = eval(test, true);
-
-    SAFE_FREE(test);
+    double meters = eval(operation, true);
 
     if (isnan(meters))
         return NAN;
@@ -585,12 +570,12 @@ double s_feet(char *operation) {
 }
 
 double s_meter(char *operation) {
-    char *test = functionHandler(operation, "meter");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double feet = eval(test, true);
-
-    SAFE_FREE(test);
+    double feet = eval(operation, true);
 
     if (isnan(feet))
         return NAN;
@@ -604,12 +589,12 @@ double s_meter(char *operation) {
 }
 
 double s_fah(char *operation) {
-    char *test = functionHandler(operation, "fah");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double cel = eval(test, true);
-
-    SAFE_FREE(test);
+    double cel = eval(operation, true);
 
     if (isnan(cel))
         return NAN;
@@ -623,12 +608,12 @@ double s_fah(char *operation) {
 }
 
 double s_cel(char *operation) {
-    char *test = functionHandler(operation, "cel");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double fah = eval(test, true);
-
-    SAFE_FREE(test);
+    double fah = eval(operation, true);
 
     if (isnan(fah))
         return NAN;
@@ -642,12 +627,12 @@ double s_cel(char *operation) {
 }
 
 char *s_oct(char *operation) {
-    char *test = functionHandler(operation, "oct");
-    if (strcmp(test, BC_ERROR) == 0) return NULL;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NULL;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NULL;
@@ -674,18 +659,18 @@ char *s_oct(char *operation) {
     if (!buffer)
         return NULL;
 
-    snprintf(buffer, 64, isNeg ? "-0o%"PRIo64 : "0o%"PRIo64, value);
+    snprintf(buffer, 64, isNeg ? "\"-0o%"PRIo64"\"" : "\"0o%"PRIo64"\"", value);
 
     return buffer;
 }
 
 char *s_chr(char *operation) {
-    char *test = functionHandler(operation, "chr");
-    if (strcmp(test, BC_ERROR) == 0)
+    char *p = strchr(operation, '(');
+    if (!p)
         return NULL;
+    operation = p;
 
-    double num = eval(test, true);
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NULL;
@@ -720,12 +705,12 @@ char *s_chr(char *operation) {
 }
 
 char *s_hex(char *operation) {
-    char *test = functionHandler(operation, "hex");
-    if (strcmp(test, BC_ERROR) == 0) return NULL;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NULL;
+    operation = p;
 
-    double val = eval(test, true);
-
-    SAFE_FREE(test);
+    double val = eval(operation, true);
 
     if (isnan(val))
         return NULL;
@@ -752,19 +737,19 @@ char *s_hex(char *operation) {
 
     int64_to_hex_min(value, buffer, 0x40);
 
-    for (uint16_t i = 2; buffer[i]; i++)
+    for (uint16_t i = 3; buffer[i]; i++)
         buffer[i] = toupper((unsigned char)buffer[i]);
 
     return buffer;
 }
 
 char *s_bin(char *operation) {
-    char *test = functionHandler(operation, "bin");
-    if (strcmp(test, BC_ERROR) == 0)
+    char *p = strchr(operation, '(');
+    if (!p)
         return NULL;
+    operation = p;
 
-    double val = eval(test, true);
-    SAFE_FREE(test);
+    double val = eval(operation, true);
 
     if (isnan(val))
         return NULL;
@@ -797,23 +782,33 @@ char *s_bin(char *operation) {
 
     int16_t len = 64 - start;
 
-    char *result = malloc(len + 3);
-    char *p = result;
+    char *result = malloc(len + 5); 
 
-    *p++ = '0';
-    *p++ = 'b';
-    memcpy(p, buf + start, len + 1);
+    if (!result)
+        return NULL;
+
+    char *c = result;
+
+    c[0] = '"';
+    c[1] = '0';
+    c[2] = 'b';
+
+    memcpy(c + 3, buf + start, len);
+
+    c[3+len] = '"';
+
+    c[4+len] = '\0';
 
     return result;
 }
 
 double s_trunc(char *operation) {
-    char *test = functionHandler(operation, "trunc");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -827,12 +822,12 @@ double s_trunc(char *operation) {
 }
 
 double s_rad(char *operation) {
-    char *test = functionHandler(operation, "rad");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double deg = eval(test, true);
-
-    SAFE_FREE(test);
+    double deg = eval(operation, true);
 
     if (isnan(deg))
         return NAN;
@@ -846,12 +841,12 @@ double s_rad(char *operation) {
 }
 
 double s_gon(char *operation) {
-    char *test = functionHandler(operation, "gon");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double deg = eval(test, true);
-
-    SAFE_FREE(test);
+    double deg = eval(operation, true);
 
     if (isnan(deg))
         return NAN;
@@ -865,12 +860,12 @@ double s_gon(char *operation) {
 }
 
 double s_deg(char *operation) {
-    char *test = functionHandler(operation, "deg");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double rad = eval(test, true);
-
-    SAFE_FREE(test);
+    double rad = eval(operation, true);
 
     if (isnan(rad))
         return NAN;
@@ -884,12 +879,12 @@ double s_deg(char *operation) {
 }
 
 double s_sqrt(char *operation) {
-    char *test = functionHandler(operation, "sqrt");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -908,13 +903,12 @@ double s_sqrt(char *operation) {
 }
 
 double s_scale(char *operation) {
-    char *test = functionHandler(operation, "scale");
-    if (strcmp(test, BC_ERROR) == 0)
+    char *p = strchr(operation, '(');
+    if (!p)
         return NAN;
+    operation = p;
 
-    double value = eval(test, true);
-
-    SAFE_FREE(test);
+    double value = eval(operation, true);
 
     if (isnan(value))
         return NAN;
@@ -936,7 +930,6 @@ double s_scale(char *operation) {
 
     char *dot = strchr(buf, '.');
     if (!dot) {
-        SAFE_FREE(test);
         return 0;
     }
 
@@ -948,12 +941,12 @@ double s_scale(char *operation) {
 }
 
 double s_sin(char *operation) {
-    char *test = functionHandler(operation, "sin");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -972,12 +965,12 @@ double s_sin(char *operation) {
 }
 
 double s_asin(char *operation) {
-    char *test = functionHandler(operation, "asin");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -996,12 +989,12 @@ double s_asin(char *operation) {
 }
 
 double s_cot(char *operation) {
-    char *test = functionHandler(operation, "cot");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1017,17 +1010,17 @@ double s_cot(char *operation) {
         printf("eval: cot() undefined for %.10g rad\n", num);
         return NAN;
     }
-    
+
     return 1.0 / t;
 }
 
 double s_acot(char *operation) {
-    char *test = functionHandler(operation, "acot");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1041,12 +1034,12 @@ double s_acot(char *operation) {
 }
 
 double s_cos(char *operation) {
-    char *test = functionHandler(operation, "cos");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1065,12 +1058,12 @@ double s_cos(char *operation) {
 }
 
 double s_acos(char *operation) {
-    char *test = functionHandler(operation, "acos");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1089,13 +1082,12 @@ double s_acos(char *operation) {
 }
 
 double s_tan(char *operation) {
-    char *test = functionHandler(operation, "tan");
-    if (strcmp(test, BC_ERROR) == 0)
+    char *p = strchr(operation, '(');
+    if (!p)
         return NAN;
+    operation = p;
 
-    double angle = eval(test, true);
-
-    SAFE_FREE(test);
+    double angle = eval(operation, true);
 
     if (isnan(angle))
         return NAN;
@@ -1120,13 +1112,12 @@ double s_tan(char *operation) {
 }
 
 double s_atan(char *operation) {
-    char *test = functionHandler(operation, "atan");
-    if (strcmp(test, BC_ERROR) == 0)
+    char *p = strchr(operation, '(');
+    if (!p)
         return NAN;
+    operation = p;
 
-    double angle = eval(test, true);
-
-    SAFE_FREE(test);
+    double angle = eval(operation, true);
 
     if (isnan(angle))
         return NAN;
@@ -1140,12 +1131,12 @@ double s_atan(char *operation) {
 }
 
 double s_ln(char *operation) {
-    char *test = functionHandler(operation, "ln");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1159,12 +1150,12 @@ double s_ln(char *operation) {
 }
 
 double s_log10(char *operation) {
-    char *test = functionHandler(operation, "log10");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1178,12 +1169,12 @@ double s_log10(char *operation) {
 }
 
 double s_log2(char *operation) {
-    char *test = functionHandler(operation, "log2");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1197,10 +1188,13 @@ double s_log2(char *operation) {
 }
 
 double s_root(char *operation) {
-    char *test = functionHandler(operation, "root");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p+1;
+    operation[strlen(operation)-1] = '\0';
 
-    char *comma = find_top_level_comma(test);
+    char *comma = find_top_level_comma(operation);
     
     if (!comma) {
         printf("eval: root() requires exactly 2 arguments\n");
@@ -1208,13 +1202,12 @@ double s_root(char *operation) {
     }
 
     *comma = '\0';
-    char *indexStr = test;
+    char *indexStr = operation;
     char *rootingStr = comma + 1;
     
     uint8_t nullCount = isnull(2, indexStr, rootingStr);
     if (nullCount) {
         printf("eval: root() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -1223,31 +1216,23 @@ double s_root(char *operation) {
 
     double index = eval(indexStr, true);
 
-    if (isnan(index)) {
-        SAFE_FREE(test);
+    if (isnan(index))
         return NAN;
-    }
 
     if (index == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
     
     double rooting = eval(rootingStr, true);
 
-    if (isnan(rooting)) {
-        SAFE_FREE(test);
+    if (isnan(rooting))
         return NAN;
-    }
 
     if (rooting == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
-
-    SAFE_FREE(test);
 
     bool invert = false;
 
@@ -1286,24 +1271,26 @@ double s_root(char *operation) {
 }
 
 double s_bmi(char *operation) {
-    char *test = functionHandler(operation, "bmi");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p+1;
+    operation[strlen(operation)-1] = '\0';
 
-    char *comma = find_top_level_comma(test);
-    
+    char *comma = find_top_level_comma(operation);
+
     if (!comma) {
         printf("eval: bmi() requires exactly 2 arguments\n");
         return NAN;
     }
 
     *comma = '\0';
-    char *weightStr = test;
+    char *weightStr = operation;
     char *heightStr = comma + 1;
-    
+
     uint8_t nullCount = isnull(2, weightStr, heightStr);
     if (nullCount) {
         printf("eval: bmi() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -1312,54 +1299,48 @@ double s_bmi(char *operation) {
 
     double weight = eval(weightStr, true);
 
-    if (isnan(weight)) {
-        SAFE_FREE(test);
+    if (isnan(weight))
         return NAN;
-    }
 
     if (weight == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
     
     double height = eval(heightStr, true);
 
-    if (isnan(height)) {
-        SAFE_FREE(test);
+    if (isnan(height))
         return NAN;
-    }
 
     if (height == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
-
-    SAFE_FREE(test);
 
     return BMI(weight, height);
 }
 
 double s_log(char *operation) {
-    char *test = functionHandler(operation, "log");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p+1;
+    operation[strlen(operation)-1] = '\0';
 
-    char *comma = find_top_level_comma(test);
+    char *comma = find_top_level_comma(operation);
 
     if (!comma) {
         printf("eval: log() requires exactly 2 arguments\n");
         return NAN;
     }
-    
+
     *comma = '\0';
-    char *baseStr = test;
+    char *baseStr = operation;
     char *numStr = comma + 1;
 
     uint8_t nullCount = isnull(2, baseStr, numStr);
     if (nullCount) {
         printf("eval: log() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -1368,31 +1349,23 @@ double s_log(char *operation) {
 
     double base = eval(baseStr, true);
 
-    if (isnan(base)) {
-        SAFE_FREE(test);
+    if (isnan(base))
         return NAN;
-    }
 
     if (base == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
 
     double num = eval(numStr, true);
 
-    if (isnan(num)) {
-        SAFE_FREE(test);
+    if (isnan(num))
         return NAN;
-    }
 
     if (num == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
-
-    SAFE_FREE(test);
 
     if (base <= 1 || num <= 0) {
         printf("eval: invalid values for log()\n");
@@ -1403,24 +1376,26 @@ double s_log(char *operation) {
 }
 
 double s_randFloat(char *operation) {
-    char *test = functionHandler(operation, "randf");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p+1;
+    operation[strlen(operation)-1] = '\0';
 
-    char *comma = find_top_level_comma(test);
+    char *comma = find_top_level_comma(operation);
 
     if (!comma) {
         printf("eval: randf() requires exactly 2 arguments\n");
         return NAN;
     }
-    
+
     *comma = '\0';
-    char *str_min = test;
+    char *str_min = operation;
     char *str_max = comma + 1;
 
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
         printf("eval: randf() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -1438,42 +1413,39 @@ double s_randFloat(char *operation) {
         maxLf = eval(str_max, true);
 
     if (isnan(maxLf)) {
-        SAFE_FREE(test);
         return NAN;
     }
 
     if (maxLf == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
-    
+
     if (strcasecmp(str_min, "rand_max") == 0)
         minLf = (double)RAND_MAX;
     else 
         minLf = eval(str_min, true);
-    
+
     if (isnan(minLf)) {
-        SAFE_FREE(test);
         return NAN;
     }
 
     if (minLf == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
-
-    SAFE_FREE(test);
 
     return random_range_float(minLf, maxLf);
 }
 
 double s_randInt(char *operation) {
-    char *test = functionHandler(operation, "rand");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p+1;
+    operation[strlen(operation)-1] = '\0';
 
-    char *comma = find_top_level_comma(test);
+    char *comma = find_top_level_comma(operation);
 
     if (!comma) {
         printf("eval: rand() requires exactly 2 arguments\n");
@@ -1481,13 +1453,12 @@ double s_randInt(char *operation) {
     }
     
     *comma = '\0';
-    char *str_min = test;
+    char *str_min = operation;
     char *str_max = comma + 1;
     
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
         printf("eval: rand() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -1504,14 +1475,11 @@ double s_randInt(char *operation) {
     else 
         maxInt = eval(str_max, true);
 
-    if (isnan(maxInt)) {
-        SAFE_FREE(test);
+    if (isnan(maxInt))
         return NAN;
-    }
 
     if (maxInt == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
 
@@ -1521,17 +1489,13 @@ double s_randInt(char *operation) {
         minInt = eval(str_min, true);
 
     if (isnan(minInt)) {
-        SAFE_FREE(test);
         return NAN;
     }
 
     if (minInt == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }  
-
-    SAFE_FREE(test);
 
     if (minInt != (int64_t)minInt || maxInt != (int64_t)maxInt) {
         printf("eval: rand() requires an integer!\n");
@@ -1542,12 +1506,12 @@ double s_randInt(char *operation) {
 }
 
 double s_floor(char *operation) {
-    char *test = functionHandler(operation, "floor");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1562,12 +1526,12 @@ double s_floor(char *operation) {
 }
 
 double s_ceil(char *operation) {
-    char *test = functionHandler(operation, "ceil");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1581,12 +1545,12 @@ double s_ceil(char *operation) {
 }
 
 double s_round(char *operation) {
-    char *test = functionHandler(operation, "round");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1625,12 +1589,12 @@ bool isprime(int64_t n) {
 }
 
 double s_isprime(char *operation) {
-    char *test = functionHandler(operation, "isprime");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1738,12 +1702,12 @@ double s_fact(char *operation) {
 }
 
 double s_sign(char *operation) {
-    char *test = functionHandler(operation, "sign");
-    if (strcmp(test, BC_ERROR) == 0) return NAN;
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p;
 
-    double num = eval(test, true);
-
-    SAFE_FREE(test);
+    double num = eval(operation, true);
 
     if (isnan(num))
         return NAN;
@@ -1763,33 +1727,29 @@ double s_sign(char *operation) {
 }
 
 double s_sum(char *operation) {
-    char *raw = functionHandler(operation, "sum");
-    if (strcmp(raw, BC_ERROR) == 0) return NAN;
-
-    char *test = strdup(raw);
-    SAFE_FREE(raw);
-    if (!test)
+    char *p = strchr(operation, '(');
+    if (!p)
         return NAN;
+    operation = p+1;
+    operation[strlen(operation)-1] = '\0';
 
-    uint16_t commaCount = count_top_level_commas(test);
+    uint16_t commaCount = count_top_level_commas(operation);
 
     if (commaCount < 1 || commaCount > 2) {
         printf(
             "eval: sum() function requires at least 2 arguments and at most 3 arguments\n"
         );
-        SAFE_FREE(test);
         return NAN;
     }
 
-    char *comma1 = find_top_level_comma(test);
+    char *comma1 = find_top_level_comma(operation);
     if (!comma1) {
-        SAFE_FREE(test);
         return NAN;
     }
 
     char *comma2 = find_top_level_comma(comma1 + 1);
 
-    char *initStr = test;
+    char *initStr = operation;
     char *endStr;
     char *diffStr = NULL;
 
@@ -1809,7 +1769,6 @@ double s_sum(char *operation) {
 
     if (nullCount) {
         printf("eval: sum() missing %"PRIu8" argument(s)\n", nullCount);
-        SAFE_FREE(test);
         return NAN;
     }
 
@@ -1820,46 +1779,37 @@ double s_sum(char *operation) {
 
     double init = eval(initStr, true);
 
-    if (isnan(init)) {
-        SAFE_FREE(test);
+    if (isnan(init))
         return NAN;
-    }
 
     if (init == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }   
 
     double end  = eval(endStr, true);
 
-    if (isnan(end)) {
-        SAFE_FREE(test);
+    if (isnan(end)) 
         return NAN;
-    }
 
     if (end == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }   
 
     char defaultDiff[] = "1";
     double diff = eval(diffStr ? diffStr : defaultDiff, true);
 
-    if (isnan(diff)) {
-        SAFE_FREE(test);
+    if (isnan(diff))
         return NAN;
-    }
+
 
     if (diff == (double)U64_NAN) {
         putchar('\n');
-        SAFE_FREE(test);
         return NAN;
     }
 
     double result = gauss_range_double(init, end, diff);
 
-    SAFE_FREE(test);
     return result;
 }

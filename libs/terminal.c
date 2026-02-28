@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.00"
+#define VERSION "r2.1.26"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -603,7 +603,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         else if (mathlib && validStrBcFuncException(operation, "hex")) {
             char *value = s_hex(operation);
             if (value) {
-                printf("'%s'\n\n", value);
+                printf("%s\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
             } else {
@@ -617,7 +617,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         else if (mathlib && validStrBcFuncException(operation, "oct")) {
             char *value = s_oct(operation);
             if (value) {
-                printf("'%s'\n\n", value);
+                printf("%s\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
             } else {
@@ -631,7 +631,7 @@ void bcCmd(uint16_t argc, char **argv, const char **cmds) {
         else if (mathlib && validStrBcFuncException(operation, "bin")) {
             char *value = s_bin(operation);
             if (value) {
-                printf("'%s'\n\n", value);
+                printf("%s\n\n", value);
                 Ans = h_atof(value, false);
                 fflush(stdout);
             } else {
@@ -1702,7 +1702,8 @@ void updatehistory(void) {
         "r2.0.50 - small changes\n\tRemoved: useless math code\n\tEdited: made the bc parser safer\n",
         "r2.0.70 - huge changes\n\tEdited: refactored the function parser\n\tAdded: error messages to string types values/functions\n",
         "r2.0.95 - huge changes\n\tAdded: parenthesis support, you can use it when you are having unexpected result with the lack of precedence\n",
-        "r2.1.00 - small changes\n\tEdited: bc initial message\n"
+        "r2.1.00 - small changes\n\tEdited: bc initial message\n",
+        "r2.1.26 - huge changes\n\tEdited: improved the bc parser by a lot and also refactored all of the function parser to depend less on heap\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
