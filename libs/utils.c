@@ -114,7 +114,7 @@ enum paren_result parenthesis_check(const char *str) {
             backslashes++;
             p--;
         }
-        bool escaped = (backslashes % 2 != 0);
+        bool escaped = ((backslashes & 1) != 0);
 
         if (*s == '"' && !in_single_quotes && !escaped) {
             in_double_quotes = !in_double_quotes;
