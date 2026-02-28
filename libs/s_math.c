@@ -6,7 +6,7 @@
 
 double parse_str_func(char *operation, const char *funcname) {    
 
-    char *buff;
+    char *buff = NULL;
     bool isChr = false;
 
     if (strcmp(funcname, "chr") == 0) {
@@ -18,6 +18,10 @@ double parse_str_func(char *operation, const char *funcname) {
         buff = s_hex(operation);
     else if (strcmp(funcname, "oct") == 0)
         buff = s_oct(operation);
+    else {
+        printf("eval: invalid function: '%s()'\n", funcname);
+        return NAN;
+    }
 
     if (!isChr) {
         const size_t len = strlen(buff);
