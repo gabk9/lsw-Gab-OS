@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8700
-#define PROJ_SIZE_APPROX_BYTES 250000
+#define PROJ_LINES_APPROX 8600
+#define PROJ_SIZE_APPROX_BYTES 250500
 
 #define RC_FILE "lswrc.txt"
 
@@ -26,35 +26,28 @@ static char *last_directory = NULL;
 
 #ifdef _WIN32
 LONG handler(EXCEPTION_POINTERS *e) {
+    (void)e;
     printf("Segmentation fault (core dumped)\n");
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
 
-bool isValidBcFunc(const char *str) {
+bool isValidBcFuncName(const char *str) {
     if (!str || !*str)
         return false;
 
-    if (parenthesis_check(str) != PAREN_OK)
+    if (!isalpha((unsigned char)*str) && *str != '_')
         return false;
 
-    if (!isalpha((unsigned char)str[0]) && str[0] != '_')
-        return false;
+    size_t len = strlen(str);
+    size_t end = len - 1;
 
-    size_t i = 1;
+    while (end > 0 && str[end] == ' ') end--;
 
-    while (str[i] && str[i] != '(') {
+    for (size_t i = 1; i < end; i++) {
         if (!isalnum((unsigned char)str[i]) && str[i] != '_')
-            break;
-
-        i++;
+            return false;
     }
-
-    while (isspace((unsigned char)str[i]))
-        i++;
-
-    if (str[i] != '(')
-        return false;
 
     return true;
 }
@@ -573,7 +566,7 @@ char* findCharOutsideQuotes(char *s, char target) {
     return NULL;
 }
 
-uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t file) {
+uint8_t echoFileNtimes(char *instruction, char *copy) {
 
     char *work = strdup(instruction);
     if (!work) return 0;
@@ -778,7 +771,7 @@ void printInFileNTimes(FILE *stream, char *str, int64_t count) {
     }
 }
 
-//! unused
+__attribute__((unused))
 char **readHistory(const char *address, uint32_t *lineCount) {
     *lineCount = 0;
 
@@ -1213,7 +1206,7 @@ char *myDirname(char *path) {
 #ifdef _WIN32
     static char buffer[MAX_PATH];
     strcpy(buffer, path);
-    for (uint16_t i = strlen(buffer) - 1; i >= 0; i--) {
+    for (ssize_t i = (ssize_t)strlen(buffer) - 1; i >= 0; i--) {
         if (buffer[i] == '\\' || buffer[i] == '/') {
             buffer[i] = '\0';
             break;
@@ -1364,8 +1357,8 @@ int16_t strrchar(const char *str, int8_t chr) {
     return -1;
 }
 
-void lsCmdLinux(const char *dirPath, uint8_t showAll) {
 #ifndef _WIN32
+void lsCmdLinux(const char *dirPath, uint8_t showAll) {
     DIR *dir = opendir(dirPath);
     if (!dir) {
         perror("erro");
@@ -1394,11 +1387,11 @@ void lsCmdLinux(const char *dirPath, uint8_t showAll) {
     }
 
     closedir(dir);
-#endif
 }
+#endif
 
-void lsCmdWin(const char *dirPath, uint8_t showAll) {
 #ifdef _WIN32
+void lsCmdWin(const char *dirPath, uint8_t showAll) {
     char searchPath[0x1000];
 
     size_t len = strlen(dirPath);
@@ -1443,11 +1436,11 @@ void lsCmdWin(const char *dirPath, uint8_t showAll) {
     } while (FindNextFileA(hFind, &fd));
 
     FindClose(hFind);
-#endif
 }
+#endif
 
-char *unameCmdWin(uint8_t flags) {
 #ifdef _WIN32
+char *unameCmdWin(uint8_t flags) {
     static char result[0x400];
     char buffer[0x100];
     result[0] = '\0';
@@ -1553,13 +1546,11 @@ char *unameCmdWin(uint8_t flags) {
     }
 
     return result;
-#else
-    return NULL;
-#endif
 }
+#endif
 
-char *unameCmdLinux(uint8_t flags) {
 #ifndef _WIN32
+char *unameCmdLinux(uint8_t flags) {
     static char result[0x400];
     char buffer[0x100];
     result[0] = '\0';
@@ -1637,10 +1628,8 @@ char *unameCmdLinux(uint8_t flags) {
     }
 
     return result;
-#else
-    return NULL;
-#endif
 }
+#endif
 
 char *get_hostname(void) {
     static char hostname[0x100];
@@ -2542,49 +2531,49 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 
 double eval(char *operation, bool mathlib) {
     FuncEntry math_table[] = {
-        {"scale",   s_scale,       BC_INT},
-        {"sqrt",    s_sqrt,        BC_FLOAT},
-        {"root",    s_root,        BC_FLOAT},
-        {"sin",     s_sin,         BC_FLOAT},
-        {"asin",    s_asin,        BC_FLOAT},
-        {"cos",     s_cos,         BC_FLOAT},
-        {"acos",    s_acos,        BC_FLOAT},
-        {"tan",     s_tan,         BC_FLOAT},
-        {"atan",    s_atan,        BC_FLOAT},
-        {"cot",     s_cot,         BC_FLOAT},
-        {"acot",    s_acot,        BC_FLOAT},
-        {"ln",      s_ln,          BC_FLOAT},
-        {"log10",   s_log10,       BC_FLOAT},
-        {"log2",    s_log2,        BC_FLOAT},
-        {"log",     s_log,         BC_FLOAT},
-        {"floor",   s_floor,       BC_INT},
-        {"ceil",    s_ceil,        BC_INT},
-        {"round",   s_round,       BC_INT},
-        {"sign",    s_sign,        BC_INT},
-        {"sum",     s_sum,         BC_FLOAT},
-        {"rad",     s_rad,         BC_FLOAT},
-        {"gon",     s_gon,         BC_FLOAT},
-        {"deg",     s_deg,         BC_FLOAT},
-        {"trunc",   s_trunc,       BC_INT},
-        {"randf",   s_randFloat,   BC_FLOAT},
-        {"fah",     s_fah,         BC_FLOAT},
-        {"cel",     s_cel,         BC_FLOAT},
-        {"rand",    s_randInt,     BC_INT},
-        {"mi",      s_miles,       BC_FLOAT},
-        {"km",      s_km,          BC_FLOAT},
-        {"lb",      s_pounds,      BC_FLOAT},
-        {"kg",      s_kg,          BC_FLOAT},
-        {"isprime", s_isprime,     BC_BOOL},
-        {"bmi",     s_bmi,         BC_FLOAT},
-        {"len",     bc_len,        BC_INT},
-        {"feet",    s_feet,        BC_FLOAT},
-        {"meter",   s_meter,       BC_FLOAT},
-        {"fabs",    s_fabs_or_abs, BC_FLOAT},  // special case
-        {"abs",     s_fabs_or_abs, BC_INT},    // special case
-        {"chr",     NULL,          BC_CHAR},   // special case
-        {"bin",     NULL,          BC_STRING}, // special case
-        {"oct",     NULL,          BC_STRING}, // special case
-        {"hex",     NULL,          BC_STRING}, // special case
+        {"scale",   s_scale,       RET_INT},
+        {"sqrt",    s_sqrt,        RET_FLOAT},
+        {"root",    s_root,        RET_FLOAT},
+        {"sin",     s_sin,         RET_FLOAT},
+        {"asin",    s_asin,        RET_FLOAT},
+        {"cos",     s_cos,         RET_FLOAT},
+        {"acos",    s_acos,        RET_FLOAT},
+        {"tan",     s_tan,         RET_FLOAT},
+        {"atan",    s_atan,        RET_FLOAT},
+        {"cot",     s_cot,         RET_FLOAT},
+        {"acot",    s_acot,        RET_FLOAT},
+        {"ln",      s_ln,          RET_FLOAT},
+        {"log10",   s_log10,       RET_FLOAT},
+        {"log2",    s_log2,        RET_FLOAT},
+        {"log",     s_log,         RET_FLOAT},
+        {"floor",   s_floor,       RET_INT},
+        {"ceil",    s_ceil,        RET_INT},
+        {"round",   s_round,       RET_INT},
+        {"sign",    s_sign,        RET_INT},
+        {"sum",     s_sum,         RET_FLOAT},
+        {"rad",     s_rad,         RET_FLOAT},
+        {"gon",     s_gon,         RET_FLOAT},
+        {"deg",     s_deg,         RET_FLOAT},
+        {"trunc",   s_trunc,       RET_INT},
+        {"randf",   s_randFloat,   RET_FLOAT},
+        {"fah",     s_fah,         RET_FLOAT},
+        {"cel",     s_cel,         RET_FLOAT},
+        {"rand",    s_randInt,     RET_INT},
+        {"mi",      s_miles,       RET_FLOAT},
+        {"km",      s_km,          RET_FLOAT},
+        {"lb",      s_pounds,      RET_FLOAT},
+        {"kg",      s_kg,          RET_FLOAT},
+        {"isprime", s_isprime,     RET_BOOL},
+        {"bmi",     s_bmi,         RET_FLOAT},
+        {"len",     bc_len,        RET_INT},
+        {"feet",    s_feet,        RET_FLOAT},
+        {"meter",   s_meter,       RET_FLOAT},
+        {"fabs",    s_fabs_or_abs, RET_FLOAT},  // special case
+        {"abs",     s_fabs_or_abs, RET_INT},    // special case
+        {"chr",     NULL,          RET_CHAR},   // special case
+        {"bin",     NULL,          RET_STRING}, // special case
+        {"oct",     NULL,          RET_STRING}, // special case
+        {"hex",     NULL,          RET_STRING}, // special case
     };
 
     size_t funcCount = sizeof(math_table) / sizeof(*math_table);
@@ -2620,7 +2609,7 @@ double eval(char *operation, bool mathlib) {
         return NAN;
     }
 
-    return CheckOperation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
+    return parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 }
 
 char *handle_cd_dash(char *address) {

@@ -4,27 +4,37 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
-double parse_str_func(char *operation, const char *funcname) {    
+double parse_str_func(char *operation, FuncEntry function) {    
+
+    if (function.returnType != RET_STRING && function.returnType != RET_CHAR) {
+        printf("eval: invalid function return type\n");
+        return NAN;
+    }
+
+    if (!isValidBcFuncName(function.name)) {
+        printf("eval: invalid function name: '%s()'\n", function.name);
+        return NAN;
+    }
+
+    bool isChr = function.returnType == RET_CHAR;
 
     char *buff = NULL;
-    bool isChr = false;
 
-    if (strcmp(funcname, "chr") == 0) {
+    if (strcmp(function.name, "chr") == 0)
         buff = s_chr(operation);
-        isChr = true;
-    } else if (strcmp(funcname, "bin") == 0)
+    else if (strcmp(function.name, "bin") == 0)
         buff = s_bin(operation);
-    else if (strcmp(funcname, "hex") == 0)
+    else if (strcmp(function.name, "hex") == 0)
         buff = s_hex(operation);
-    else if (strcmp(funcname, "oct") == 0)
+    else if (strcmp(function.name, "oct") == 0)
         buff = s_oct(operation);
     else {
-        printf("eval: invalid function name: '%s()'\n", funcname);
+        printf("eval: undefined function: '%s()'\n", function.name);
         return NAN;
     }
 
     if (!isChr) {
-        const size_t len = strlen(buff);
+        size_t len = strlen(buff);
         memmove(buff, buff+1, len+1);
         buff[len-2] = '\0';
     }    
@@ -179,6 +189,9 @@ double h_atof(const char *str, bool mathlib) {
         value = ~value;
         return (double)value;
     }
+
+    if (isAns)
+        return Ans;
 
     size_t len = strlen(buf);
 

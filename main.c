@@ -44,7 +44,7 @@ int32_t main(int32_t argc, char **argv) {
         checkLswrcSyntax(data_folder);
         SAFE_FREE(input);
 
-        for (size_t i = 1; i < argc; i++) {
+        for (int32_t i = 1; i < argc; i++) {
             if (*argv[i] == '#')
                 break;
 

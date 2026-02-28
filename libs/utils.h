@@ -7,27 +7,26 @@
 #include <wchar.h>
 #include <errno.h>
 #include <stdio.h>
+#include <float.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <float.h>
-#include "s_math.h"
 #include <stdbool.h>
 #include <inttypes.h>
 #include "terminal.h"
 
-typedef double (*MathFunc)(char *);
+typedef double (*MathFunc)(char *operation);
 
 typedef struct Functions {
     const char *name;
     MathFunc func;
     enum returns {
-        BC_STRING, BC_FLOAT,
-        BC_INT, BC_BOOL, BC_CHAR
+        RET_STRING, RET_FLOAT,
+        RET_INT, RET_BOOL, RET_CHAR
     } returnType;
 } FuncEntry;
 
-
+#include "s_math.h"
 #include "CheckCmd.h"
 
 #ifdef _WIN32
@@ -64,28 +63,28 @@ extern double Ans;
 #define MIN_SAFE_INT64_D -9223372036854775808.0
 #define U64_NAN ((uint64_t)(UINT64_MAX - 1ULL))
 
-#define RM_FORCE 0b00000001
-#define RM_BIN   0b00000010
+#define RM_FORCE 0x0001
+#define RM_BIN   0x0002
 
-#define BC_QUIET   0b00000001
-#define BC_MATHLIB 0b00000010
+#define BC_QUIET   0x0001
+#define BC_MATHLIB 0x0002
 
-#define LS_ALL 0b00000001
+#define LS_ALL 0x0001
 
 #define DEFAULT_HISTSIZE 1000
 #define HISTSIZE_MAX     10000
 #define HISTSIZE_MIN     10
 
-#define BASH_VERSION 0b00000001
-#define BASH_HELP    0b00000010
+#define BASH_VERSION 0x0001
+#define BASH_HELP    0x0002
 #define BASH_ALL (BASH_VERSION | BASH_HELP)
 
-#define U_KERN_NAME        0b00000001
-#define U_KERN_RELEASE     0b00000010
-#define U_MACHINE          0b00000100
-#define U_KERN_VERSION     0b00001000
-#define U_HOST_NAME        0b00010000
-#define U_OPERATING_SYSTEM 0b00100000
+#define U_KERN_NAME        0x0001
+#define U_KERN_RELEASE     0x0002
+#define U_MACHINE          0x0004
+#define U_KERN_VERSION     0x0008
+#define U_HOST_NAME        0x0010
+#define U_OPERATING_SYSTEM 0x0020
 #define U_ALL (U_KERN_NAME | U_KERN_RELEASE | U_MACHINE | U_KERN_VERSION | U_HOST_NAME | U_OPERATING_SYSTEM)
 
 #define SAFE_FREE(ptr) do { \
@@ -114,6 +113,16 @@ enum paren_result {
     PAREN_MISSING_OPEN,
     PAREN_UNCLOSED_QUOTE
 };
+
+#ifdef _WIN32
+    char *unameCmdWin(uint8_t flags);
+    LONG WINAPI handler(EXCEPTION_POINTERS *e);
+    void lsCmdWin(const char *dirPath, uint8_t showAll);
+#else
+    char *unameCmdLinux(uint8_t flags);
+    void lsCmdLinux(const char *dirPath, uint8_t showAll);
+#endif
+
 
 char randChr(void);
 char *get_user(void);
@@ -147,14 +156,11 @@ uint64_t get_total_ram_mb(void);
 char *get_default_address(void);
 int8_t isAppend(const char *str);
 void safe_lower_inplace(char *s);
-char *unameCmdWin(uint8_t flags);
 void setColor(enum color4 color);
 char *buildLswRcPath(char *path);
 char *tolowerstr(const char *str);
 int16_t move_to_trash(char *path);
-char *unameCmdLinux(uint8_t flags);
 char *get_env_var(const char *name);
-bool isValidBcFunc(const char *str);
 void charRm(char *str, int8_t targ);
 char *handle_cd_dash(char *address);
 uint32_t getFileLength(FILE *stream);
@@ -162,16 +168,12 @@ char* findStarOutsideQuotes(char *s);
 uint16_t getSavedHistSize(char *path);
 uint16_t getSavedHistSize(char *path);
 bool isIn(char needle, char *haystack);
+bool isValidBcFuncName(const char *str);
 bool isBetweenQuotes(const char *action);
 char *find_andand_outside_quotes(char *s);
 void update_last_directory(char *address);
 char *strrm(char *str, const char *substr);
 char *findFirstEqualOutsideQuotes(char *s);
-
-#ifdef _WIN32
-LONG WINAPI handler(EXCEPTION_POINTERS *e);
-#endif
-
 double eval(char *operation, bool mathlib);
 uint8_t bsort(char **array, uint16_t count);
 int16_t rm_delete(char *path, uint8_t flags);
@@ -189,9 +191,8 @@ char *extract_instruction(char *str, char **args);
 void createShortcut(char *instruction, char *path);
 enum paren_result parenthesis_check(const char *s);
 char **parseData(const char *str, uint16_t *count);
-void lsCmdWin(const char *dirPath, uint8_t showAll);
 bool isBcVariable(const char *str, bool *shouldError);
-void lsCmdLinux(const char *dirPath, uint8_t showAll);
+uint8_t echoFileNtimes(char *instruction, char *copy);
 void charReplace(char *str, int8_t targ, int8_t repl);
 double parse_base_fraction(const char *s, int8_t base);
 uint8_t myStrcasestr(const char *str, const char *sub);
@@ -199,10 +200,7 @@ char *handle_normal_cd(const char *path, char *address);
 bool validStrBcFuncException(char *str, char *funcname);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
 bool isKeyRepeated(char *data_folder, const char *key_name);
-
-__attribute__((unused))
 char **readHistory(const char *address, uint32_t *lineCount);
-
 char **copyMat(char **dest, const char **src, uint16_t size);
 void printInFileNTimes(FILE *stream, char *str, int64_t count);
 double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok);
@@ -215,7 +213,6 @@ void split_instruction_args(char *line, char **out_cmd, char **out_args);
 __attribute__((format(printf, 1, 4)))
 void printc(const char *str, enum color4 initColor, enum color4 resetColor, ...);
 
-uint8_t echoFileNtimes(char *instruction, char *copy, uint16_t reps, uint16_t file);
 bool has_top_level_operator(const char *s, const char *uniOps, const char **multiOps);
 void printTarg(const char *str, const char *targ, enum color4 markColor, int8_t ignoreCase);
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp);

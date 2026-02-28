@@ -499,7 +499,7 @@ void clearHistoryCmd(const char *path) {
     }
 }
 
-void bcCmd(uint16_t argc, char **argv, const char **cmds) {
+void bcCmd(uint16_t argc, char **argv) {
     setup_console();
     double result;
     uint8_t appear = 0;
@@ -1703,7 +1703,8 @@ void updatehistory(void) {
         "r2.0.70 - huge changes\n\tEdited: refactored the function parser\n\tAdded: error messages to string types values/functions\n",
         "r2.0.95 - huge changes\n\tAdded: parenthesis support, you can use it when you are having unexpected result with the lack of precedence\n",
         "r2.1.00 - small changes\n\tEdited: bc initial message\n",
-        "r2.1.26 - huge changes\n\tEdited: improved the bc parser by a lot and also refactored all of the function parser to depend less on heap\n"
+        "r2.1.26 - huge changes\n\tEdited: improved the bc parser by a lot and also refactored all of the function parser to depend less on heap\n",
+        "r2.1.32 - small changes\n\tEdited: optimized the function parser and fixed the -Wextra and -Wpedantic compilation flags warnings\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
@@ -1804,7 +1805,6 @@ void echoCmd(char *instruction) {
         return;
     }
 
-
     if (reps != -1 && file == -1) {
         if (!echoNtimes(instruction, copy, reps)) {
             return;
@@ -1833,7 +1833,6 @@ void echoCmd(char *instruction) {
 
         trim(inFile); trimEnd(inFile);
         trim(filename); trimEnd(filename);
-
 
         bool QuoteAfterAbracket = (file < strrchar(instruction, '\"') ||
                                 file < strrchar(instruction, '\''));
@@ -1892,9 +1891,9 @@ void echoCmd(char *instruction) {
 
         SAFE_FREE(copy);
         return;
-        
+
     } else if (reps != -1 && file != -1) {
-        if (!echoFileNtimes(instruction, copy, reps, file)) {
+        if (!echoFileNtimes(instruction, copy)) {
             return;
         }
     }

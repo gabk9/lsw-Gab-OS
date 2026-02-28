@@ -642,6 +642,8 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tasin(X)        : Arc sine (inverse sine) of X\n"
             "\t                 Example: asin(0.5) = 0.523599\n"
             "\t                 Note: Returns value in radians\n"
+        );
+        printf(       
             "\n"
             "\tcos(X)         : Cosine of X\n"
             "\t                 Example: cos(rad(0)) = 1\n"
@@ -683,7 +685,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t                 Example: log10(1000) = 3\n"
             "\n"
             "\tlog2(X)        : Base-2 logarithm\n"
-            "\t                 Example: log2(8) = 3\n"
+            "\t                 Example: log2(8) = 3\n"     
             "\n"
             "\tlog(X, Y)      : Logarithm of Y in base X\n"
             "\t                 Example: log(2, 32) = 5\n"
@@ -718,6 +720,8 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\n"
             "\tbin(X)         : Convert X to binary\n"
             "\t                 Example: bin(5) = 0b0101\n"
+        );
+        printf(
             "\n"
             "\tchr(X)         : Convert X to ascii\n"
             "\t                 Example: ascii(65) = 'A'\n"
@@ -805,7 +809,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tHexadecimal: (prefix: '0x')   base 16 numbers e.g. 0x400 = 1024\n"
             "\n"
             "\tAscii: (characters)           1 bytes chars only e.g. 'a' = 97\n"
-            );
+        );
 
 
     }
@@ -1065,7 +1069,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
         uint16_t argc_bc;
         char **argv_bc = extract_args(args, &argc_bc, "bc");
 
-        bcCmd(argc_bc, argv_bc, cmds);
+        bcCmd(argc_bc, argv_bc);
         if (args) {
             for (uint16_t i = 1; i < argc_bc; i++)
                 SAFE_FREE(argv_bc[i]);
@@ -1133,7 +1137,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
     SAFE_FREE(temp);
 }
 
-double CheckOperation(char *operation, FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
+double parse_operation(char *operation, FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
     char op[0x4] = {0};
 
     while (is_wrapped_by_parentheses(operation)) {
@@ -1149,44 +1153,35 @@ double CheckOperation(char *operation, FuncEntry *functions, size_t funcCount, c
     );
 
     if (op_pos == -1) {
+        char *paren = strchr(operation, '(');
 
-        if (mathlib && strcasecmp(operation, OLD_ANSWER_STR) == 0) {
-            if (isnan(Ans)) {
-                printf("Warning: Ans is undefined\n");
-                return NAN;
-            }
+        if (!paren) {
+            return h_atof(operation, mathlib);
+        }
 
-            return Ans;
+        char name[0x100] = {0};
+
+        ssize_t parenthesis_index = strchar(operation, '(');
+        if (parenthesis_index == -1)
+            return h_atof(operation, mathlib);
+
+        memcpy(name, operation, parenthesis_index);
+        name[parenthesis_index] = '\0';
+
+        trimEnd(name);
+
+        if (*operation == '~' || *operation == '-')
+            return h_atof(operation, mathlib);
+
+        if (!*name)
+            return h_atof(operation, mathlib);
+
+        if (!isValidBcFuncName(name)) {
+            printf("eval: invalid function name: '%s()'\n", name);
+            return NAN;
         }
 
         if (mathlib) {
-            char *paren = strchr(operation, '(');
-
-            if (!paren) {
-                return h_atof(operation, mathlib);
-            }
-
-            char name[0x100];
-            size_t len = paren - operation;
-
-            if (len >= sizeof(name))
-                return NAN;
-
-            memcpy(name, operation, len);
-            name[len] = '\0';
-            trimEnd(name);
-
-            if (*operation == '~' || *operation == '-')
-                return h_atof(operation, mathlib);
-
-            if (!*name)
-                return h_atof(operation, mathlib);
-
-            if (!isValidBcFunc(operation)) {
-                printf("eval: invalid function name: '%s()'\n", name);
-                return NAN;
-            }
-
             for (size_t i = 0; i < funcCount; i++) {
                 if (strcmp(name, functions[i].name) == 0) {
 
@@ -1194,23 +1189,21 @@ double CheckOperation(char *operation, FuncEntry *functions, size_t funcCount, c
                         return functions[i].func(operation);
                     }
 
-                    if (functions[i].returnType == BC_CHAR) {
+                    if (functions[i].returnType == RET_CHAR) {
                         if (strcmp(name, "chr") == 0)
-                            return parse_str_func(operation, "chr");
+                            return parse_str_func(operation, functions[i]);
                     }
 
-                    if (functions[i].returnType == BC_STRING) {
+                    if (functions[i].returnType == RET_STRING) {
                         printf("eval: %s() is of type string, cannot operate with this function\n", name);
                         return NAN;
                     }
                 }
             }
+        }    
 
-            printf("eval: undefined function: '%s()'\n", name);
-            return NAN;
-        }
-
-        return h_atof(operation, mathlib);
+        printf("eval: undefined function: '%s()'\n", name);
+        return NAN;
     }
 
     char buffer[0x100];
