@@ -22,8 +22,8 @@ typedef struct Functions {
     const char *name;
     MathFunc func;
     enum returns {
-        STRING, FLOAT,
-        INT, BOOL, CHAR
+        BC_STRING, BC_FLOAT,
+        BC_INT, BC_BOOL, BC_CHAR
     } returnType;
 } FuncEntry;
 

@@ -1194,12 +1194,12 @@ double CheckOperation(char *operation, FuncEntry *functions, size_t funcCount, c
                         return functions[i].func(operation);
                     }
 
-                    if (functions[i].returnType == CHAR) {
+                    if (functions[i].returnType == BC_CHAR) {
                         if (strcmp(name, "chr") == 0)
                             return parse_str_func(operation, "chr");
                     }
 
-                    if (functions[i].returnType == STRING) {
+                    if (functions[i].returnType == BC_STRING) {
                         printf("eval: %s() is of type string, cannot operate with this function\n", name);
                         return NAN;
                     }

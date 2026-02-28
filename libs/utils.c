@@ -16,7 +16,6 @@
 #define PATH_TERMINAL_C "./libs/terminal.c"
 #define PATH_TERMINAL_H "./libs/terminal.h"
 
-
 #ifdef _WIN32
     extern HANDLE hConsole;
 #elif !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
@@ -2543,49 +2542,49 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 
 double eval(char *operation, bool mathlib) {
     FuncEntry math_table[] = {
-        {"scale",   s_scale,       INT},
-        {"sqrt",    s_sqrt,        FLOAT},
-        {"root",    s_root,        FLOAT},
-        {"sin",     s_sin,         FLOAT},
-        {"asin",    s_asin,        FLOAT},
-        {"cos",     s_cos,         FLOAT},
-        {"acos",    s_acos,        FLOAT},
-        {"tan",     s_tan,         FLOAT},
-        {"atan",    s_atan,        FLOAT},
-        {"cot",     s_cot,         FLOAT},
-        {"acot",    s_acot,        FLOAT},
-        {"ln",      s_ln,          FLOAT},
-        {"log10",   s_log10,       FLOAT},
-        {"log2",    s_log2,        FLOAT},
-        {"log",     s_log,         FLOAT},
-        {"floor",   s_floor,       INT},
-        {"ceil",    s_ceil,        INT},
-        {"round",   s_round,       INT},
-        {"sign",    s_sign,        INT},
-        {"sum",     s_sum,         FLOAT},
-        {"rad",     s_rad,         FLOAT},
-        {"gon",     s_gon,         FLOAT},
-        {"deg",     s_deg,         FLOAT},
-        {"trunc",   s_trunc,       INT},
-        {"randf",   s_randFloat,   FLOAT},
-        {"fah",     s_fah,         FLOAT},
-        {"cel",     s_cel,         FLOAT},
-        {"rand",    s_randInt,     INT},
-        {"mi",      s_miles,       FLOAT},
-        {"km",      s_km,          FLOAT},
-        {"lb",      s_pounds,      FLOAT},
-        {"kg",      s_kg,          FLOAT},
-        {"isprime", s_isprime,     BOOL},
-        {"bmi",     s_bmi,         FLOAT},
-        {"len",     bc_len,        INT},
-        {"feet",    s_feet,        FLOAT},
-        {"meter",   s_meter,       FLOAT},
-        {"fabs",    s_fabs_or_abs, FLOAT},  // special case
-        {"abs",     s_fabs_or_abs, INT},    // special case
-        {"chr",     NULL,          CHAR},   // special case
-        {"bin",     NULL,          STRING}, // special case
-        {"oct",     NULL,          STRING}, // special case
-        {"hex",     NULL,          STRING}, // special case
+        {"scale",   s_scale,       BC_INT},
+        {"sqrt",    s_sqrt,        BC_FLOAT},
+        {"root",    s_root,        BC_FLOAT},
+        {"sin",     s_sin,         BC_FLOAT},
+        {"asin",    s_asin,        BC_FLOAT},
+        {"cos",     s_cos,         BC_FLOAT},
+        {"acos",    s_acos,        BC_FLOAT},
+        {"tan",     s_tan,         BC_FLOAT},
+        {"atan",    s_atan,        BC_FLOAT},
+        {"cot",     s_cot,         BC_FLOAT},
+        {"acot",    s_acot,        BC_FLOAT},
+        {"ln",      s_ln,          BC_FLOAT},
+        {"log10",   s_log10,       BC_FLOAT},
+        {"log2",    s_log2,        BC_FLOAT},
+        {"log",     s_log,         BC_FLOAT},
+        {"floor",   s_floor,       BC_INT},
+        {"ceil",    s_ceil,        BC_INT},
+        {"round",   s_round,       BC_INT},
+        {"sign",    s_sign,        BC_INT},
+        {"sum",     s_sum,         BC_FLOAT},
+        {"rad",     s_rad,         BC_FLOAT},
+        {"gon",     s_gon,         BC_FLOAT},
+        {"deg",     s_deg,         BC_FLOAT},
+        {"trunc",   s_trunc,       BC_INT},
+        {"randf",   s_randFloat,   BC_FLOAT},
+        {"fah",     s_fah,         BC_FLOAT},
+        {"cel",     s_cel,         BC_FLOAT},
+        {"rand",    s_randInt,     BC_INT},
+        {"mi",      s_miles,       BC_FLOAT},
+        {"km",      s_km,          BC_FLOAT},
+        {"lb",      s_pounds,      BC_FLOAT},
+        {"kg",      s_kg,          BC_FLOAT},
+        {"isprime", s_isprime,     BC_BOOL},
+        {"bmi",     s_bmi,         BC_FLOAT},
+        {"len",     bc_len,        BC_INT},
+        {"feet",    s_feet,        BC_FLOAT},
+        {"meter",   s_meter,       BC_FLOAT},
+        {"fabs",    s_fabs_or_abs, BC_FLOAT},  // special case
+        {"abs",     s_fabs_or_abs, BC_INT},    // special case
+        {"chr",     NULL,          BC_CHAR},   // special case
+        {"bin",     NULL,          BC_STRING}, // special case
+        {"oct",     NULL,          BC_STRING}, // special case
+        {"hex",     NULL,          BC_STRING}, // special case
     };
 
     size_t funcCount = sizeof(math_table) / sizeof(*math_table);
