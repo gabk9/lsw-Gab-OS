@@ -39,22 +39,20 @@ bool isValidBcFunc(const char *str) {
     if (parenthesis_check(str) != PAREN_OK)
         return false;
 
-    if (!isalpha((unsigned char)str[0]) && *str != '_')
+    if (!isalpha((unsigned char)str[0]) && str[0] != '_')
         return false;
 
-
     size_t i = 1;
-    while (str[i] && str[i] != '(') {
-        if (isspace((unsigned char)str[i])) {
-            i++;
-            continue;
-        }
 
+    while (str[i] && str[i] != '(') {
         if (!isalnum((unsigned char)str[i]) && str[i] != '_')
-            return false;
+            break;
 
         i++;
     }
+
+    while (isspace((unsigned char)str[i]))
+        i++;
 
     if (str[i] != '(')
         return false;

@@ -19,7 +19,7 @@ double parse_str_func(char *operation, const char *funcname) {
     else if (strcmp(funcname, "oct") == 0)
         buff = s_oct(operation);
     else {
-        printf("eval: invalid function: '%s()'\n", funcname);
+        printf("eval: invalid function name: '%s()'\n", funcname);
         return NAN;
     }
 
