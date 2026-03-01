@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.17"
+#define VERSION "r2.1.25"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -605,6 +605,25 @@ void bcCmd(uint16_t argc, char **argv) {
 
         result = eval(operation, mathlib);        
         Ans = result;
+
+        size_t len = strlen(result);
+        bool is_numeric_string = true;
+        for (size_t i = 0; i < len; i++) {
+            if (!isdigit((unsigned char)result[i]) && result[i] != '.' && result[i] != '-' && result[i] != '+') {
+                is_numeric_string = false;
+                break;
+            }
+        }
+
+        if (is_numeric_string) {
+            double num = atof(result);
+
+            if (isnan(num))
+                continue;
+
+            printf("%g\n\n", num);
+            continue;
+        }
 
         if (result)
             printf("%s\n\n", result);
@@ -1374,7 +1393,7 @@ void updatehistory(void) {
         "b0.6.24 - small changes\n\tAdded: euler constant\n",
         "b0.6.26 - big changes\n\tAdded: bash command (available if you're inside the terminal)\n",
         "b0.6.29 - minor changes\n\tEdited: a few tweaks to the calculator, now you can use -PI or -E, still not case sensitive\n",
-        "b0.6.35 - small changes\n\tEdited: now to convert octal to integer or hex to integer, you just type it in\n\tRemoved: int32_t() calculator function\n",
+        "b0.6.35 - small changes\n\tEdited: now to convert octal to integer or hex to integer, you just type it in\n\tRemoved: int() calculator function\n",
         "b0.6.39 - minor changes\n\tEdited: a few more tweaks to the calculator\n",
         "b0.6.45 - small changes\n\tEdited: improved sin(), cos() and tan() suffix identifier\n",
         "b0.6.50 - small changes\n\tEdited: now you can type things like '3pi' or '-pi' and it will work, including hex and oct numbers\n",
@@ -1591,6 +1610,7 @@ void updatehistory(void) {
         "r2.1.65 - minor changes\n\tFixed: seg-fault fixed, now the bc is a slightly safer\n",
         "r2.1.90 - huge changes\n\tEdited: changing the whole eval from double to char *, later I will add full support to strings to Bc\n",
         "r2.2.17 - huge changes\n\tAdded: strings are now fully supported on bc, and also added int(), float() and str() functions (it may have some bugs which with further testing will soon be fixed)\n",
+        "r2.2.25 - small changes\n\tFixed: a seg-fault caused by the format i chose to print the numbers on the strings\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

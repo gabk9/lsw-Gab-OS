@@ -1233,7 +1233,7 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
                 return NULL;
             }
 
-            snprintf(buff, bytes, "%g", num);
+            snprintf(buff, bytes, "%lf", num);
             return buff;
         }
 
@@ -1254,7 +1254,7 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
             if (isnan(num))
                 return NULL;
 
-            snprintf(buff, bytes, "%g", num);
+            snprintf(buff, bytes, "%lf", num);
             return buff;
         }
 
@@ -1277,7 +1277,7 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
             if (isnan(num))
                 return NULL;
 
-            snprintf(buff, bytes, "%g", num);
+            snprintf(buff, bytes, "%lf", num);
             return buff;
         }
 
@@ -1324,7 +1324,7 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
                         if (isnan(num))
                             return NULL;
 
-                        snprintf(buff, bytes, "%g", num);
+                        snprintf(buff, bytes, "%lf", num);
                         return buff;
                     }
 
@@ -1431,6 +1431,6 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
     if (!buff)
         return NULL;
 
-    snprintf(buff, 0x180, "%g", result);
+    snprintf(buff, 0x180, "%lf", result);
     return buff;
 }
