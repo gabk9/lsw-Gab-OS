@@ -195,14 +195,31 @@ double h_atof(const char *str, bool mathlib) {
     size_t len = strlen(buf);
 
     if (len > 1 && *buf == '\'' && buf[len-1] == '\'') {
-        if (len-2 > 1) {
+        if (!injectEscape(buf, "eval"))
+            return NAN;
+
+        size_t oldLen = len;
+        len = strlen(buf);
+        bool isNullChr = !buf[1] && oldLen != len;
+        
+        if (buf[len-1] == '\'') {
+            buf[len-1] = '\0';
+            len--;
+        }
+        if (*buf == '\'') {
+            memmove(buf, buf+1, len+1);
+            len--;
+        }
+
+        if (len > 1) {
             printf("eval: to use sigle quotes it must be a single character\n");
             return NAN;
-        } else if (len-2 < 1) {
+        } else if (!isNullChr && len < 1) {
             printf("eval: missing the character inside quotes\n");
             return NAN;
         }
-        return (double)buf[1];
+    
+        return (double)(unsigned char)*buf;
     }
 
     if (mathlib) {            
@@ -332,35 +349,13 @@ static uint8_t validPtrFuncArgs(char *arg) {
     if (!len)
         return 1;
 
-    if (arg[0] != '"' || arg[len-1] != '"') {
+    if (*arg != '"' || arg[len-1] != '"') {
+        double num = eval(arg, true);
 
-        if (arg[len-1] == '\'' && arg[0] == '\'') {
-            printf("eval: must be a string\n");
+        if (isnan(num))
             return 0;
-        }
 
-        if (arg[len-1] != '"' && arg[0] == '"') {
-            printf("eval: missing closing quote\n");
-            return 0;
-        }
-
-        if (arg[len-1] == '"' && arg[0] != '"') {
-            char *tmp = strdup(arg);
-            tmp[len-1] = '\0';
-            printf("eval: invalid argument: '%s'\n", tmp);
-            SAFE_FREE(tmp);
-            return 0;
-        }
-
-        if (isdigit((uint8_t)arg[0])) {
-
-            if (isOct(arg) || isHex(arg) || isBin(arg)) {
-                printf("eval: must be a string\n");
-                return 0;
-            }
-        }
-
-        printf("eval: invalid argument: '%s'\n", arg);
+        printf("eval: invalid argument: '%g', it must be of type string\n", num);
         return 0;
     }
 
@@ -442,6 +437,47 @@ static uint16_t countCommaOutsideParenthesis(const char *str) {
     return count;
 }
 
+__attribute__((unused))
+double bc_parse(char *operation) {
+    bool enablePrecision = strncmp(operation, "float", 4) == 0;
+
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NAN;
+    operation = p+1;
+
+    size_t len = strlen(operation);
+    operation[len-1] = '\0';
+    len--;
+
+    if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
+        printf("eval: %s() requires exactly 1 argument\n", enablePrecision ? "float" : "int");
+        return NAN;
+    }
+
+    if (!injectEscape(operation, "eval"))
+        return NAN;
+
+    len = strlen(operation);
+
+    if (operation[len-1] == '"') {
+        operation[len-1] = '\0';
+        len--;
+    } if (*operation == '"') {
+        memmove(operation, operation+1, len+1);
+        len--;
+    }
+
+    double num = eval(operation, true);
+
+    if (!enablePrecision) {
+        printf("eval: int() requires an integer\n");
+        return NAN;
+    }
+
+    return num;
+}
+
 double bc_len(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
@@ -453,14 +489,27 @@ double bc_len(char *operation) {
     len--;
 
     if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
-        printf("eval: strlen() requires exactly 1 argument\n");
+        printf("eval: len() requires exactly 1 argument\n");
         return NAN;
     }
 
     if (!validPtrFuncArgs(operation))
         return NAN;
 
-    return (double)len - 2.0;
+    if (!injectEscape(operation, "eval"))
+        return NAN;
+
+    len = strlen(operation);
+
+    if (operation[len-1] == '"') {
+        operation[len-1] = '\0';
+        len--;
+    } if (*operation == '"') {
+        memmove(operation, operation+1, len+1);
+        len--;
+    }
+
+    return (double)len;
 }
 
 double s_fabs_or_abs(char *operation) {
@@ -709,6 +758,7 @@ char *s_chr(char *operation) {
     *buff = '\'';
 
     switch (value) {
+        case 0:  strcpy(buff + 1, "\\0"); break;
         case 7:  strcpy(buff + 1, "\\a"); break;
         case 8:  strcpy(buff + 1, "\\b"); break;
         case 9:  strcpy(buff + 1, "\\t"); break;
@@ -721,7 +771,7 @@ char *s_chr(char *operation) {
         case 63: strcpy(buff + 1, "\\?"); break;
         case 92: strcpy(buff + 1, "\\\\"); break;
         default:
-            if (value < 32 || value == 127 || value == 1) {
+            if (value < 32 || value == 127) {
                 printf("eval: chr() does not work with certain control and escape characters\n");
                 SAFE_FREE(buff);
                 return NULL;

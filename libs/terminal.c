@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.54"
+#define VERSION "r2.1.65"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -509,7 +509,7 @@ void bcCmd(uint16_t argc, char **argv) {
     for (uint16_t i = 1; i < argc; i++) {
         char *opt = argv[i];
 
-        if (opt[0] != '-') {
+        if (*opt != '-') {
             printf("bc: invalid argument: '%s'\n", opt);
             return;
         }
@@ -646,8 +646,6 @@ void bcCmd(uint16_t argc, char **argv) {
             char *value = s_chr(operation);
             if (value) {
                 printf("%s\n\n", value);
-                injectEscape(value, "eval");
-
                 Ans = h_atof(value, false);                
                 fflush(stdout);
             } else {
@@ -1637,7 +1635,9 @@ void updatehistory(void) {
         "r2.1.26 - huge changes\n\tEdited: improved the bc parser by a lot and also refactored all of the function parser to depend less on heap\n",
         "r2.1.32 - small changes\n\tEdited: optimized the function parser and fixed the -Wextra and -Wpedantic compilation flags warnings\n",
         "r2.1.38 - small changes\n\tEdited: renamed the angles functions\n",
-        "r2.1.54 - big changes\n\tRemoved: string multiplication with echo and touch\n\tAdded: support to escape characters to lsw, and bc of course\n"
+        "r2.1.54 - big changes\n\tRemoved: string multiplication with echo and touch\n\tAdded: support to escape characters to lsw, and bc of course\n",
+        "r2.1.62 - small changes\n\tEdited: improved the escape characters parser in bc and you can now use the '\\0' character\n",
+        "r2.1.65 - minor changes\n\tFixed: seg-fault fixed, now the bc is a slightly safer\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

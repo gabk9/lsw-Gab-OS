@@ -65,6 +65,7 @@ double s_floor(char *operation)__attribute__((nonnull));
 double s_round(char *operation)__attribute__((nonnull));
 double s_log10(char *operation)__attribute__((nonnull));
 double s_scale(char *operation)__attribute__((nonnull));
+double bc_parse(char *operation)__attribute__((nonnull));
 double s_pounds(char *operation)__attribute__((nonnull));
 double s_randInt(char *operation)__attribute__((nonnull));
 double s_isprime(char *operation)__attribute__((nonnull));

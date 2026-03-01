@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8500
-#define PROJ_SIZE_APPROX_BYTES 247500
+#define PROJ_SIZE_APPROX_BYTES 248500
 
 #define RC_FILE "lswrc.txt"
 
@@ -2463,7 +2463,9 @@ double eval(char *operation, bool mathlib) {
         {"len",     bc_len,        RET_INT},
         {"feet",    s_feet,        RET_FLOAT},
         {"meter",   s_meter,       RET_FLOAT},
-        {"fabs",    s_fabs_or_abs, RET_FLOAT},  // special case
+        {"fabs",    s_fabs_or_abs, RET_FLOAT},
+        // {"float",   bc_parse,      RET_FLOAT},
+        // {"int",     bc_parse,      RET_INT},
         {"abs",     s_fabs_or_abs, RET_INT},    // special case
         {"chr",     NULL,          RET_CHAR},   // special case
         {"bin",     NULL,          RET_STRING}, // special case
@@ -2503,9 +2505,6 @@ double eval(char *operation, bool mathlib) {
 
         return NAN;
     }
-
-    if (!injectEscape(operation, "eval"))
-        return NAN;
 
     return parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 }

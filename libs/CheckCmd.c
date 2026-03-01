@@ -1171,8 +1171,10 @@ double parse_operation(char *operation, FuncEntry *functions, size_t funcCount, 
         if (*operation == '~' || *operation == '-')
             return h_atof(operation, mathlib);
 
-        if (!*name)
-            return h_atof(operation, mathlib);
+        if (!*name || operation[strlen(operation)-1] != ')') {
+            printf("eval: invalid syntax\n");
+            return NAN;
+        }
 
         if (!isValidBcFuncName(name)) {
             printf("eval: invalid function name: '%s()'\n", name);
