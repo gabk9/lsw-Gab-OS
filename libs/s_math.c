@@ -112,7 +112,7 @@ uint16_t count_top_level_commas(const char *s) {
 
 double h_atof(const char *str, bool mathlib) {
 
-    if (!*str || !str)
+    if (!str || !*str)
         return NAN;
 
     char buf[0x80];
@@ -125,8 +125,11 @@ double h_atof(const char *str, bool mathlib) {
     bool isUnaryNot = false;
     bool isUnaryNeg = false;
 
-    const int32_t end = (int32_t)strlen(buf) - 1;
-    if (mathlib && buf[end] == '!')
+    size_t len = strlen(buf);
+    if (len == 0)
+        return NAN;
+
+    if (mathlib && buf[len-1] == '!')
         return s_fact(buf);
 
     if (*buf == '~' || *buf == '-') {
@@ -168,6 +171,9 @@ double h_atof(const char *str, bool mathlib) {
         else {
             char *buff = eval(buf, mathlib);
 
+            if (!buff)
+                return NAN;
+
             num = h_atof(buff, mathlib);
 
             SAFE_FREE(buff);
@@ -197,6 +203,9 @@ double h_atof(const char *str, bool mathlib) {
         else {
             char *buff = eval(buf, mathlib);
 
+            if (!buff)
+                return NAN;
+
             num = h_atof(buff, mathlib);
 
             SAFE_FREE(buff);
@@ -223,7 +232,7 @@ double h_atof(const char *str, bool mathlib) {
     if (isAns)
         return h_atof(Ans, mathlib);
 
-    size_t len = strlen(buf);
+    len = strlen(buf);
 
     if (len > 1 && *buf == '\'' && buf[len-1] == '\'') {
         if (!injectEscape(buf, "eval"))
@@ -293,6 +302,9 @@ double h_atof(const char *str, bool mathlib) {
 
                     char *buff = eval(buf, mathlib);
 
+                    if (!buff)
+                        return NAN;
+
                     double num = h_atof(buff, mathlib);
 
                     SAFE_FREE(buff);
@@ -314,6 +326,9 @@ double h_atof(const char *str, bool mathlib) {
             temp[i] = '\0';
             char *buff = eval(temp, mathlib);
 
+            if (!buff)
+                return NAN;
+
             double num = h_atof(buff, mathlib);
 
             SAFE_FREE(buff);
@@ -325,6 +340,9 @@ double h_atof(const char *str, bool mathlib) {
             strncpy(temp, buf, i);
             temp[i] = '\0';
             char *buff = eval(temp, mathlib);
+
+            if (!buff)
+                return NAN;
 
             double num = h_atof(buff, mathlib);
 

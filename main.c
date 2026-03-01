@@ -77,7 +77,7 @@ int32_t main(int32_t argc, char **argv) {
     puts("Type 'cmds' to see the command list");
 
     while (true) {
-        checkLswrcSyntax(data_folder);
+        // checkLswrcSyntax(data_folder);
         char *wd = defaultAddressReplace(address);
 
         printc("❯ lsw ❮ ", CYAN, WHITE);

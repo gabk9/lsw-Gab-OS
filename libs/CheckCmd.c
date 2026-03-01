@@ -1149,8 +1149,12 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
     char op[0x4] = {0};
 
     while (is_wrapped_by_parentheses(operation)) {
-        operation++;
-        operation[strlen(operation) - 1] = '\0';
+        size_t len = strlen(operation);
+        if (len <= 2)
+            break;
+
+        operation[len - 1] = '\0';
+        memmove(operation, operation + 1, len);
     }
 
     int16_t op_pos = find_main_operator_full(
@@ -1163,7 +1167,7 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
     if (op_pos == -1) {
 
         if (Ans && strcasecmp(operation, "ans") == 0) {
-            if (*Ans == '"' && Ans[strlen(Ans)-1] == '"')
+            if (*Ans == '"' && Ans[2] == '"' && Ans[3] == '\0')
                 return Ans;
         }
 
@@ -1251,8 +1255,10 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
 
             double num = h_atof(operation, mathlib);
 
-            if (isnan(num))
+            if (isnan(num)) {
+                SAFE_FREE(buff);
                 return NULL;
+            }
 
             snprintf(buff, bytes, "%lf", num);
             return buff;
@@ -1274,8 +1280,10 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
 
             double num = h_atof(operation, mathlib);
 
-            if (isnan(num))
+            if (isnan(num)) {
+                SAFE_FREE(buff);
                 return NULL;
+            }
 
             snprintf(buff, bytes, "%lf", num);
             return buff;
