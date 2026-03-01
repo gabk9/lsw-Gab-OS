@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8600
-#define PROJ_SIZE_APPROX_BYTES 249500
+#define PROJ_LINES_APPROX 8800
+#define PROJ_SIZE_APPROX_BYTES 254000
 
 #define RC_FILE "lswrc.txt"
 
@@ -2284,7 +2284,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
         }
 
         if (*Ans == '"' && Ans[strlen(Ans)-1] == '"') {
-            printf("eval: to use juxtaposition operations it must be a number\n");
+            printf("eval: cannot make juxtaposition operations with strings\n");
             return NAN;
         }
 
@@ -2476,10 +2476,11 @@ char *eval(char *operation, bool mathlib) {
         {"len",     bc_len,        RET_INT},
         {"feet",    s_feet,        RET_FLOAT},
         {"meter",   s_meter,       RET_FLOAT},
+        {"abs",     s_fabs_or_abs, RET_INT},
         {"fabs",    s_fabs_or_abs, RET_FLOAT},
-        // {"float",   bc_parse,      RET_FLOAT},
-        // {"int",     bc_parse,      RET_INT},
-        {"abs",     s_fabs_or_abs, RET_INT},    // special case
+        {"int",     bc_parse,      RET_INT},
+        {"float",   bc_parse,      RET_FLOAT},
+        {"str",     NULL,          RET_STRING}, // special case
         {"chr",     NULL,          RET_CHAR},   // special case
         {"bin",     NULL,          RET_STRING}, // special case
         {"oct",     NULL,          RET_STRING}, // special case

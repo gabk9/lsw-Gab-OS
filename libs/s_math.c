@@ -28,6 +28,8 @@ double parse_str_func(char *operation, FuncEntry function) {
         buff = s_bin(operation);
     else if (strcmp(function.name, "oct") == 0)
         buff = s_oct(operation);
+    else if (strcmp(function.name, "str") == 0)
+        buff = bc_parse_str(operation);
     else {
         printf("eval: undefined function: '%s()'\n", function.name);
         return NAN;
@@ -254,6 +256,10 @@ double h_atof(const char *str, bool mathlib) {
     if (mathlib) {            
         int16_t ok = 0;
         double hex_pi_e = parse_bin_hex_oct_ans_e_pi(buf, &ok);
+
+        if (isnan(hex_pi_e))
+            return NAN;
+
         if (ok)
             return hex_pi_e;
     }
@@ -293,11 +299,6 @@ double h_atof(const char *str, bool mathlib) {
                     return (isnan(num)) ? NAN : num * suffix[mi].mult;
                 }
             }
-        }
-
-        if (*buf == '"' && buf[len-1] == '"') {
-            printf("eval: cannot operate with string type values\n");
-            return NAN;
         }
 
         if (strcasecmp(buf, "pi") == 0) return PI;
@@ -340,6 +341,10 @@ double h_atof(const char *str, bool mathlib) {
 
         if (is_bin)
             return parseBinToInt(buf);
+    }
+    if (*buf == '"' && buf[len-1] == '"') {
+        printf("eval: cannot operate with string type values\n");
+        return NAN;
     }
 
     if (!isalldigit(buf)) {
@@ -482,44 +487,82 @@ static uint16_t countCommaOutsideParenthesis(const char *str) {
     return count;
 }
 
-__attribute__((unused))
+char *bc_parse_str(char *operation) {
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NULL;
+    operation = p;
+
+    size_t len = strlen(operation);
+
+    if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
+        printf("eval: str() requires exactly 1 argument\n");
+        return NULL;
+    }
+
+    char *buff = eval(operation, true);
+
+    if (!buff)
+        return NULL;
+
+    len = strlen(buff);
+    if (*buff != '"' && buff[len-1] != '"') {
+        char *buff2 = malloc(len+3);
+        buff2[len+3] = '\0';
+
+        snprintf(buff2, len+3, "\"%s\"", buff);
+        SAFE_FREE(buff);
+        return buff2;
+    }
+
+    return buff;
+}
+
 double bc_parse(char *operation) {
     bool enablePrecision = strncmp(operation, "float", 4) == 0;
 
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
-    operation = p+1;
+    operation = p;
 
     size_t len = strlen(operation);
-    operation[len-1] = '\0';
-    len--;
 
     if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
         printf("eval: %s() requires exactly 1 argument\n", enablePrecision ? "float" : "int");
         return NAN;
     }
 
-    if (!injectEscape(operation, "eval"))
-        return NAN;
-
+    char *buff = eval(operation, true);
     len = strlen(operation);
 
-    if (operation[len-1] == '"') {
-        operation[len-1] = '\0';
-        len--;
-    } if (*operation == '"') {
-        memmove(operation, operation+1, len+1);
-        len--;
+
+    bool isNumeric = true;
+    if (*buff == '"' && len > 1) {
+        memmove(buff, buff+1, len+1);
+        isNumeric = false;
+    }
+        
+    len = strlen(buff);
+    if (len > 1&& buff[len-1] == '"') {
+        buff[len-1] = '\0';
+        isNumeric = false;
     }
 
-    char *buff = eval(operation, true);
-
-    double num = h_atof(buff, true);
-
+    double num;
+    if (isNumeric)
+        num = h_atof(buff, true);
+    else {
+        char *tmp = eval(buff, true);
+        num = h_atof(tmp, true);
+        SAFE_FREE(tmp);
+    }
     SAFE_FREE(buff);
 
-    if (!enablePrecision) {
+    if (isnan(num))
+        return NAN;
+
+    if (!enablePrecision && num != (int64_t)num) {
         printf("eval: int() requires an integer\n");
         return NAN;
     }

@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.90"
+#define VERSION "r2.1.17"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -601,7 +601,6 @@ void bcCmd(uint16_t argc, char **argv) {
             cls();
             appear = 0;
             continue;
-
         }
 
         result = eval(operation, mathlib);        
@@ -1367,7 +1366,7 @@ void updatehistory(void) {
         "b0.5.79 - minor changes\n\tEdited: changed int32_t variables to optimize the code, using 'inttypes.h'\n",
         "b0.5.85 - small changes\n\tEdited: now on windows you can generate 32bit numbers with rand command, or rand() in the calculator\n",
         "b0.5.90 - small changes\n\tEdited: now the calculator supports hex and octal numbers\n",
-        "b0.6.00 - small changes\n\tAdded: hex(), int32_t() and oct() to the calculator\n",
+        "b0.6.00 - small changes\n\tAdded: hex(), int() and oct() to the calculator\n",
         "b0.6.07 - minor changes\n\tEdited: now echo and touch supports hex and oct numbers and the calculator was improved\n\n"
         "b0.6.15 - big changes\n\tEdited: improved ls command\n",
         "b0.6.18 - small changes\n\tEdited: improved functionHandler()\n",
@@ -1590,7 +1589,8 @@ void updatehistory(void) {
         "r2.1.54 - big changes\n\tRemoved: string multiplication with echo and touch\n\tAdded: support to escape characters to lsw, and bc of course\n",
         "r2.1.62 - small changes\n\tEdited: improved the escape characters parser in bc and you can now use the '\\0' character\n",
         "r2.1.65 - minor changes\n\tFixed: seg-fault fixed, now the bc is a slightly safer\n",
-        "r2.1.90 - huge changes\n\tEdited: changing the whole eval from double to char *, later I will add full support to strings to Bc\n"
+        "r2.1.90 - huge changes\n\tEdited: changing the whole eval from double to char *, later I will add full support to strings to Bc\n",
+        "r2.2.17 - huge changes\n\tAdded: strings are now fully supported on bc, and also added int(), float() and str() functions (it may have some bugs which with further testing will soon be fixed)\n",
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

@@ -531,12 +531,13 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         );              
 
     else if (strcmp(instruction, cmds[20]) == 0) { //! bc
-        printf("'bc' a simple calculator on the terminal, apparently it works with more than 2 numbers, but without operand precedence\n\nUsage:\n\tbc [OPTION...]\n\nOptions:\n");
+        printf("'bc' a simple calculator on the terminal, operand precedence does not work unless if you use parenthesis, and it also works with strings\n");
+        printf("\nUsage:\n\tbc [OPTION...]\n\nOptions:\n");
         printf("\t'-q', '--quiet'     will not print the initial text\n");
         printf("\t'-l', '--mathlib'   includes the mathlib header\n");
         printf("\nOperations:\n"
-            "\t'+'    : Addition\n"
-            "\t         Example: 2 + 3 = 5\n"
+            "\t'+'    : Addition / string concatenation\n"
+            "\t         Example: 2 + 3 = 5 / \"string1\" + \"string2\" = \"string1string2\"\n"
             "\n"
             "\t'-'    : Subtraction\n"
             "\t         Example: 10 - 4 = 6\n"
@@ -725,6 +726,15 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t                 Example: ascii(65) = 'A'\n"
             "\t                 Note: escape characters does not work\n"
             "\t                 Tip: the number must be an integer between 0 and 127 (inclusive)\n"
+            "\n"
+            "\tint(X)         : Converts X to integer\n"
+            "\t                 Example: int(\"2\") = 2\n"
+            "\n"
+            "\tfloat(X)       : Converts X to float\n"
+            "\t                 Example: float(\"3.1415\") = 3.1415\n"
+            "\n"
+            "\tstr(X)         : Converts X to string\n"
+            "\t                 Example: str(pi) = \"3.14159\"\n"
             "\n"
             "\tfah(X)         : Celsius to Fahrenheit\n"
             "\t                 Example: fah(0) = 32\n"
@@ -1160,18 +1170,68 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
         char *paren = strchr(operation, '(');
 
         if (!paren) {
+
+            size_t len = strlen(operation);
+
+            if (len > 1 && operation[0] == '"') {
+
+                char result[0x400] = {0};
+                size_t res_len = 0;
+
+                const char *p = operation;
+
+                while (*p) {
+
+                    while (isspace((unsigned char)*p))
+                        p++;
+
+                    if (*p != '"')
+                        break;
+
+                    p++;
+
+                    while (*p && !(*p == '"' && *(p - 1) != '\\')) {
+                        result[res_len++] = *p;
+                        p++;
+                    }
+
+                    if (*p != '"') {
+                        printf("eval: unclosed quote\n");
+                        return NULL;
+                    }
+
+                    p++;
+                }
+
+                if (res_len > 0) {
+
+                    char *final = malloc(res_len + 3);
+                    if (!final) {
+                        printf("eval: memory allocation error\n");
+                        return NULL;
+                    }
+
+                    final[0] = '"';
+                    memcpy(final + 1, result, res_len);
+                    final[res_len + 1] = '"';
+                    final[res_len + 2] = '\0';
+
+                    return final;
+                }
+            }
+
             const size_t bytes = 0x180;
             char *buff = malloc(bytes);
-
             if (!buff) {
                 printf("eval: memory allocation error\n");
                 return NULL;
             }
 
             double num = h_atof(operation, mathlib);
-
-            if (isnan(num))
+            if (isnan(num)) {
+                SAFE_FREE(buff);
                 return NULL;
+            }
 
             snprintf(buff, bytes, "%g", num);
             return buff;
@@ -1221,7 +1281,22 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
             return buff;
         }
 
-        if (!*name || operation[strlen(operation)-1] != ')') {
+        int32_t depth = 0;
+        int32_t close_index = -1;
+
+        for (int32_t i = parenthesis_index; operation[i]; i++) {
+            if (operation[i] == '(')
+                depth++;
+            else if (operation[i] == ')') {
+                depth--;
+                if (depth == 0) {
+                    close_index = i;
+                    break;
+                }
+            }
+        }
+
+        if (close_index == -1 || operation[close_index + 1] != '\0') {
             printf("eval: invalid syntax\n");
             return NULL;
         }
@@ -1262,6 +1337,8 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
                             return s_bin(operation);
                         else if (strcmp(name, "oct") == 0)
                             return s_oct(operation);
+                        else if (strcmp(name, "str") == 0)
+                            return bc_parse_str(operation);
                     }
                 }
             }
@@ -1288,38 +1365,72 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
         return NULL;
     }
 
-    char *tmp1 = eval(num1, mathlib);
-
-    double num1_double = h_atof(tmp1, mathlib);
-
-    SAFE_FREE(tmp1);
-
-    if (isnan(num1_double))
+    char *left = eval(num1, mathlib);
+    if (!left)
         return NULL;
 
-    char *tmp2 = eval(num2, mathlib);
-
-    double num2_double = h_atof(tmp2, mathlib);
-
-    SAFE_FREE(tmp2);
-
-    if (isnan(num2_double))
-        return NULL;
+    bool left_is_string = (*left == '"' && left[strlen(left)-1] == '"');
 
 
-    const size_t bytes = 0x180;
-    char *buff = malloc(bytes);
-
-    if (!buff) {
-        printf("eval: memory allocation error\n");
+    char *right = eval(num2, mathlib);
+    if (!right) {
+        SAFE_FREE(left);
         return NULL;
     }
 
-    double num = calc(num1_double, op, num2_double, mathlib);
+    bool right_is_string = (*right == '"' && right[strlen(right)-1] == '"');
 
-    if (isnan(num))
+
+    if (strcmp(op, "+") == 0 && left_is_string && right_is_string) {
+
+        size_t len1 = strlen(left);
+        size_t len2 = strlen(right);
+
+        left[len1 - 1] = '\0';
+        memmove(right, right + 1, len2);
+
+        size_t total = strlen(left) + strlen(right) + 2;
+
+        char *cat = malloc(total);
+        if (!cat) {
+            SAFE_FREE(left);
+            SAFE_FREE(right);
+            return NULL;
+        }
+
+        snprintf(cat, total, "%s%s", left, right);
+
+        SAFE_FREE(left);
+        SAFE_FREE(right);
+
+        return cat;
+    }
+
+
+    double num1_double = h_atof(left, mathlib);
+    SAFE_FREE(left);
+
+    if (isnan(num1_double)) {
+        SAFE_FREE(right);        
+        return NULL;
+    }
+
+    double num2_double = h_atof(right, mathlib);
+    SAFE_FREE(right);        
+
+    if (isnan(num2_double)) {
+        return NULL;
+    }
+
+    double result = calc(num1_double, op, num2_double, mathlib);
+
+    if (isnan(result))
         return NULL;
 
-    snprintf(buff, bytes, "%g", num);
+    char *buff = malloc(0x180);
+    if (!buff)
+        return NULL;
+
+    snprintf(buff, 0x180, "%g", result);
     return buff;
 }
