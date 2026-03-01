@@ -2655,7 +2655,7 @@ char **copyMat(char **dest, const char **src, uint16_t size) {
 bool isalldigit(const char *s) {
     if (!s || !*s) return false;
 
-    if (*s == '-')
+    if (*s == '-' || *s == '~')
         s++;
 
     bool hex = isHex(s);
