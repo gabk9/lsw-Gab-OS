@@ -13,7 +13,6 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <inttypes.h>
-#include "terminal.h"
 
 typedef double (*MathFunc)(char *operation);
 
@@ -28,6 +27,7 @@ typedef struct Functions {
 
 #include "s_math.h"
 #include "CheckCmd.h"
+#include "terminal.h"
 
 #ifdef _WIN32
     #include <direct.h>
@@ -49,7 +49,7 @@ typedef struct Functions {
     #define cls(void) system("clear")
 #endif
 
-extern double Ans;
+extern char *Ans;
 
 #define OLD_ANSWER_STR "ans"
 
@@ -173,9 +173,9 @@ void shiftLeft_at(char *str, size_t pos);
 bool isBetweenQuotes(const char *action);
 char *find_andand_outside_quotes(char *s);
 void update_last_directory(char *address);
+char *eval(char *operation, bool mathlib);
 char *strrm(char *str, const char *substr);
 char *findFirstEqualOutsideQuotes(char *s);
-double eval(char *operation, bool mathlib);
 uint8_t bsort(char **array, uint16_t count);
 int16_t rm_delete(char *path, uint8_t flags);
 int16_t strchar(const char *str, int8_t chr);

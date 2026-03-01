@@ -22,10 +22,10 @@ double parse_str_func(char *operation, FuncEntry function) {
 
     if (strcmp(function.name, "chr") == 0)
         buff = s_chr(operation);
-    else if (strcmp(function.name, "bin") == 0)
-        buff = s_bin(operation);
     else if (strcmp(function.name, "hex") == 0)
         buff = s_hex(operation);
+    else if (strcmp(function.name, "bin") == 0)
+        buff = s_bin(operation);
     else if (strcmp(function.name, "oct") == 0)
         buff = s_oct(operation);
     else {
@@ -33,10 +33,25 @@ double parse_str_func(char *operation, FuncEntry function) {
         return NAN;
     }
 
+    if (!buff)
+        return NAN;
+
     if (!isChr) {
         size_t len = strlen(buff);
-        memmove(buff, buff+1, len+1);
-        buff[len-2] = '\0';
+
+        if (len < 2) {
+            SAFE_FREE(buff);
+            return NAN;
+        }
+
+        if (buff[len-1] == '"') {
+            buff[len-1] = '\0';
+            len--;
+        }
+        if (*buff == '"') {
+            memmove(buff, buff + 1, len+1);
+            len--;
+        }
     }    
 
     double num = h_atof(buff, true);
@@ -94,6 +109,10 @@ uint16_t count_top_level_commas(const char *s) {
 }
 
 double h_atof(const char *str, bool mathlib) {
+
+    if (!*str || !str)
+        return NAN;
+
     char buf[0x80];
     strncpy(buf, str, sizeof(buf) - 1);
     buf[sizeof(buf) - 1] = '\0';
@@ -130,7 +149,7 @@ double h_atof(const char *str, bool mathlib) {
 
     bool isAns = mathlib && strcasecmp(buf, OLD_ANSWER_STR) == 0;
 
-    if (isAns && isnan(Ans)) {
+    if (isAns && !Ans) {
         puts("Warning: Ans is undefined");
         return NAN;
     }
@@ -143,9 +162,14 @@ double h_atof(const char *str, bool mathlib) {
 
         double num;
         if (isAns)
-            num = Ans;
-        else
-            num = eval(buf, mathlib);
+            num = h_atof(Ans, mathlib);
+        else {
+            char *buff = eval(buf, mathlib);
+
+            num = h_atof(buff, mathlib);
+
+            SAFE_FREE(buff);
+        }
 
         if (isnan(num))
             return NAN;
@@ -167,9 +191,14 @@ double h_atof(const char *str, bool mathlib) {
         double num;
 
         if (isAns)
-            num = Ans;
-        else
-            num = eval(buf, mathlib);
+            num = h_atof(Ans, mathlib);
+        else {
+            char *buff = eval(buf, mathlib);
+
+            num = h_atof(buff, mathlib);
+
+            SAFE_FREE(buff);
+        }
 
         if (isnan(num))
             return NAN;
@@ -190,7 +219,7 @@ double h_atof(const char *str, bool mathlib) {
     }
 
     if (isAns)
-        return Ans;
+        return h_atof(Ans, mathlib);
 
     size_t len = strlen(buf);
 
@@ -256,7 +285,11 @@ double h_atof(const char *str, bool mathlib) {
                     if (buf[len-2] == '!')
                         return 0.0;
 
-                    double num = eval(buf, mathlib);
+                    char *buff = eval(buf, mathlib);
+
+                    double num = h_atof(buff, mathlib);
+
+                    SAFE_FREE(buff);
                     return (isnan(num)) ? NAN : num * suffix[mi].mult;
                 }
             }
@@ -278,7 +311,11 @@ double h_atof(const char *str, bool mathlib) {
             char temp[0x40];
             strncpy(temp, buf, i);
             temp[i] = '\0';
-            double num = eval(temp, mathlib);
+            char *buff = eval(temp, mathlib);
+
+            double num = h_atof(buff, mathlib);
+
+            SAFE_FREE(buff);
             return (isnan(num)) ? NAN : num * PI;
         }
 
@@ -286,7 +323,11 @@ double h_atof(const char *str, bool mathlib) {
             char temp[0x40];
             strncpy(temp, buf, i);
             temp[i] = '\0';
-            double num = eval(temp, mathlib);
+            char *buff = eval(temp, mathlib);
+
+            double num = h_atof(buff, mathlib);
+
+            SAFE_FREE(buff);
             return (isnan(num)) ? NAN : num * E;
         }
 
@@ -350,7 +391,11 @@ static uint8_t validPtrFuncArgs(char *arg) {
         return 1;
 
     if (*arg != '"' || arg[len-1] != '"') {
-        double num = eval(arg, true);
+        char *buff = eval(arg, true);
+
+        double num = h_atof(buff, true);
+
+        SAFE_FREE(buff);
 
         if (isnan(num))
             return 0;
@@ -468,7 +513,11 @@ double bc_parse(char *operation) {
         len--;
     }
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (!enablePrecision) {
         printf("eval: int() requires an integer\n");
@@ -519,15 +568,14 @@ double s_fabs_or_abs(char *operation) {
         return NAN;
     operation = p;
 
-    double value = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double value = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(value))
         return NAN;
-
-    if (value == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     if (!enable_single_point) {
         if (value != (int64_t)value) {
@@ -545,15 +593,14 @@ double s_miles(char *operation) {
         return NAN;
     operation = p;
 
-    double km = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double km = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(km))
         return NAN;
-
-    if (km == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     return KM_TO_MI(km);
 }
@@ -564,15 +611,14 @@ double s_km(char *operation) {
         return NAN;
     operation = p;
 
-    double miles = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double miles = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(miles))
         return NAN;
-
-    if (miles == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return MI_TO_KM(miles);
 }
@@ -583,15 +629,14 @@ double s_pounds(char *operation) {
         return NAN;
     operation = p;
 
-    double kg = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double kg = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(kg))
         return NAN;
-
-    if (kg == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return KG_TO_LB(kg);
 }
@@ -602,15 +647,14 @@ double s_kg(char *operation) {
         return NAN;
     operation = p;
 
-    double lbs = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double lbs = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(lbs))
         return NAN;
-
-    if (lbs == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return LB_TO_KG(lbs);
 }
@@ -621,15 +665,14 @@ double s_feet(char *operation) {
         return NAN;
     operation = p;
 
-    double meters = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double meters = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(meters))
         return NAN;
-
-    if (meters == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return M_TO_FT(meters);
 }
@@ -640,15 +683,14 @@ double s_meter(char *operation) {
         return NAN;
     operation = p;
 
-    double feet = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double feet = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(feet))
         return NAN;
-
-    if (feet == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return FT_TO_M(feet);
 }
@@ -659,15 +701,14 @@ double s_fah(char *operation) {
         return NAN;
     operation = p;
 
-    double cel = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double cel = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(cel))
         return NAN;
-
-    if (cel == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return C_TO_F(cel);
 }
@@ -678,15 +719,14 @@ double s_cel(char *operation) {
         return NAN;
     operation = p;
 
-    double fah = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double fah = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(fah))
         return NAN;
-
-    if (fah == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return F_TO_C(fah);
 }
@@ -697,15 +737,14 @@ char *s_oct(char *operation) {
         return NULL;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NULL;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NULL;
-    }
 
     if (num != (int64_t)num) {
         printf("eval: oct() requires an integer!\n");
@@ -735,7 +774,12 @@ char *s_chr(char *operation) {
         return NULL;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
+
     if (isnan(num))
         return NULL;
 
@@ -751,41 +795,41 @@ char *s_chr(char *operation) {
         return NULL;
     }
 
-    char *buff = malloc(5);
-    if (!buff)
+    char *chr = malloc(5);
+    if (!chr)
         return NULL;
 
-    *buff = '\'';
+    *chr = '\'';
 
     switch (value) {
-        case 0:  strcpy(buff + 1, "\\0"); break;
-        case 7:  strcpy(buff + 1, "\\a"); break;
-        case 8:  strcpy(buff + 1, "\\b"); break;
-        case 9:  strcpy(buff + 1, "\\t"); break;
-        case 10: strcpy(buff + 1, "\\n"); break;
-        case 11: strcpy(buff + 1, "\\v"); break;
-        case 12: strcpy(buff + 1, "\\f"); break;
-        case 13: strcpy(buff + 1, "\\r"); break;
-        case 34: strcpy(buff + 1, "\\\""); break;
-        case 39: strcpy(buff + 1, "\\'"); break;
-        case 63: strcpy(buff + 1, "\\?"); break;
-        case 92: strcpy(buff + 1, "\\\\"); break;
+        case 0:  strcpy(chr + 1, "\\0"); break;
+        case 7:  strcpy(chr + 1, "\\a"); break;
+        case 8:  strcpy(chr + 1, "\\b"); break;
+        case 9:  strcpy(chr + 1, "\\t"); break;
+        case 10: strcpy(chr + 1, "\\n"); break;
+        case 11: strcpy(chr + 1, "\\v"); break;
+        case 12: strcpy(chr + 1, "\\f"); break;
+        case 13: strcpy(chr + 1, "\\r"); break;
+        case 34: strcpy(chr + 1, "\\\""); break;
+        case 39: strcpy(chr + 1, "\\'"); break;
+        case 63: strcpy(chr + 1, "\\?"); break;
+        case 92: strcpy(chr + 1, "\\\\"); break;
         default:
             if (value < 32 || value == 127) {
                 printf("eval: chr() does not work with certain control and escape characters\n");
-                SAFE_FREE(buff);
+                SAFE_FREE(chr);
                 return NULL;
             }
-            buff[1] = (char)value;
-            buff[2] = '\0';
+            chr[1] = (char)value;
+            chr[2] = '\0';
             break;
     }
 
-    int32_t len = (buff[2] == '\0') ? 2 : 3;
-    buff[len] = '\'';
-    buff[len + 1] = '\0';
+    int32_t len = (chr[2] == '\0') ? 2 : 3;
+    chr[len] = '\'';
+    chr[len + 1] = '\0';
 
-    return buff;
+    return chr;
 }
 
 char *s_hex(char *operation) {
@@ -794,15 +838,14 @@ char *s_hex(char *operation) {
         return NULL;
     operation = p;
 
-    double val = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double val = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(val))
         return NULL;
-
-    if (val == (double)U64_NAN) {
-        putchar('\n');
-        return NULL;
-    }
 
     if (val != (int64_t)val) {
         printf("eval: hex() requires an integer!\n");
@@ -823,7 +866,7 @@ char *s_hex(char *operation) {
 
     for (uint16_t i = 3; buffer[i]; i++)
         buffer[i] = toupper((unsigned char)buffer[i]);
-
+    
     return buffer;
 }
 
@@ -833,15 +876,14 @@ char *s_bin(char *operation) {
         return NULL;
     operation = p;
 
-    double val = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double val = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(val))
         return NULL;
-
-    if (val == (double)U64_NAN) {
-        putchar('\n');
-        return NULL;
-    }
 
     if (val != (int64_t)val) {
         printf("Bin: bin() requires an integer!\n");
@@ -892,15 +934,14 @@ double s_trunc(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     return trunc(num);
 }
@@ -911,15 +952,14 @@ double s_rad(char *operation) {
         return NAN;
     operation = p;
 
-    double deg = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double deg = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(deg))
         return NAN;
-
-    if (deg == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     return DEG_TO_RAD(deg);
 }
@@ -930,15 +970,14 @@ double s_gon(char *operation) {
         return NAN;
     operation = p;
 
-    double deg = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double deg = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(deg))
-        return NAN;
-
-    if (deg == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
+        return NAN;  
 
     return RAD_TO_GON(deg);
 }
@@ -949,15 +988,14 @@ double s_deg(char *operation) {
         return NAN;
     operation = p;
 
-    double rad = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double rad = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(rad))
         return NAN;
-
-    if (rad == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return RAD_TO_DEG(rad);
 }
@@ -968,15 +1006,14 @@ double s_sqrt(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     if (num < 0) {
         puts("eval: sqrt() requires a non negative!");
@@ -992,15 +1029,14 @@ double s_scale(char *operation) {
         return NAN;
     operation = p;
 
-    double value = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double value = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(value))
         return NAN;
-
-    if (value == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     if (isnan(value) || isinf(value)) {
         return 0;
@@ -1030,18 +1066,17 @@ double s_sin(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
 
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
-
     double result = sin(num);
-    
+
     if (fabs(result) < 1e-6)
         result = 0.0;
 
@@ -1054,16 +1089,15 @@ double s_asin(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
 
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
-    
     if (num < -1.0 || num > 1.0) {
         puts("eval: asin() is defined only for -1 <= x <= 1");
         return NAN;
@@ -1078,15 +1112,14 @@ double s_cot(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     double t = tan(num);
 
@@ -1104,15 +1137,14 @@ double s_acot(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return PI / 2.0 - atan(num);
 }
@@ -1123,15 +1155,14 @@ double s_cos(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     double result = cos(num);
 
@@ -1147,15 +1178,14 @@ double s_acos(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     if (num < -1.0 || num > 1.0) {
         puts("eval: acos() is defined only for -1 <= x <= 1");
@@ -1171,15 +1201,14 @@ double s_tan(char *operation) {
         return NAN;
     operation = p;
 
-    double angle = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double angle = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(angle))
         return NAN;
-
-    if (angle == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     double modPi = fmod(fabs(angle), PI);
     if (fabs(modPi - PI / 2.0) < 1e-8) {
@@ -1201,15 +1230,14 @@ double s_atan(char *operation) {
         return NAN;
     operation = p;
 
-    double angle = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double angle = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(angle))
         return NAN;
-
-    if (angle == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     return atan(angle);
 }
@@ -1220,15 +1248,14 @@ double s_ln(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     return log(num);
 }
@@ -1239,15 +1266,14 @@ double s_log10(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     return log10(num);
 }
@@ -1258,15 +1284,14 @@ double s_log2(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }    
 
     return log2(num);
 }
@@ -1298,25 +1323,23 @@ double s_root(char *operation) {
     trim(indexStr);
     trim(rootingStr);
 
-    double index = eval(indexStr, true);
+    char *tmp1 = eval(indexStr, true);
+
+    double index = h_atof(tmp1, true);
+
+    SAFE_FREE(tmp1);
 
     if (isnan(index))
         return NAN;
 
-    if (index == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }  
-    
-    double rooting = eval(rootingStr, true);
+    char *tmp3 = eval(rootingStr, true);
+
+    double rooting = h_atof(tmp3, true);
+
+    SAFE_FREE(tmp3);
 
     if (isnan(rooting))
         return NAN;
-
-    if (rooting == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
 
     bool invert = false;
 
@@ -1381,17 +1404,20 @@ double s_bmi(char *operation) {
     trim(weightStr);
     trim(heightStr);
 
-    double weight = eval(weightStr, true);
+    char *tmp1 = eval(weightStr, true);
+
+    double weight = h_atof(tmp1, true);
+
+    SAFE_FREE(tmp1);
 
     if (isnan(weight))
         return NAN;
 
-    if (weight == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }  
-    
-    double height = eval(heightStr, true);
+    char *tmp2 = eval(heightStr, true);
+
+    double height = h_atof(tmp2, true);
+
+    SAFE_FREE(tmp2);
 
     if (isnan(height))
         return NAN;
@@ -1431,17 +1457,20 @@ double s_log(char *operation) {
     trim(baseStr);
     trim(numStr);
 
-    double base = eval(baseStr, true);
+    char *tmp1 = eval(baseStr, true);
+
+    double base = h_atof(tmp1, true);
+
+    SAFE_FREE(tmp1);
 
     if (isnan(base))
         return NAN;
 
-    if (base == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }  
+    char *tmp2 = eval(numStr, true);
 
-    double num = eval(numStr, true);
+    double num = h_atof(tmp2, true);
+
+    SAFE_FREE(tmp2);
 
     if (isnan(num))
         return NAN;
@@ -1493,31 +1522,31 @@ double s_randFloat(char *operation) {
 
     if (strcasecmp(str_max, "rand_max") == 0)
         maxLf = (double)RAND_MAX;
-    else 
-        maxLf = eval(str_max, true);
+    else {
+        char *buff = eval(str_max, true);
+
+        maxLf = h_atof(buff, true);
+
+        SAFE_FREE(buff);
+    }
 
     if (isnan(maxLf)) {
         return NAN;
     }
 
-    if (maxLf == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }  
-
     if (strcasecmp(str_min, "rand_max") == 0)
         minLf = (double)RAND_MAX;
-    else 
-        minLf = eval(str_min, true);
+    else {
+        char *buff = eval(str_min, true);
+
+        minLf = h_atof(buff, true);
+
+        SAFE_FREE(buff);
+    }
 
     if (isnan(minLf)) {
         return NAN;
     }
-
-    if (minLf == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }  
 
     return random_range_float(minLf, maxLf);
 }
@@ -1556,30 +1585,30 @@ double s_randInt(char *operation) {
 
     if (strcasecmp(str_max, "rand_max") == 0)
         maxInt = (double)RAND_MAX;
-    else 
-        maxInt = eval(str_max, true);
+    else {
+        char *buff = eval(str_max, true);
+
+        maxInt = h_atof(buff, true);
+
+        SAFE_FREE(buff);
+    }
 
     if (isnan(maxInt))
         return NAN;
 
-    if (maxInt == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }  
-
     if (strcasecmp(str_min, "rand_max") == 0)
         minInt = (double)RAND_MAX;
-    else 
-        minInt = eval(str_min, true);
+    else {
+        char *buff = eval(str_min, true);
+
+        minInt = h_atof(buff, true);
+
+        SAFE_FREE(buff);
+    }
 
     if (isnan(minInt)) {
         return NAN;
     }
-
-    if (minInt == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }  
 
     if (minInt != (int64_t)minInt || maxInt != (int64_t)maxInt) {
         printf("eval: rand() requires an integer!\n");
@@ -1595,18 +1624,16 @@ double s_floor(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
 
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }   
-
-    double result = floor(num);
-    return result;
+    return floor(num);
 }
 
 double s_ceil(char *operation) {
@@ -1615,15 +1642,14 @@ double s_ceil(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }   
 
     return ceil(num);
 }
@@ -1634,15 +1660,14 @@ double s_round(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }   
 
     return round(num);
 }
@@ -1678,15 +1703,14 @@ double s_isprime(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }   
 
     if (num <= 1) {
         printf("eval: isprime() requires a number greater than 1\n");
@@ -1760,17 +1784,15 @@ double s_fact(char *operation) {
         return NAN;
     }
 
-    double num = eval(test, true);
+    char *buff = eval(test, true);
 
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
     SAFE_FREE(test);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }   
 
     if (num < 0) {
         printf("eval: cannot factor negative values\n");
@@ -1791,15 +1813,14 @@ double s_sign(char *operation) {
         return NAN;
     operation = p;
 
-    double num = eval(operation, true);
+    char *buff = eval(operation, true);
+
+    double num = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }   
 
     if (num > 0.0)
         return 1.0;
@@ -1861,39 +1882,33 @@ double s_sum(char *operation) {
     if (diffStr)
         trim(diffStr);
 
-    double init = eval(initStr, true);
+    char *tmp1 = eval(initStr, true);
+
+    double init = h_atof(tmp1, true);
+
+    SAFE_FREE(tmp1);
 
     if (isnan(init))
         return NAN;
 
-    if (init == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }   
+    char *tmp2 = eval(endStr, true);
 
-    double end  = eval(endStr, true);
+    double end = h_atof(tmp2, true);
+
+    SAFE_FREE(tmp2);
 
     if (isnan(end)) 
         return NAN;
 
-    if (end == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }   
-
     char defaultDiff[] = "1";
-    double diff = eval(diffStr ? diffStr : defaultDiff, true);
+    char *tmp3 = eval(diffStr ? diffStr : defaultDiff, true);
+
+    double diff = h_atof(tmp3, true);
+
+    SAFE_FREE(tmp3);
 
     if (isnan(diff))
         return NAN;
 
-
-    if (diff == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
-
-    double result = gauss_range_double(init, end, diff);
-
-    return result;
+    return gauss_range_double(init, end, diff);
 }

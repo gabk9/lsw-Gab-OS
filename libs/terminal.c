@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.65"
+#define VERSION "r2.1.90"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -255,7 +255,11 @@ void sleepCmd(char *instruction) {
     }
 
     double time;
-    time = eval(instruction, true);
+    char *buff = eval(instruction, true);
+
+    time = h_atof(buff, true);
+
+    SAFE_FREE(buff);
 
     if (isnan(time) || time == (double)U64_NAN)
         return;
@@ -501,7 +505,7 @@ void clearHistoryCmd(const char *path) {
 
 void bcCmd(uint16_t argc, char **argv) {
     setup_console();
-    double result;
+    char *result;
     uint8_t appear = 0;
 
     uint8_t flags = 0;
@@ -549,7 +553,7 @@ void bcCmd(uint16_t argc, char **argv) {
         return;
     }
 
-    Ans = NAN;
+    Ans = NULL;
     while (true) {
         if (!appear) {
             if (!quiet) {
@@ -566,7 +570,6 @@ void bcCmd(uint16_t argc, char **argv) {
 
 
         appear = 1;
-        result = NAN;
 
         fgets(operation, MAX_CHAR, stdin);
         operation[strcspn(operation, "\n")] = '\0';
@@ -600,73 +603,19 @@ void bcCmd(uint16_t argc, char **argv) {
             continue;
 
         }
-        else if (mathlib && validStrBcFuncException(operation, "hex")) {
-            char *value = s_hex(operation);
-            if (value) {
-                printf("%s\n\n", value);
-                Ans = h_atof(value, false);
-                fflush(stdout);
-            } else {
-                putchar('\n');
-                Ans = NAN;
-            }
-
-            SAFE_FREE(value);
-            continue;
-        }
-        else if (mathlib && validStrBcFuncException(operation, "oct")) {
-            char *value = s_oct(operation);
-            if (value) {
-                printf("%s\n\n", value);
-                Ans = h_atof(value, false);
-                fflush(stdout);
-            } else {
-                putchar('\n');
-                Ans = NAN;
-            }
-
-            SAFE_FREE(value);
-            continue;
-        }
-        else if (mathlib && validStrBcFuncException(operation, "bin")) {
-            char *value = s_bin(operation);
-            if (value) {
-                printf("%s\n\n", value);
-                Ans = h_atof(value, false);
-                fflush(stdout);
-            } else {
-                putchar('\n');
-                Ans = NAN;
-            }
-
-            SAFE_FREE(value);
-            continue;
-        }
-        else if (mathlib && validStrBcFuncException(operation, "chr")) {
-            char *value = s_chr(operation);
-            if (value) {
-                printf("%s\n\n", value);
-                Ans = h_atof(value, false);                
-                fflush(stdout);
-            } else {
-                putchar('\n');
-                Ans = NAN;
-            }
-
-            SAFE_FREE(value);
-            continue; 
-        }
 
         result = eval(operation, mathlib);        
-        Ans = (result == (double)U64_NAN) ? NAN : result;
+        Ans = result;
 
-        if (!isnan(result) && result != (double)U64_NAN)
-            printf("%g\n\n", result);
-        if (isnan(result) || result == (double)U64_NAN)
+        if (result)
+            printf("%s\n\n", result);
+        else
             putchar('\n');
 
         fflush(stdout);
     }
+
+    SAFE_FREE(result);
     SAFE_FREE(operation);
 }
 
@@ -826,8 +775,11 @@ void historyCmd(char *operation, const char *path) {
         return;
     }
 
-    double num;
-    num = eval(operation, true);
+    char *tmp = eval(operation, true);
+
+    double num = h_atof(tmp, true);
+
+    SAFE_FREE(tmp);
 
     if (isnan(num) || num == (double)U64_NAN) {
         SAFE_FCLOSE(f);
@@ -1637,7 +1589,8 @@ void updatehistory(void) {
         "r2.1.38 - small changes\n\tEdited: renamed the angles functions\n",
         "r2.1.54 - big changes\n\tRemoved: string multiplication with echo and touch\n\tAdded: support to escape characters to lsw, and bc of course\n",
         "r2.1.62 - small changes\n\tEdited: improved the escape characters parser in bc and you can now use the '\\0' character\n",
-        "r2.1.65 - minor changes\n\tFixed: seg-fault fixed, now the bc is a slightly safer\n"
+        "r2.1.65 - minor changes\n\tFixed: seg-fault fixed, now the bc is a slightly safer\n",
+        "r2.1.90 - huge changes\n\tEdited: changing the whole eval from double to char *, later I will add full support to strings to Bc\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

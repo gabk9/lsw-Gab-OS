@@ -26,6 +26,7 @@
 
 bool isprime(int64_t n);
 uint64_t fact(int64_t num, int32_t steps);
+double h_atof(const char *str, bool mathlib);
 double tetration(double base, int32_t height);
 double s_ln(char *operation)__attribute__((nonnull));
 char *s_chr(char *operation)__attribute__((nonnull));
@@ -75,7 +76,6 @@ double s_randFloat(char *operation)__attribute__((nonnull));
 double s_fabs_or_abs(char *operation)__attribute__((nonnull));
 int64_t parseBinToInt(const char *str)__attribute__((nonnull));
 uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
-double h_atof(const char *str, bool mathlib)__attribute__((nonnull(1)));
 
 #define DEG_TO_RAD(x) ((x) * (PI / 180.0))
 #define RAD_TO_DEG(x) ((x) * (180.0 / PI))
@@ -102,7 +102,7 @@ static inline uint32_t better_rand32(void) {
 
 static inline double gauss_range_double(double a, double b, double d) {
     if (d == 0.0) {
-        puts("Error: step value cannot be zero\n");
+        puts("Error: step value cannot be zero");
         return NAN;
     }
 

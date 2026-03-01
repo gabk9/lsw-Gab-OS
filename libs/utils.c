@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8500
-#define PROJ_SIZE_APPROX_BYTES 248500
+#define PROJ_LINES_APPROX 8600
+#define PROJ_SIZE_APPROX_BYTES 249500
 
 #define RC_FILE "lswrc.txt"
 
@@ -825,7 +825,12 @@ double parse_len(char *s) {
             s++;
     }
 
-    return eval(s, true);
+    char *buff = eval(s, true);
+
+    double len = h_atof(buff, true);
+    SAFE_FREE(buff);
+
+    return len;
 }
 
 char randChr(void) {
@@ -2273,9 +2278,17 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     else if (strcasecmp(cpy + pos, "e") == 0)
         mult = E;
     else if (strcasecmp(cpy + pos, "ans") == 0) {
-        if (isnan(Ans))
+        if (!Ans) {
             puts("Warning: Ans is undefined");
-        mult = Ans;
+            return NAN;
+        }
+
+        if (*Ans == '"' && Ans[strlen(Ans)-1] == '"') {
+            printf("eval: to use juxtaposition operations it must be a number\n");
+            return NAN;
+        }
+
+        mult = h_atof(Ans, true);
     } else {
         SAFE_FREE(cpy);
         return 0.0;
@@ -2424,7 +2437,7 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
     return -1;
 }
 
-double eval(char *operation, bool mathlib) {
+char *eval(char *operation, bool mathlib) {
     FuncEntry math_table[] = {
         {"scale",   s_scale,       RET_INT},
         {"sqrt",    s_sqrt,        RET_FLOAT},
@@ -2503,7 +2516,7 @@ double eval(char *operation, bool mathlib) {
                 break;
         }
 
-        return NAN;
+        return NULL;
     }
 
     return parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);

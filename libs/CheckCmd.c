@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-double Ans = NAN;
+char *Ans = NULL;
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1135,7 +1135,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
     SAFE_FREE(temp);
 }
 
-double parse_operation(char *operation, FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
+char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
     char op[0x4] = {0};
 
     while (is_wrapped_by_parentheses(operation)) {
@@ -1151,34 +1151,84 @@ double parse_operation(char *operation, FuncEntry *functions, size_t funcCount, 
     );
 
     if (op_pos == -1) {
+
+        if (Ans && strcasecmp(operation, "ans") == 0) {
+            if (*Ans == '"' && Ans[strlen(Ans)-1] == '"')
+                return Ans;
+        }
+
         char *paren = strchr(operation, '(');
 
         if (!paren) {
-            return h_atof(operation, mathlib);
+            const size_t bytes = 0x180;
+            char *buff = malloc(bytes);
+
+            if (!buff) {
+                printf("eval: memory allocation error\n");
+                return NULL;
+            }
+
+            double num = h_atof(operation, mathlib);
+
+            if (isnan(num))
+                return NULL;
+
+            snprintf(buff, bytes, "%g", num);
+            return buff;
         }
 
         char name[0x100] = {0};
 
         ssize_t parenthesis_index = strchar(operation, '(');
-        if (parenthesis_index == -1)
-            return h_atof(operation, mathlib);
+        if (parenthesis_index == -1) {
+            const size_t bytes = 0x180;
+            char *buff = malloc(bytes);
+
+            if (!buff) {
+                printf("eval: memory allocation error\n");
+                return NULL;
+            }
+
+            double num = h_atof(operation, mathlib);
+
+            if (isnan(num))
+                return NULL;
+
+            snprintf(buff, bytes, "%g", num);
+            return buff;
+        }
 
         memcpy(name, operation, parenthesis_index);
         name[parenthesis_index] = '\0';
 
         trimEnd(name);
 
-        if (*operation == '~' || *operation == '-')
-            return h_atof(operation, mathlib);
+        if (*operation == '~' || *operation == '-') {
+            const size_t bytes = 0x180;
+            char *buff = malloc(bytes);
+
+            if (!buff) {
+                printf("eval: memory allocation error\n");
+                return NULL;
+            }
+
+            double num = h_atof(operation, mathlib);
+
+            if (isnan(num))
+                return NULL;
+
+            snprintf(buff, bytes, "%g", num);
+            return buff;
+        }
 
         if (!*name || operation[strlen(operation)-1] != ')') {
             printf("eval: invalid syntax\n");
-            return NAN;
+            return NULL;
         }
 
         if (!isValidBcFuncName(name)) {
             printf("eval: invalid function name: '%s()'\n", name);
-            return NAN;
+            return NULL;
         }
 
         if (mathlib) {
@@ -1186,24 +1236,39 @@ double parse_operation(char *operation, FuncEntry *functions, size_t funcCount, 
                 if (strcmp(name, functions[i].name) == 0) {
 
                     if (functions[i].func != NULL) {
-                        return functions[i].func(operation);
+                        const size_t bytes = 0x180;
+                        char *buff = malloc(bytes);
+
+                        if (!buff) {
+                            printf("eval: memory allocation error\n");
+                            return NULL;
+                        }
+
+                        double num = functions[i].func(operation);
+
+                        if (isnan(num))
+                            return NULL;
+
+                        snprintf(buff, bytes, "%g", num);
+                        return buff;
                     }
 
-                    if (functions[i].returnType == RET_CHAR) {
+                    if (functions[i].returnType == RET_STRING || functions[i].returnType == RET_CHAR) {
                         if (strcmp(name, "chr") == 0)
-                            return parse_str_func(operation, functions[i]);
-                    }
-
-                    if (functions[i].returnType == RET_STRING) {
-                        printf("eval: %s() is of type string, cannot operate with this function\n", name);
-                        return NAN;
+                            return s_chr(operation);
+                        else if (strcmp(name, "hex") == 0)
+                            return s_hex(operation);
+                        else if (strcmp(name, "bin") == 0)
+                            return s_bin(operation);
+                        else if (strcmp(name, "oct") == 0)
+                            return s_oct(operation);
                     }
                 }
             }
         }    
 
         printf("eval: undefined function: '%s()'\n", name);
-        return NAN;
+        return NULL;
     }
 
     char buffer[0x100];
@@ -1220,18 +1285,41 @@ double parse_operation(char *operation, FuncEntry *functions, size_t funcCount, 
 
     if (!*num1 || !*num2) {
         printf("eval: invalid syntax\n");
-        return NAN;
+        return NULL;
     }
 
-    double num1_double = eval(num1, mathlib);
+    char *tmp1 = eval(num1, mathlib);
+
+    double num1_double = h_atof(tmp1, mathlib);
+
+    SAFE_FREE(tmp1);
 
     if (isnan(num1_double))
-        return NAN;
+        return NULL;
 
-    double num2_double = eval(num2, mathlib);
+    char *tmp2 = eval(num2, mathlib);
+
+    double num2_double = h_atof(tmp2, mathlib);
+
+    SAFE_FREE(tmp2);
 
     if (isnan(num2_double))
-        return NAN;
+        return NULL;
 
-    return calc(num1_double, op, num2_double, mathlib);
+
+    const size_t bytes = 0x180;
+    char *buff = malloc(bytes);
+
+    if (!buff) {
+        printf("eval: memory allocation error\n");
+        return NULL;
+    }
+
+    double num = calc(num1_double, op, num2_double, mathlib);
+
+    if (isnan(num))
+        return NULL;
+
+    snprintf(buff, bytes, "%g", num);
+    return buff;
 }
