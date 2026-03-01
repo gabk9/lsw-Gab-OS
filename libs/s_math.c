@@ -1487,11 +1487,6 @@ double s_bmi(char *operation) {
     if (isnan(height))
         return NAN;
 
-    if (height == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }
-
     return BMI(weight, height);
 }
 
@@ -1539,11 +1534,6 @@ double s_log(char *operation) {
 
     if (isnan(num))
         return NAN;
-
-    if (num == (double)U64_NAN) {
-        putchar('\n');
-        return NAN;
-    }  
 
     if (base <= 1 || num <= 0) {
         printf("eval: invalid values for log()\n");

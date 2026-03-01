@@ -193,9 +193,6 @@ char *randstrCmd(char *instruction) {
     if (isnan(len))
         return NULL;
 
-    if (len == (double)U64_NAN)
-        return NULL;
-
     if (len <= 0 || len >= 65536) {
         printf("randstr: length must be > 0 and < 65536\n");
         return NULL;
@@ -261,7 +258,7 @@ void sleepCmd(char *instruction) {
 
     SAFE_FREE(buff);
 
-    if (isnan(time) || time == (double)U64_NAN)
+    if (isnan(time))
         return;
 
     time *= unit;
@@ -815,7 +812,7 @@ void historyCmd(char *operation, const char *path) {
 
     SAFE_FREE(tmp);
 
-    if (isnan(num) || num == (double)U64_NAN) {
+    if (isnan(num)) {
         SAFE_FCLOSE(f);
         return;
     }
