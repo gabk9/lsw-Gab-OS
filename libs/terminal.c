@@ -1386,7 +1386,7 @@ void updatehistory(void) {
         "b0.5.85 - small changes\n\tEdited: now on windows you can generate 32bit numbers with rand command, or rand() in the calculator\n",
         "b0.5.90 - small changes\n\tEdited: now the calculator supports hex and octal numbers\n",
         "b0.6.00 - small changes\n\tAdded: hex(), int() and oct() to the calculator\n",
-        "b0.6.07 - minor changes\n\tEdited: now echo and touch supports hex and oct numbers and the calculator was improved\n\n"
+        "b0.6.07 - minor changes\n\tEdited: now echo and touch supports hex and oct numbers and the calculator was improved\n\n",
         "b0.6.15 - big changes\n\tEdited: improved ls command\n",
         "b0.6.18 - small changes\n\tEdited: improved functionHandler()\n",
         "b0.6.21 - minor changes\n\tEdited: improved echoCmd() and touchCmd()\n",

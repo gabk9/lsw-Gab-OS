@@ -588,18 +588,22 @@ double bc_len(char *operation) {
     if (!validPtrFuncArgs(operation))
         return NAN;
 
-    if (!injectEscape(operation, "eval"))
+    char *buff = eval(operation, true);
+
+    if (!injectEscape(buff, "eval"))
         return NAN;
 
-    len = strlen(operation);
+    len = strlen(buff);
 
-    if (operation[len-1] == '"') {
-        operation[len-1] = '\0';
+    if (buff[len-1] == '"') {
+        buff[len-1] = '\0';
         len--;
-    } if (*operation == '"') {
-        memmove(operation, operation+1, len+1);
+    } if (*buff == '"') {
+        memmove(buff, buff+1, len+1);
         len--;
     }
+
+    SAFE_FREE(buff);
 
     return (double)len;
 }
