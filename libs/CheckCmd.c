@@ -1304,6 +1304,23 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
             }
         }
 
+        if (operation[strlen(operation)-1] == '!') {
+            double result = s_fact(operation);
+
+            if (isnan(result))
+                return NULL;
+
+            char *tmp = malloc(0x100);
+
+            if (!tmp) {
+                printf("eval: memory allocation error\n");
+                return NULL;
+            }
+
+            snprintf(tmp, 0x100, "%lf", result);
+            return tmp;
+        }
+
         if (close_index == -1 || operation[close_index + 1] != '\0') {
             printf("eval: invalid syntax\n");
             return NULL;

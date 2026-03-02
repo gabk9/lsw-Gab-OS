@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.31"
+#define VERSION "r2.1.39"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -616,17 +616,7 @@ void bcCmd(uint16_t argc, char **argv) {
             break;
         }
 
-        size_t len = strlen(result);
-        bool is_numeric_string = true;
-        for (size_t i = 0; i < len; i++) {
-            if (!isdigit((unsigned char)result[i]) &&
-                result[i] != '.' &&
-                result[i] != '-' &&
-                result[i] != '+') {
-                is_numeric_string = false;
-                break;
-            }
-        }
+        bool is_numeric_string = isalldigit(result);
 
         if (is_numeric_string) {
             double num = atof(result);
@@ -1624,7 +1614,8 @@ void updatehistory(void) {
         "r2.1.90 - huge changes\n\tEdited: changing the whole eval from double to char *, later I will add full support to strings to Bc\n",
         "r2.2.17 - huge changes\n\tAdded: strings are now fully supported on bc, and also added int(), float() and str() functions (it may have some bugs which with further testing will soon be fixed)\n",
         "r2.2.25 - small changes\n\tFixed: a seg-fault caused by the format i chose to print the numbers on the strings\n",
-        "r2.2.31 - small changes\n\tFixed: a a another seg-fault caused by NULL pointers, and also fixed some lost pointers\n"
+        "r2.2.31 - small changes\n\tFixed: a a another seg-fault caused by NULL pointers, and also fixed some lost pointers\n",
+        "r2.2.39 - small changes\n\tFixed: factorial is now working with parenthesis again\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
