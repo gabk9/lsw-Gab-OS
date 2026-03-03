@@ -197,7 +197,6 @@ double parse_base_fraction(const char *s, int8_t base);
 int16_t injectEscape(char *str, const char *error_str);
 uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
-bool validStrBcFuncException(char *str, char *funcname);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
 bool isBetweenQuotes(const char *action, int16_t quoteMode);
 bool isKeyRepeated(char *data_folder, const char *key_name);

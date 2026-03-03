@@ -162,58 +162,6 @@ uint32_t getFileLength(FILE *stream) {
     return size;
 }
 
-bool validStrBcFuncException(char *str, char *funcname) {
-    char *test = strdup(str);
-    if (!test) return false;
-
-    charRm(test, ' ');
-
-    size_t fn_len = strlen(funcname);
-
-    if (strncmp(test, funcname, fn_len) != 0) {
-        SAFE_FREE(test);
-        return false;
-    }
-
-    if (test[fn_len] != '(') {
-        SAFE_FREE(test);
-        return false;
-    }
-
-    int32_t depth = 0;
-    int32_t closing_index = -1;
-
-    for (size_t i = fn_len; test[i]; i++) {
-        if (test[i] == '(')
-            depth++;
-        else if (test[i] == ')') {
-            depth--;
-            if (depth == 0) {
-                closing_index = (int32_t)i;
-                break;
-            }
-        }
-
-        if (depth < 0) {
-            SAFE_FREE(test);
-            return false;
-        }
-    }
-
-    if (depth != 0) {
-        SAFE_FREE(test);
-        return false;
-    }
-
-    if (closing_index != (int32_t)strlen(test) - 1) {
-        SAFE_FREE(test);
-        return false;
-    }
-
-    SAFE_FREE(test);
-    return true;
-}
-
 bool isBcVariable(const char *str, bool *shouldError) {
     *shouldError = true;
 
