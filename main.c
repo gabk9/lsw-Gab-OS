@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
     #define rmdir _rmdir
-    #define chdir _chdir
+    #define chdir _chdir'
     #define getcwd _getcwd
     HANDLE hConsole;
 #elif !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)

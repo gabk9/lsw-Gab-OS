@@ -537,44 +537,35 @@ char *bc_parse_str(char *operation) {
 }
 
 double bc_parse(char *operation) {
-    bool enablePrecision = strncmp(operation, "float", 4) == 0;
+
+    bool enablePrecision = strncmp(operation, "float", 5) == 0;
 
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
+
     operation = p;
 
-    size_t len = strlen(operation);
-
-    if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
-        printf("eval: %s() requires exactly 1 argument\n", enablePrecision ? "float" : "int");
+    if (countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
+        printf("eval: %s() requires exactly 1 argument\n",
+                enablePrecision ? "float" : "int");
         return NAN;
     }
 
     char *buff = eval(operation, true);
-    len = strlen(operation);
-
-
-    bool isNumeric = true;
-    if (*buff == '"' && len > 1) {
-        memmove(buff, buff+1, len+1);
-        isNumeric = false;
-    }
-        
-    len = strlen(buff);
-    if (len > 1&& buff[len-1] == '"') {
-        buff[len-1] = '\0';
-        isNumeric = false;
-    }
+    if (!buff)
+        return NAN;
 
     double num;
-    if (isNumeric)
+
+    if (isBetweenQuotes(buff, 2)) {
+        size_t len = strlen(buff);
+        memmove(buff, buff + 1, len - 2);
+        buff[len-2] = '\0';
         num = h_atof(buff, true);
-    else {
-        char *tmp = eval(buff, true);
-        num = h_atof(tmp, true);
-        SAFE_FREE(tmp);
-    }
+    } else
+        num = h_atof(buff, true);
+
     SAFE_FREE(buff);
 
     if (isnan(num))

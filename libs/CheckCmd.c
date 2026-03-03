@@ -159,7 +159,7 @@ void checkLswrcSyntax(char *data_folder) {
                 exit(EXIT_FAILURE);
             }
 
-            if (!isBetweenQuotes(action)) {
+            if (!isBetweenQuotes(action, 2)) {
                 fprintf(stderr, "alias: the action should be between quotes, and it must be equal\n");
                 SAFE_FREE(lineCpy);
                 SAFE_FREE(secondCpy);

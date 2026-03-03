@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8800
-#define PROJ_SIZE_APPROX_BYTES 256000
+#define PROJ_SIZE_APPROX_BYTES 255500
 
 #define RC_FILE "lswrc.txt"
 
@@ -217,7 +217,7 @@ bool validStrBcFuncException(char *str, char *funcname) {
 bool isBcVariable(const char *str, bool *shouldError) {
     *shouldError = true;
 
-    if (isBetweenQuotes(str)) {
+    if (isBetweenQuotes(str, 2)) {
         *shouldError = false;
         return false;
     }
@@ -1860,15 +1860,31 @@ char *findFirstEqualOutsideQuotes(char *s) {
     return NULL;
 }
 
-bool isBetweenQuotes(const char *action) {
+bool isBetweenQuotes(const char *action, int16_t quoteMode) {
+
+    if (!action)
+        return false;
+
+    if (quoteMode < 0 || quoteMode > 2)
+        return false;
+
     size_t len = strlen(action);
 
     if (len < 2)
         return false;
 
-    if ((*action == '\'' && action[len-1] == '\'') ||
-        (*action == '\"' && action[len-1] == '\"'))
-        return true;
+    char first = *action;
+    char last  = action[len-1];
+
+    switch (quoteMode) {
+        case 0:
+            return first == '\'' && last == '\'';
+        case 1:
+            return first == '"' && last == '"';
+        case 2:
+            return (first == '\'' && last == '\'') ||
+                    (first == '"'  && last == '"');
+    }
 
     return false;
 }
@@ -1916,7 +1932,7 @@ void createShortcut(char *instruction, char *path) {
 
     size_t len = strlen(action);
     
-    if (!isBetweenQuotes(action)) {
+    if (!isBetweenQuotes(action, 2)) {
         puts("Error: the action should be between quotes, and it must be equal, use \"man alias\" to check the manual");
         SAFE_FREE(alias);
         return;
