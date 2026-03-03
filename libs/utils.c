@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define PROJ_LINES_APPROX 8800
-#define PROJ_SIZE_APPROX_BYTES 255500
+#define PROJ_SIZE_APPROX_BYTES 255000
 
 #define RC_FILE "lswrc.txt"
 
@@ -2332,28 +2332,6 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     
     SAFE_FREE(cpy);
     return sign * value * mult;
-}
-
-bool has_top_level_operator(const char *s, const char *uniOps, const char **multiOps) {
-    int32_t depth = 0;
-
-    for (int32_t i = 0; s[i]; i++) {
-        if (s[i] == '(') depth++;
-        else if (s[i] == ')') depth--;
-
-        if (depth == 0) {
-            for (int32_t j = 0; multiOps[j]; j++) {
-                int32_t len = strlen(multiOps[j]);
-                if (strncmp(&s[i], multiOps[j], len) == 0)
-                    return true;
-            }
-
-            if (strchr(uniOps, s[i]))
-                return true;
-        }
-    }
-
-    return false;
 }
 
 bool is_wrapped_by_parentheses(const char *s) {

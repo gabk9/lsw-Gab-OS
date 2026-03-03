@@ -213,7 +213,6 @@ void split_instruction_args(char *line, char **out_cmd, char **out_args);
 __attribute__((format(printf, 1, 4)))
 void printc(const char *str, enum color4 initColor, enum color4 resetColor, ...);
 
-bool has_top_level_operator(const char *s, const char *uniOps, const char **multiOps);
 void printTarg(const char *str, const char *targ, enum color4 markColor, int8_t ignoreCase);
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp);
 void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint16_t data_size, char *history_path, uint16_t hist_size);
