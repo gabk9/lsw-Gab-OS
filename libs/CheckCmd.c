@@ -1167,8 +1167,10 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
     if (op_pos == -1) {
 
         if (Ans && strcasecmp(operation, "ans") == 0) {
-            if (*Ans == '"' && Ans[2] == '"' && Ans[3] == '\0')
-                return Ans;
+            size_t ansEnd = strlen(Ans) - 1;
+            if (*Ans == '"' && Ans[ansEnd] == '"') {
+                return strdup(Ans);
+            }
         }
 
         char *paren = strchr(operation, '(');
