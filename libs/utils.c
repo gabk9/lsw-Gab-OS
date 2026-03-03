@@ -2476,8 +2476,7 @@ char *eval(char *operation, bool mathlib) {
         {"len",     bc_len,        RET_INT},
         {"feet",    s_feet,        RET_FLOAT},
         {"meter",   s_meter,       RET_FLOAT},
-        {"abs",     s_fabs_or_abs, RET_INT},
-        {"fabs",    s_fabs_or_abs, RET_FLOAT},
+        {"abs",     s_abs,         RET_FLOAT},
         {"int",     bc_parse,      RET_INT},
         {"float",   bc_parse,      RET_FLOAT},
         {"str",     NULL,          RET_STRING}, // special case

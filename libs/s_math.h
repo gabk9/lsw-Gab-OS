@@ -45,6 +45,7 @@ double s_sin(char *operation)__attribute__((nonnull));
 double s_cot(char *operation)__attribute__((nonnull));
 double s_sum(char *operation)__attribute__((nonnull));
 double s_rad(char *operation)__attribute__((nonnull));
+double s_abs(char *operation)__attribute__((nonnull));
 double s_gon(char *operation)__attribute__((nonnull));
 double s_deg(char *operation)__attribute__((nonnull));
 double s_acos(char *operation)__attribute__((nonnull));
@@ -74,7 +75,6 @@ double parse_str_func(char *operation, FuncEntry function);
 char *find_top_level_comma(char *s)__attribute__((nonnull));
 char *bc_parse_str(char *operation)__attribute__((nonnull));
 double s_randFloat(char *operation)__attribute__((nonnull));
-double s_fabs_or_abs(char *operation)__attribute__((nonnull));
 int64_t parseBinToInt(const char *str)__attribute__((nonnull));
 uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
 

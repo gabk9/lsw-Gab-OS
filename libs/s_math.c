@@ -626,8 +626,7 @@ double bc_len(char *operation) {
     return (double)len;
 }
 
-double s_fabs_or_abs(char *operation) {
-    bool enable_single_point = *operation == 'f';
+double s_abs(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -642,14 +641,7 @@ double s_fabs_or_abs(char *operation) {
     if (isnan(value))
         return NAN;
 
-    if (!enable_single_point) {
-        if (value != (int64_t)value) {
-            printf("eval: abs() requires an integer\n");
-            return NAN;
-        }
-    }
-
-    return enable_single_point ? fabs(value) : (double)llabs((int64_t)value);
+    return fabs(value);
 }
 
 double s_miles(char *operation) {
