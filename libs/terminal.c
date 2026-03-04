@@ -632,8 +632,6 @@ void bcCmd(uint16_t argc, char **argv) {
 
         if (result)
             printf("%s\n\n", result);
-        else
-            putchar('\n');
 
         SAFE_FREE(result);
         fflush(stdout);
