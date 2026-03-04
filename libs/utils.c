@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define PROJ_LINES_APPROX 8800
-#define PROJ_SIZE_APPROX_BYTES 255000
+#define PROJ_LINES_APPROX 8700
+#define PROJ_SIZE_APPROX_BYTES 234000
 
 #define RC_FILE "lswrc.txt"
 

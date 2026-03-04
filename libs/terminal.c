@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.50"
+#define VERSION "r2.1.55"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -605,6 +605,7 @@ void bcCmd(uint16_t argc, char **argv) {
 
         if (!result) {
             putchar('\n');
+            SAFE_FREE(Ans);
             continue;
         }
 
@@ -1616,7 +1617,8 @@ void updatehistory(void) {
         "r2.2.25 - small changes\n\tFixed: a seg-fault caused by the format i chose to print the numbers on the strings\n",
         "r2.2.31 - small changes\n\tFixed: a a another seg-fault caused by NULL pointers, and also fixed some lost pointers\n",
         "r2.2.39 - small changes\n\tFixed: factorial is now working with parenthesis again\n",
-        "r2.2.50 - big changes\n\tFixed: int(), float() and ans not working with strings\n\tRemoved: fabs() from bc\n"
+        "r2.2.50 - big changes\n\tFixed: int(), float() and ans not working with strings\n\tRemoved: fabs() from bc\n",
+        "r2.2.55 small changes\n\tFixed: Ans not freeing after an error\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
