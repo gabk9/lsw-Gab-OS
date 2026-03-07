@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.85"
+#define VERSION "r2.1.93"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -569,7 +569,7 @@ void bcCmd(uint16_t argc, char **argv) {
 
         appear = 1;
 
-        printf(">>> ");
+        printc(">>> ", LIGHT_BLUE, WHITE);
         fgets(operation, MAX_CHAR, stdin);
         operation[strcspn(operation, "\n")] = '\0';
 
@@ -612,6 +612,7 @@ void bcCmd(uint16_t argc, char **argv) {
 
         SAFE_FREE(Ans);
         Ans = strdup(result);
+
         if (!Ans) {
             printf("bc: strdup failed\n");
             SAFE_FREE(result);
@@ -1621,7 +1622,8 @@ void updatehistory(void) {
         "r2.2.50 - big changes\n\tFixed: int(), float() and ans not working with strings\n\tRemoved: fabs() from bc\n",
         "r2.2.55 - small changes\n\tFixed: Ans not freeing after an error\n",
         "r2.2.80 - huge changes\n\tEdited: huge refactor on eval()\n\tAdded: support to boolean constants\n",
-        "r2.2.85 - small changes\n\tRemoved: numeric a numeric overflow error message\n\tEdited: bc prompt\n"
+        "r2.2.85 - small changes\n\tRemoved: numeric a numeric overflow error message\n\tEdited: bc prompt\n",
+        "r2.2.93 - small changes\n\tEdited: bc prompt\n\tFixed: Ans now converts true to 1 and false to 0\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

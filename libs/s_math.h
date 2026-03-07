@@ -71,11 +71,11 @@ double bc_parse(char *operation)__attribute__((nonnull));
 double s_pounds(char *operation)__attribute__((nonnull));
 double s_randInt(char *operation)__attribute__((nonnull));
 double s_isprime(char *operation)__attribute__((nonnull));
-double parse_str_func(char *operation, FuncEntry function);
 char *find_top_level_comma(char *s)__attribute__((nonnull));
 char *bc_parse_str(char *operation)__attribute__((nonnull));
 double s_randFloat(char *operation)__attribute__((nonnull));
 int64_t parseBinToInt(const char *str)__attribute__((nonnull));
+double parse_str_func(char *operation, const FuncEntry function);
 uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
 
 #define DEG_TO_RAD(x) ((x) * (PI / 180.0))

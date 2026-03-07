@@ -411,6 +411,27 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
         result = pow(num1, num2);
     }
 
+
+    else if (strcmp(operation, "^^") == 0) {
+
+        if (num2 != (int64_t)num2) {
+            printf("eval: tetration height must be an integer\n");
+            return out;
+        } else if (num2 < 0) {
+            printf("eval: tetration height must be non-negative\n");
+            return out;
+        } else if (num1 == 0.0 && num2 == 0.0) {
+            printf("eval: 0^^0 is undefined\n");
+            return out;
+        } else {
+
+            result = tetration(num1, (int32_t)num2);
+
+            if (isnan(result))
+                printf("eval: invalid input for tetration\n");
+        }
+    }
+
     else if (strcmp(operation, "<<") == 0) {
 
         if (num2 < 0 || num2 >= sizeof(uint64_t) * 8) {
@@ -1233,7 +1254,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
     SAFE_FREE(temp);
 }
 
-evalOut parse_operation(char *operation, FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
+evalOut parse_operation(char *operation, const FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
     char op[0x4] = {0};
 
     while (is_wrapped_by_parentheses(operation)) {
@@ -1249,10 +1270,20 @@ evalOut parse_operation(char *operation, FuncEntry *functions, size_t funcCount,
 
     if (op_pos == -1) {
 
-        if (Ans && strcasecmp(operation, "ans") == 0) {
-            size_t ansEnd = strlen(Ans) - 1;
-            if (*Ans == '"' && Ans[ansEnd] == '"') {
-                return (evalOut){ .type = RET_STRING, .str = strdup(Ans) };
+        if (Ans) {
+            if (strcasecmp(operation, OLD_ANSWER_STR) == 0) {
+                size_t ansEnd = strlen(Ans) - 1;
+                if (*Ans == '"' && Ans[ansEnd] == '"') {
+                    return (evalOut){ .type = RET_STRING, .str = strdup(Ans) };
+                }
+            }
+
+            if (strcasecmp(Ans, "false") == 0) {
+                SAFE_FREE(Ans);
+                Ans = strdup("0.0");
+            } else if (strcasecmp(Ans, "true") == 0) {
+                SAFE_FREE(Ans);
+                Ans = strdup("1.0");
             }
         }
 

@@ -2411,7 +2411,7 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 }
 
 char *eval(char *operation, bool mathlib) {
-    FuncEntry math_table[] = {
+    const FuncEntry math_table[] = {
         {"scale",   s_scale,       RET_INT},
         {"sqrt",    s_sqrt,        RET_FLOAT},
         {"root",    s_root,        RET_FLOAT},

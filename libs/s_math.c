@@ -4,7 +4,7 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
-double parse_str_func(char *operation, FuncEntry function) {    
+double parse_str_func(char *operation, const FuncEntry function) {    
 
     if (function.returnType != RET_STRING && function.returnType != RET_CHAR) {
         printf("eval: invalid function return type\n");
