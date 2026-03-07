@@ -371,12 +371,10 @@ double h_atof(const char *str, bool mathlib) {
 
         if (!isValid && shouldError) {
             for (size_t i = 0; buf[i]; i++) {
-                if (buf[i] == ' ' || buf[i] == '(' || buf[i] == ')' ||
-                    buf[i] == '"' || buf[i] == '\'' || buf[i] == '!' || buf[i] == '.'
-                )
+                if (isIn(buf[i], "()\"'!. _+-/*^%%&|<>"))
                     continue;
 
-                if (!isIn(buf[i], "+-/*^%%&|<>") && !isalnum((unsigned char)buf[i])) {
+                if (!isalnum((unsigned char)buf[i])) {
                     printf("eval: illegal character: '%c'\n", buf[i]);
                     return NAN;
                 }

@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 #include "utils.h"
-
+#include "types.h"
 char *Ans = NULL;
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
@@ -238,146 +238,236 @@ void checkLswrcSyntax(char *data_folder) {
     SAFE_FCLOSE(f);
 }
 
-double calc(double num1, char *operation, double num2, bool mathLib) {
+evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
 
-    double result;
+    evalOut out;
+    out.type = RET_NONE;
+
+    if ((left.type == RET_STRING && right.type != RET_STRING) ||
+        (right.type == RET_STRING && left.type != RET_STRING)) {
+        printf("eval: cannot operate numbers with strings\n");
+        return out;
+    }
+
+    if (left.type == RET_STRING && right.type == RET_STRING) {
+
+        if (strcmp(operation, "+") != 0) {
+            printf("eval: invalid operation for strings\n");
+            return out;
+        }
+
+        size_t len1 = strlen(left.str);
+        size_t len2 = strlen(right.str);
+
+        if (len1 < 2 || len2 < 2) {
+            printf("eval: invalid string format\n");
+            return out;
+        }
+
+        size_t total = (len1 - 2) + (len2 - 2) + 3;
+
+        char *cat = malloc(total);
+        if (!cat)
+            return out;
+
+        snprintf(cat, total, "\"%.*s%.*s\"",
+            (int)(len1 - 2), left.str + 1,
+            (int)(len2 - 2), right.str + 1);
+
+        out.type = RET_STRING;
+        out.str = cat;
+
+        return out;
+    }
+
+    double num1 = left.num;
+    double num2 = right.num;
+
+    double result = 0;
 
     if (strcmp(operation, "+") == 0)
         result = num1 + num2;
+
     else if (strcmp(operation, "-") == 0)
         result = num1 - num2;
+
     else if (strcmp(operation, "*") == 0)
         result = num1 * num2;
+
     else if (strcmp(operation, "/") == 0) {
 
         if (num2 == 0.0) {
 
             if (!mathLib) {
                 printf("eval: can't divide by 0\n");
-                return NAN;
+                return out;
             }
 
-            if (num1 == 0.0)
-                return 0.0;
+            int negative = signbit(num1) ^ signbit(num2);
+            result = negative ? -INFINITY : INFINITY;
 
-            int32_t negative = signbit(num1) ^ signbit(num2);
+        } else
+            result = num1 / num2;
+    }
 
-            return negative ? -INFINITY : INFINITY;
-        }
+    else if (strcmp(operation, "%") == 0) {
 
-        result = num1 / num2;
-    } else if (strcmp(operation, "%") == 0) {
         if (num2 == 0) {
             printf("eval: can't divide by 0\n");
-            return NAN;
+            return out;
         }
 
         result = fmod(num1, num2);
-    } else if (strcmp(operation, "^") == 0) {
+    }
+
+    else if (strcmp(operation, "^") == 0) {
+
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
             printf("eval: must be integers\n");
-            return NAN;
+            return out;
         }
 
         result = (int64_t)num1 ^ (int64_t)num2;
     }
+
     else if (strcmp(operation, "&") == 0) {
+
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
             printf("eval: must be integers\n");
-            return NAN;
+            return out;
         }
 
         result = (int64_t)num1 & (int64_t)num2;
     }
+
     else if (strcmp(operation, "|") == 0) {
+
         if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
             printf("eval: must be integers\n");
-            return NAN;
+            return out;
         }
 
         result = (int64_t)num1 | (int64_t)num2;
     }
-    else if (strcmp(operation, "<") == 0)
-        result = num1 < num2;
-    else if (strcmp(operation, ">") == 0)
-        result = num1 > num2;
 
-    else if (strcmp(operation, "**") == 0) {
-        if (num1 < 0 && (int64_t)num2 != num2) {
-            printf("eval: negative base with non-integer exponent\n");
-            return NAN;
-        }
-        else
-            result = pow(num1, num2);
+    else if (strcmp(operation, "<") == 0) {
+
+        out.type = RET_BOOL;
+        out.boolean = (num1 < num2) && fabs(num1 - num2) > EPS;
+        return out;
     }
 
-    else if (strcmp(operation, "^^") == 0) {
+    else if (strcmp(operation, ">") == 0) {
 
-        if (num2 != (int64_t)num2) {
-            printf("eval: tetration height must be an integer\n");
-            return NAN;
-        } else if (num2 < 0) {
-            printf("eval: tetration height must be non-negative\n");
-            return NAN;
-        } else if (num1 == 0.0 && num2 == 0.0) {
-            printf("eval: 0^^0 is undefined\n");
-            return NAN;
-        } else {
+        out.type = RET_BOOL;
+        out.boolean = (num1 > num2) && fabs(num1 - num2) > EPS;
+        return out;
+    }
 
-            result = tetration(num1, (int32_t)num2);
+    else if (strcmp(operation, "<=") == 0) {
 
-            if (isnan(result))
-                printf("eval: invalid input for tetration\n");
+        out.type = RET_BOOL;
+        out.boolean = (num1 < num2) || fabs(num1 - num2) < EPS;
+        return out;
+    }
+
+    else if (strcmp(operation, ">=") == 0) {
+
+        out.type = RET_BOOL;
+        out.boolean = (num1 > num2) || fabs(num1 - num2) < EPS;
+        return out;
+    }
+
+    else if (strcmp(operation, "!=") == 0) {
+
+        out.type = RET_BOOL;
+        out.boolean = fabs(num1 - num2) > EPS;
+        return out;
+    }
+
+    else if (strcmp(operation, "==") == 0) {
+
+        out.type = RET_BOOL;
+
+        if (isnan(num1) || isnan(num2))
+            out.boolean = 0;
+
+        else if (isinf(num1) || isinf(num2))
+            out.boolean = (num1 == num2);
+
+        else
+            out.boolean = fabs(num1 - num2) < EPS;
+
+        return out;
+    }
+
+    else if (strcmp(operation, "**") == 0) {
+
+        if (num1 < 0 && (int64_t)num2 != num2) {
+            printf("eval: negative base with non-integer exponent\n");
+            return out;
         }
+
+        result = pow(num1, num2);
     }
 
     else if (strcmp(operation, "<<") == 0) {
-        if (num2 < 0 || num2 >= sizeof(long long) * 8) {
-            printf("eval: shift amount must be between 0 and %zu\n", sizeof(uint64_t) * 8 - 1);
-            return NAN;
+
+        if (num2 < 0 || num2 >= sizeof(uint64_t) * 8) {
+            printf("eval: invalid shift\n");
+            return out;
         }
+
         result = (uint64_t)num1 << (uint64_t)num2;
     }
+
     else if (strcmp(operation, ">>") == 0) {
-        if (num2 < 0 || num2 >= sizeof(long long) * 8) {
-            printf("eval: shift amount must be between 0 and %zu\n", sizeof(int64_t) * 8 - 1);
-            return NAN;
+
+        if (num2 < 0 || num2 >= sizeof(int64_t) * 8) {
+            printf("eval: invalid shift\n");
+            return out;
         }
 
         result = (int64_t)num1 >> (int64_t)num2;
     }
 
-    else if (strcmp(operation, "&&") == 0)
-        return (num1 != 0 && num2 != 0);
-    else if (strcmp(operation, "||") == 0)
-        return (num1 != 0 || num2 != 0);
-    else if (strcmp(operation, "<=") == 0)
-        result = num1 <= num2;
-    else if (strcmp(operation, ">=") == 0)
-        result = num1 >= num2;
-    else if (strcmp(operation, "!=") == 0)
-        result = num1 != num2;
-    else if (strcmp(operation, "==") == 0) {
-        if (isnan(num1) || isnan(num2))
-            return 0.0;
-        else if (isinf(num1) || isinf(num2))
-            result = (num1 == num2);
-        else
-            result = fabs(num1 - num2) < EPS;
+    else if (strcmp(operation, "&&") == 0) {
+
+        out.type = RET_BOOL;
+        out.boolean = (num1 != 0 && num2 != 0);
+        return out;
     }
 
+    else if (strcmp(operation, "||") == 0) {
+
+        out.type = RET_BOOL;
+        out.boolean = (num1 != 0 || num2 != 0);
+        return out;
+    }
 
     else {
+
         printf("eval: Unknown operator '%s'\n", operation);
-        return NAN;
+        return out;
     }
 
     if (isinf(result)) {
-        printf("eval: numeric overflow (too large)\n");
-        return NAN;
+        printf("eval: numeric overflow\n");
+        return out;
     }
 
-    return result;
+    if (fabs(result - (int64_t)result) < EPS) {
+
+        out.type = RET_INT;
+        out.num = (int64_t)result;
+
+    } else {
+
+        out.type = RET_FLOAT;
+        out.num = result;
+    }
+
+    return out;
 }
 
 void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
@@ -779,14 +869,20 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t        Note: its value cannot be changed manually\n"
 
             "\nConstants: (mathlib must be on to grant access)\n"
-            "\tPI   : 3.141592...\n"
-            "\t       Example: sin(PI / 2) = 1\n"
+            "\tPI      : 3.141592...\n"
+            "\t          Example: sin(PI / 2) = 1\n"
             "\n"
-            "\tE    : 2.718281...\n"
-            "\t       Example: ln(E) = 1\n"
+            "\tE       : 2.718281...\n"
+            "\t          Example: ln(E) = 1\n"
             "\n"
-            "\tINF  : 1.797e+308 (64 bit)\n"
-            "\t     : Example: acot(-inf) = pi\n"
+            "\tINF     : 1.797e+308 (64 bit)\n"
+            "\t          Example: acot(-inf) = pi\n"
+            "\n"
+            "\ttrue    : 1 (boolean)\n"
+            "\t         Example: sen(deg2rad(30)) == sen(deg2rad(150))\n"
+            "\n"
+            "\tfalse   : 0 (boolean)\n"
+            "\t          Example: 1 != 5 = false\n"
 
             "\nSuffixes: (only works for non hexadecimals and mathlib must be on to grant access)\n"
             "\tK   : 1.000               (1e+3)\n"
@@ -1142,7 +1238,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
     SAFE_FREE(temp);
 }
 
-char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
+evalOut parse_operation(char *operation, FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
     char op[0x4] = {0};
 
     while (is_wrapped_by_parentheses(operation)) {
@@ -1154,25 +1250,26 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
         memmove(operation, operation + 1, len);
     }
 
-    int16_t op_pos = find_main_operator_full(
-        operation,
-        multiOps,
-        uniOps,
-        op
-    );
+    int16_t op_pos = find_main_operator_full(operation, multiOps, uniOps, op);
 
     if (op_pos == -1) {
 
         if (Ans && strcasecmp(operation, "ans") == 0) {
             size_t ansEnd = strlen(Ans) - 1;
             if (*Ans == '"' && Ans[ansEnd] == '"') {
-                return strdup(Ans);
+                return (evalOut){ .type = RET_STRING, .str = strdup(Ans) };
             }
         }
 
         char *paren = strchr(operation, '(');
 
         if (!paren) {
+
+            if (strcasecmp(operation, "true") == 0)
+                return (evalOut){ .type = RET_BOOL, .boolean = 1 };
+
+            if (strcasecmp(operation, "false") == 0)
+                return (evalOut){ .type = RET_BOOL, .boolean = 0 };
 
             size_t len = strlen(operation);
 
@@ -1200,7 +1297,7 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
 
                     if (*p != '"') {
                         printf("eval: unclosed quote\n");
-                        return NULL;
+                        return (evalOut){ .type = RET_NONE };
                     }
 
                     p++;
@@ -1211,7 +1308,7 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
                     char *final = malloc(res_len + 3);
                     if (!final) {
                         printf("eval: memory allocation error\n");
-                        return NULL;
+                        return (evalOut){ .type = RET_NONE };
                     }
 
                     final[0] = '"';
@@ -1219,48 +1316,28 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
                     final[res_len + 1] = '"';
                     final[res_len + 2] = '\0';
 
-                    return final;
+                    return (evalOut){ .type = RET_STRING, .str = final };
                 }
             }
 
-            const size_t bytes = 0x180;
-            char *buff = malloc(bytes);
-            if (!buff) {
-                printf("eval: memory allocation error\n");
-                return NULL;
-            }
-
             double num = h_atof(operation, mathlib);
-            if (isnan(num)) {
-                SAFE_FREE(buff);
-                return NULL;
-            }
+            if (isnan(num))
+                return (evalOut){ .type = RET_NONE };
 
-            snprintf(buff, bytes, "%lf", num);
-            return buff;
+            return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = num };
         }
 
         char name[0x100] = {0};
 
         ssize_t parenthesis_index = strchar(operation, '(');
         if (parenthesis_index == -1) {
-            const size_t bytes = 0x180;
-            char *buff = malloc(bytes);
-
-            if (!buff) {
-                printf("eval: memory allocation error\n");
-                return NULL;
-            }
 
             double num = h_atof(operation, mathlib);
 
-            if (isnan(num)) {
-                SAFE_FREE(buff);
-                return NULL;
-            }
+            if (isnan(num))
+                return (evalOut){ .type = RET_NONE };
 
-            snprintf(buff, bytes, "%lf", num);
-            return buff;
+            return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = num };
         }
 
         memcpy(name, operation, parenthesis_index);
@@ -1269,23 +1346,13 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
         trimEnd(name);
 
         if (*operation == '~' || *operation == '-') {
-            const size_t bytes = 0x180;
-            char *buff = malloc(bytes);
-
-            if (!buff) {
-                printf("eval: memory allocation error\n");
-                return NULL;
-            }
 
             double num = h_atof(operation, mathlib);
 
-            if (isnan(num)) {
-                SAFE_FREE(buff);
-                return NULL;
-            }
+            if (isnan(num))
+                return (evalOut){ .type = RET_NONE };
 
-            snprintf(buff, bytes, "%lf", num);
-            return buff;
+            return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = num };
         }
 
         int32_t depth = 0;
@@ -1307,27 +1374,19 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
             double result = s_fact(operation);
 
             if (isnan(result))
-                return NULL;
+                return (evalOut){ .type = RET_NONE };
 
-            char *tmp = malloc(0x100);
-
-            if (!tmp) {
-                printf("eval: memory allocation error\n");
-                return NULL;
-            }
-
-            snprintf(tmp, 0x100, "%lf", result);
-            return tmp;
+            return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = result };
         }
 
         if (close_index == -1 || operation[close_index + 1] != '\0') {
             printf("eval: invalid syntax\n");
-            return NULL;
+            return (evalOut){ .type = RET_NONE };
         }
 
         if (!isValidBcFuncName(name)) {
             printf("eval: invalid function name: '%s()'\n", name);
-            return NULL;
+            return (evalOut){ .type = RET_NONE };
         }
 
         if (mathlib) {
@@ -1335,41 +1394,41 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
                 if (strcmp(name, functions[i].name) == 0) {
 
                     if (functions[i].func != NULL) {
-                        const size_t bytes = 0x180;
-                        char *buff = malloc(bytes);
-
-                        if (!buff) {
-                            printf("eval: memory allocation error\n");
-                            return NULL;
-                        }
 
                         double num = functions[i].func(operation);
 
                         if (isnan(num))
-                            return NULL;
+                            return (evalOut){ .type = RET_NONE };
 
-                        snprintf(buff, bytes, "%lf", num);
-                        return buff;
+                        if (functions[i].returnType == RET_BOOL)
+                            return (evalOut){ .type = RET_BOOL, .boolean = (int)num };
+
+                        return (evalOut){ .type = functions[i].returnType, .num = num };
                     }
 
                     if (functions[i].returnType == RET_STRING || functions[i].returnType == RET_CHAR) {
+
                         if (strcmp(name, "chr") == 0)
-                            return s_chr(operation);
+                            return (evalOut){ .type = RET_CHAR, .ch = *s_chr(operation) };
+
                         else if (strcmp(name, "hex") == 0)
-                            return s_hex(operation);
+                            return (evalOut){ .type = RET_STRING, .str = s_hex(operation) };
+
                         else if (strcmp(name, "bin") == 0)
-                            return s_bin(operation);
+                            return (evalOut){ .type = RET_STRING, .str = s_bin(operation) };
+
                         else if (strcmp(name, "oct") == 0)
-                            return s_oct(operation);
+                            return (evalOut){ .type = RET_STRING, .str = s_oct(operation) };
+
                         else if (strcmp(name, "str") == 0)
-                            return bc_parse_str(operation);
+                            return (evalOut){ .type = RET_STRING, .str = bc_parse_str(operation) };
                     }
                 }
             }
-        }    
+        }
 
         printf("eval: undefined function: '%s()'\n", name);
-        return NULL;
+        return (evalOut){ .type = RET_NONE };
     }
 
     char buffer[0x100];
@@ -1386,75 +1445,47 @@ char *parse_operation(char *operation, FuncEntry *functions, size_t funcCount, c
 
     if (!*num1 || !*num2) {
         printf("eval: invalid syntax\n");
-        return NULL;
+        return (evalOut){ .type = RET_NONE };
     }
 
     char *left = eval(num1, mathlib);
     if (!left)
-        return NULL;
-
-    bool left_is_string = (*left == '"' && left[strlen(left)-1] == '"');
-
+        return (evalOut){ .type = RET_NONE };
 
     char *right = eval(num2, mathlib);
     if (!right) {
         SAFE_FREE(left);
-        return NULL;
+        return (evalOut){ .type = RET_NONE };
     }
 
-    bool right_is_string = (*right == '"' && right[strlen(right)-1] == '"');
+    evalOut val1 = eval_typeof(left, mathlib);
+    evalOut val2 = eval_typeof(right, mathlib);
 
-
-    if (strcmp(op, "+") == 0 && left_is_string && right_is_string) {
-
-        size_t len1 = strlen(left);
-        size_t len2 = strlen(right);
-
-        left[len1 - 1] = '\0';
-        memmove(right, right + 1, len2);
-
-        size_t total = strlen(left) + strlen(right) + 2;
-
-        char *cat = malloc(total);
-        if (!cat) {
-            SAFE_FREE(left);
-            SAFE_FREE(right);
-            return NULL;
-        }
-
-        snprintf(cat, total, "%s%s", left, right);
-
-        SAFE_FREE(left);
-        SAFE_FREE(right);
-
-        return cat;
+    if (strcasecmp(left, "true") == 0) {
+        val1.type = RET_BOOL;
+        val1.boolean = 1;
+    }
+    else if (strcasecmp(left, "false") == 0) {
+        val1.type = RET_BOOL;
+        val1.boolean = 0;
     }
 
+    if (strcasecmp(right, "true") == 0) {
+        val2.type = RET_BOOL;
+        val2.boolean = 1;
+    }
+    else if (strcasecmp(right, "false") == 0) {
+        val2.type = RET_BOOL;
+        val2.boolean = 0;
+    }
 
-    double num1_double = h_atof(left, mathlib);
+    if (val1.type == RET_NONE || val2.type == RET_NONE)
+        return (evalOut){ .type = RET_NONE };
+
+    evalOut result = calc(val1, op, val2, mathlib);
+
     SAFE_FREE(left);
+    SAFE_FREE(right);
 
-    if (isnan(num1_double)) {
-        SAFE_FREE(right);        
-        return NULL;
-    }
-
-    double num2_double = h_atof(right, mathlib);
-    SAFE_FREE(right);        
-
-    if (isnan(num2_double)) {
-        return NULL;
-    }
-
-    double result = calc(num1_double, op, num2_double, mathlib);
-
-    if (isnan(result))
-        return NULL;
-
-    char *buff = malloc(0x180);
-    if (!buff)
-        return NULL;
-
-    snprintf(buff, 0x180, "%lf", result);
-    return buff;
+    return result;
 }

@@ -1,8 +1,9 @@
 #define _GNU_SOURCE
 #include "utils.h"
+#include "types.h"
 
-#define PROJ_LINES_APPROX 8700
-#define PROJ_SIZE_APPROX_BYTES 234000
+#define PROJ_LINES_APPROX 8800
+#define PROJ_SIZE_APPROX_BYTES 256000
 
 #define RC_FILE "lswrc.txt"
 
@@ -31,6 +32,36 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+evalOut eval_typeof(char *operation, bool mathLib) {
+
+    evalOut out = {0};
+    out.type = RET_NONE;
+
+    if (!operation)
+        return out;
+
+    if (isBetweenQuotes(operation, 1)) {
+        out.type = RET_STRING;
+        out.str = strdup(operation);
+        return out;
+    }
+
+    double result = h_atof(operation, mathLib);
+
+    if (isnan(result))
+        return out;
+
+    if (fabs(result - (int64_t)result) < EPS) {
+        out.type = RET_INT;
+        out.num = (int64_t)result;
+    } else {
+        out.type = RET_FLOAT;
+        out.num = result;
+    }
+
+    return out;
+}
 
 int16_t injectEscape(char *str, const char *error_str) {
     bool inQuotes = false;
@@ -100,7 +131,7 @@ bool isValidBcFuncName(const char *str) {
     return true;
 }
 
-enum paren_result parenthesis_check(const char *str) {
+paren_status parenthesis_check(const char *str) {
     int32_t level = 0;
     bool in_double_quotes = false;
     bool in_single_quotes = false;
@@ -1540,7 +1571,7 @@ void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint1
 #endif
 }
 
-void setColor(enum color4 color) {
+void setColor(color4 color) {
 #ifdef _WIN32
     SetConsoleTextAttribute(hConsole, color);
 #else
@@ -2096,7 +2127,7 @@ const char *strcasestr_ptr(const char *haystack, const char *needle) {
     return NULL;
 }
 
-void printTarg(const char *str, const char *targ, enum color4 markColor, int8_t ignoreCase) {
+void printTarg(const char *str, const char *targ, color4 markColor, int8_t ignoreCase) {
     const char *p = str;
     uint16_t targLen = strlen(targ);
 
@@ -2437,7 +2468,7 @@ char *eval(char *operation, bool mathlib) {
         NULL
     };
 
-    enum paren_result result = parenthesis_check(operation);
+    paren_status result = parenthesis_check(operation);
 
     if (result != PAREN_OK) {
 
@@ -2461,7 +2492,49 @@ char *eval(char *operation, bool mathlib) {
         return NULL;
     }
 
-    return parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
+    evalOut buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
+
+    if (buff.type == RET_BOOL) 
+        return (buff.boolean == 1) ? strdup("true") : strdup("false");
+
+    return evalOut2str(buff);
+}
+
+char *evalOut2str(evalOut buff) {
+    switch (buff.type) {
+
+        case RET_STRING:
+            return buff.str;
+
+        case RET_CHAR: {
+            char *tmp = malloc(2);
+            if (!tmp) return NULL;
+
+            tmp[0] = buff.ch;
+            tmp[1] = '\0';
+            return tmp;
+        }
+
+        case RET_BOOL: {
+            char *tmp = malloc(6);
+            if (!tmp) return NULL;
+
+            snprintf(tmp, 6, "%d", buff.boolean);
+            return tmp;
+        }
+
+        case RET_INT:
+        case RET_FLOAT: {
+            char *tmp = malloc(64);
+            if (!tmp) return NULL;
+
+            snprintf(tmp, 64, "%lf", buff.num);
+            return tmp;
+        }
+
+        default:
+            return NULL;
+    }
 }
 
 char *handle_cd_dash(char *address) {
@@ -2680,7 +2753,7 @@ char *get_default_address(void) {
     return strdup(".");
 }
 
-void printc(const char *str, enum color4 initColor, enum color4 resetColor, ...) {
+void printc(const char *str, color4 initColor, color4 resetColor, ...) {
     setColor(initColor);
 
     va_list args;

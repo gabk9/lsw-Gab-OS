@@ -8,24 +8,13 @@
 #include <errno.h>
 #include <stdio.h>
 #include <float.h>
+#include "types.h"
+#include "s_math.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <inttypes.h>
-
-typedef double (*MathFunc)(char *operation);
-
-typedef struct Functions {
-    const char *name;
-    MathFunc func;
-    enum returns {
-        RET_STRING, RET_FLOAT,
-        RET_INT, RET_BOOL, RET_CHAR
-    } returnType;
-} FuncEntry;
-
-#include "s_math.h"
 #include "CheckCmd.h"
 #include "terminal.h"
 
@@ -101,19 +90,6 @@ extern char *Ans;
     } \
 } while (false)
 
-enum color4 {
-    BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, YELLOW,
-    WHITE, GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN,
-    LIGHT_RED, LIGHT_MAGENTA, LIGHT_YELLOW, BRIGHT_WHITE
-};
-
-enum paren_result {
-    PAREN_OK,
-    PAREN_MISSING_CLOSE,
-    PAREN_MISSING_OPEN,
-    PAREN_UNCLOSED_QUOTE
-};
-
 #ifdef _WIN32
     char *unameCmdWin(uint8_t flags);
     LONG WINAPI handler(EXCEPTION_POINTERS *e);
@@ -143,6 +119,7 @@ bool isBin(const char *str);
 bool isHex(const char *str);
 bool isOct(const char *str);
 void trimBetween(char *str);
+void setColor(color4 color);
 char *myDirname(char *path);
 char *echoHandler(char *str);
 void enableAnsiIfNeeded(void);
@@ -154,9 +131,9 @@ bool isalldigit(const char *s);
 int8_t isDir(const char *path);
 uint64_t get_total_ram_mb(void);
 char *get_default_address(void);
+char *evalOut2str(evalOut buff);
 int8_t isAppend(const char *str);
 void safe_lower_inplace(char *s);
-void setColor(enum color4 color);
 char *buildLswRcPath(char *path);
 char *tolowerstr(const char *str);
 int16_t move_to_trash(char *path);
@@ -180,6 +157,7 @@ int16_t rm_delete(char *path, uint8_t flags);
 int16_t strchar(const char *str, int8_t chr);
 uint16_t getHistSizeConfig(char *lswrc_path);
 int16_t strrchar(const char *str, int8_t chr);
+paren_status parenthesis_check(const char *s);
 bool is_wrapped_by_parentheses(const char *s);
 bool isValidFolderOrFileName(const char *name);
 bool isValidBcCommand(char *str, char *command);
@@ -189,7 +167,7 @@ uint16_t countIndex(const char *str, int8_t chr);
 char* findCharOutsideQuotes(char *s, char target);
 char *extract_instruction(char *str, char **args);
 void createShortcut(char *instruction, char *path);
-enum paren_result parenthesis_check(const char *s);
+evalOut eval_typeof(char *operation, bool mathLib);
 char **parseData(const char *str, uint16_t *count);
 bool isBcVariable(const char *str, bool *shouldError);
 void charReplace(char *str, int8_t targ, int8_t repl);
@@ -207,12 +185,12 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok);
 char **extract_args(char *args, uint16_t *argc, char *firstArg);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
 void saveHist(char *operation, char *history_path, char *data_folder);
-void split_instruction_args(char *line, char **out_cmd, char **out_args);
 
 __attribute__((format(printf, 1, 4)))
-void printc(const char *str, enum color4 initColor, enum color4 resetColor, ...);
+void printc(const char *str, color4 initColor, color4 resetColor, ...);
 
-void printTarg(const char *str, const char *targ, enum color4 markColor, int8_t ignoreCase);
+void split_instruction_args(char *line, char **out_cmd, char **out_args);
+void printTarg(const char *str, const char *targ, color4 markColor, int8_t ignoreCase);
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp);
 void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint16_t data_size, char *history_path, uint16_t hist_size);
 bool isalias(char *operation, char *args, const char **cmds, char **address, char *history_path, char *data_folder, uint16_t isInsideBash);

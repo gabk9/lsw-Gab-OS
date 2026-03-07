@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.1.55"
+#define VERSION "r2.1.80"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1618,7 +1618,8 @@ void updatehistory(void) {
         "r2.2.31 - small changes\n\tFixed: a a another seg-fault caused by NULL pointers, and also fixed some lost pointers\n",
         "r2.2.39 - small changes\n\tFixed: factorial is now working with parenthesis again\n",
         "r2.2.50 - big changes\n\tFixed: int(), float() and ans not working with strings\n\tRemoved: fabs() from bc\n",
-        "r2.2.55 small changes\n\tFixed: Ans not freeing after an error\n"
+        "r2.2.55 - small changes\n\tFixed: Ans not freeing after an error\n",
+        "r2.2.80 - huge changes\n\tEdited: huge refactor on eval()\n\tAdded: support to boolean constants\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
@@ -1871,10 +1872,10 @@ void neofetchCmd(char *lswrc_path) {
 
     const uint8_t lines = sizeof(ascii_art) / sizeof(*ascii_art);
     
-    const enum color4 title_color = YELLOW;
-    const enum color4 label_color = LIGHT_CYAN;
-    const enum color4 art_color = GREEN;
-    const enum color4 art_bg_color = LIGHT_GREEN;
+    const color4 title_color = YELLOW;
+    const color4 label_color = LIGHT_CYAN;
+    const color4 art_color = GREEN;
+    const color4 art_bg_color = LIGHT_GREEN;
 
     for (uint8_t i = 0; i < lines; i++) {
         for (size_t j = 0; ascii_art[i][j]; j++) {
