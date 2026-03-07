@@ -2314,7 +2314,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
 }
 
 bool is_wrapped_by_parentheses(const char *s) {
-    int len = strlen(s);
+    int32_t len = strlen(s);
 
     if (len < 2)
         return false;
@@ -2322,9 +2322,9 @@ bool is_wrapped_by_parentheses(const char *s) {
     if (s[0] != '(' || s[len - 1] != ')')
         return false;
 
-    int depth = 0;
+    int32_t depth = 0;
 
-    for (int i = 0; i < len - 1; i++) {
+    for (int32_t i = 0; i < len - 1; i++) {
 
         if (s[i] == '(')
             depth++;
@@ -2373,10 +2373,10 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
         if (depth != 0)
             continue;
 
-        for (int j = 0; multiOps[j]; j++) {
+        for (int32_t j = 0; multiOps[j]; j++) {
 
-            int oplen = strlen(multiOps[j]);
-            int start = i - oplen + 1;
+            int32_t oplen = strlen(multiOps[j]);
+            int32_t start = i - oplen + 1;
 
             if (start < 0)
                 continue;

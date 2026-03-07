@@ -271,8 +271,8 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
             return out;
 
         snprintf(cat, total, "\"%.*s%.*s\"",
-            (int)(len1 - 2), left.str + 1,
-            (int)(len2 - 2), right.str + 1);
+            (int32_t)(len1 - 2), left.str + 1,
+            (int32_t)(len2 - 2), right.str + 1);
 
         out.type = RET_STRING;
         out.str = cat;
@@ -303,7 +303,7 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
                 return out;
             }
 
-            int negative = signbit(num1) ^ signbit(num2);
+            int32_t negative = signbit(num1) ^ signbit(num2);
             result = negative ? -INFINITY : INFINITY;
 
         } else
@@ -448,11 +448,6 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
     else {
 
         printf("eval: Unknown operator '%s'\n", operation);
-        return out;
-    }
-
-    if (isinf(result)) {
-        printf("eval: numeric overflow\n");
         return out;
     }
 
@@ -1401,7 +1396,7 @@ evalOut parse_operation(char *operation, FuncEntry *functions, size_t funcCount,
                             return (evalOut){ .type = RET_NONE };
 
                         if (functions[i].returnType == RET_BOOL)
-                            return (evalOut){ .type = RET_BOOL, .boolean = (int)num };
+                            return (evalOut){ .type = RET_BOOL, .boolean = (int32_t)num };
 
                         return (evalOut){ .type = functions[i].returnType, .num = num };
                     }
