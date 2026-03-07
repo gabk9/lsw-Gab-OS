@@ -272,7 +272,10 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
 
             out.type = RET_STRING;
             char *result = strdup(multiplied_str);
-            if (!result) return out;
+            if (!result) {
+                out.type = RET_NONE;
+                return out;
+            }
 
             for (size_t i = 1; i < (size_t)multiplier; i++) {
                 char *old = result;
