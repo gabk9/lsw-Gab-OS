@@ -265,7 +265,7 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
             }
             
             const double max = 1024;
-            if ((((ssize_t)strlen(multiplied_str)) - 2) * (size_t)multiplier > 1024) {
+            if (((ssize_t)strlen(multiplied_str) - 2) * (size_t)multiplier > 1024) {
                 printf("eval: the resultant string must be less than %g characters long\n", max);
                 return out;
             }
