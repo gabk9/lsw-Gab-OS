@@ -2,8 +2,8 @@
 #include "utils.h"
 #include "types.h"
 
-#define PROJ_LINES_APPROX 8900
-#define PROJ_SIZE_APPROX_BYTES 257000
+#define PROJ_LINES_APPROX 9000
+#define PROJ_SIZE_APPROX_BYTES 260500
 
 #define RC_FILE "lswrc.txt"
 
@@ -33,6 +33,17 @@ LONG handler(EXCEPTION_POINTERS *e) {
 }
 #endif
 
+void getItemTypeStr(char *buff, size_t size, evalOut item) {
+    switch (item.type) {
+        case RET_INT:    snprintf(buff, size, "int"); break;
+        case RET_FLOAT:  snprintf(buff, size, "float"); break;
+        case RET_STRING: snprintf(buff, size, "str"); break;
+        case RET_BOOL:   snprintf(buff, size, "bool"); break;
+        case RET_NONE:   snprintf(buff, size, "none"); break;
+        default:         snprintf(buff, size, "NULL"); break;
+    }
+}
+
 evalOut eval_typeof(char *operation, bool mathLib) {
 
     evalOut out = {0};
@@ -61,6 +72,46 @@ evalOut eval_typeof(char *operation, bool mathLib) {
     }
 
     return out;
+}
+
+int32_t bc_strcmp(char *str1, char *str2) {
+    char buff1[0x100], buff2[0x100];
+
+    if (isBetweenQuotes(str1, 1)) {
+        size_t len = strlen(str1) - 2;
+        strncpy(buff1, str1+1, len);
+        buff1[len] = '\0';
+    } else
+        strncpy(buff1, str1, sizeof(buff1)-1), buff1[sizeof(buff1)-1] = '\0';
+
+    if (isBetweenQuotes(str2, 1)) {
+        size_t len = strlen(str2) - 2;
+        strncpy(buff2, str2+1, len);
+        buff2[len] = '\0';
+    } else
+        strncpy(buff2, str2, sizeof(buff2)-1), buff2[sizeof(buff2)-1] = '\0';
+
+    return strcmp(buff1, buff2);
+}
+
+char *bc_strcat(const char *dest, const char *src) {
+    size_t len1 = strlen(dest);
+    size_t len2 = strlen(src);
+
+    if (len1 < 2 || len2 < 2)
+        return NULL;
+
+    size_t total = (len1 - 2) + (len2 - 2) + 3;
+
+    char *cat = malloc(total);
+    if (!cat)
+        return NULL;
+
+    snprintf(cat, total, "\"%.*s%.*s\"",
+        (int32_t)(len1 - 2), dest + 1,
+        (int32_t)(len2 - 2), src + 1);
+
+    return cat;
 }
 
 int16_t injectEscape(char *str, const char *error_str) {
@@ -212,7 +263,7 @@ bool isBcVariable(const char *str, bool *shouldError) {
     return true;
 }
 
-bool isKeyRepeated(char *data_folder, const char *key_name) {
+bool isKeyRepeated(const char *data_folder, const char *key_name) {
     char *path = buildLswRcPath(data_folder);
 
     bool foundKey = false;
@@ -1774,7 +1825,7 @@ char *echoHandler(char *str) {
     return out;
 }
 
-char *buildLswRcPath(char *path) {
+char *buildLswRcPath(const char *path) {
     uint16_t extra = strlen(path) + 1 + strlen(RC_FILE);
     char *buffer = calloc(extra, sizeof(char));
     strcpy(buffer, path);
@@ -2494,8 +2545,9 @@ char *eval(char *operation, bool mathlib) {
 
     evalOut buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 
-    if (buff.type == RET_BOOL) 
+    if (buff.type == RET_BOOL)
         return (buff.boolean == 1) ? strdup("true") : strdup("false");
+
 
     return evalOut2str(buff);
 }

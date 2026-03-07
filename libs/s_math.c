@@ -232,9 +232,14 @@ double h_atof(const char *str, bool mathlib) {
     if (isAns)
         return h_atof(Ans, mathlib);
 
+    if (strcasecmp(buf, "true") == 0)
+        return 1.0;
+    else if (strcasecmp(buf, "false") == 0)
+        return 0.0;
+
     len = strlen(buf);
 
-    if (len > 1 && *buf == '\'' && buf[len-1] == '\'') {
+    if (isBetweenQuotes(buf, 0)) {
         if (!injectEscape(buf, "eval"))
             return NAN;
 

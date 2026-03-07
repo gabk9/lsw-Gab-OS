@@ -95,18 +95,22 @@ char *stringToVariable(const char *str, int32_t *changed) {
     return strdup(str);
 }
 
-void checkLswrcSyntax(char *data_folder) {
+void checkLswrcSyntax(const char *data_folder) {
     char *path = buildLswRcPath(data_folder);
-    
     FILE *f = fopen(path, "r");
 
-    if (!f)
+    if (!f) {
+        SAFE_FREE(path);
         return;
-    
+    }
+
     char line[MAX_CHAR];
     while (fgets(line, sizeof(line), f)) {
         line[strcspn(line, "\n")] = '\0';
-        char *lineCpy = strdup(line);
+
+        char lineOrig[MAX_CHAR];
+        strcpy(lineOrig, line); // cópia local para verificações que precisam da linha inteira
+
         removeComments(line);
         trim(line);
         trimEnd(line);
@@ -115,169 +119,212 @@ void checkLswrcSyntax(char *data_folder) {
         if (*line == '\0')
             continue;
 
-        char *args;
+        char *args = NULL;
         char *cmd = extractCommandOrKey(line, &args);
 
-        char *secondCpy = strdup(lineCpy);
+        if (!cmd) continue;
 
         if (strcmp(cmd, "alias") == 0) {
-            char *eq = findFirstEqualOutsideQuotes(lineCpy);
-
+            char *eq = findFirstEqualOutsideQuotes(lineOrig); // usar a cópia original
             if (!eq) {
                 fprintf(stderr, "alias: syntax error\n");
-                SAFE_FREE(lineCpy);
-                SAFE_FREE(secondCpy);
-                SAFE_FREE(path);
-                SAFE_FCLOSE(f);
-                exit(EXIT_FAILURE);
+                goto fail;
             }
 
             *eq = '\0';
-            char *shortcutName = lineCpy;
+            char *shortcutName = strchr(lineOrig, ' ');
             char *action = eq + 1;
 
-            shortcutName = strchr(shortcutName, ' ');
-            
-            trim(action); trimEnd(action);
             trim(shortcutName); trimEnd(shortcutName);
-            
-            if (!shortcutName) {
+            trim(action); trimEnd(action);
+
+            if (!shortcutName || !*shortcutName) {
                 fprintf(stderr, "alias: missing shortcut name\n");
-                SAFE_FREE(lineCpy);
-                SAFE_FREE(secondCpy);
-                SAFE_FREE(path);
-                SAFE_FCLOSE(f);
-                exit(EXIT_FAILURE);
+                goto fail;
             }
 
-            if (!action) {
+            if (!action || !*action) {
                 fprintf(stderr, "alias: missing action\n");
-                SAFE_FREE(lineCpy);
-                SAFE_FREE(secondCpy);
-                SAFE_FREE(path);
-                SAFE_FCLOSE(f);
-                exit(EXIT_FAILURE);
+                goto fail;
             }
 
             if (!isBetweenQuotes(action, 2)) {
-                fprintf(stderr, "alias: the action should be between quotes, and it must be equal\n");
-                SAFE_FREE(lineCpy);
-                SAFE_FREE(secondCpy);
-                SAFE_FREE(path);
-                SAFE_FCLOSE(f);
-                exit(EXIT_FAILURE);
+                fprintf(stderr, "alias: the action should be between quotes\n");
+                goto fail;
             }
 
         } else if (strcmp(cmd, "HISTSIZE") == 0) {
-
-            if (!args) {
-                fprintf(stderr, "HISTFILE: missing arguments!\n");
-                SAFE_FREE(lineCpy);
-                SAFE_FREE(secondCpy);
-                SAFE_FREE(path);
-                SAFE_FCLOSE(f);
-                exit(EXIT_FAILURE);
+            if (!args || !*args) {
+                fprintf(stderr, "HISTSIZE: missing arguments!\n");
+                goto fail;
             }
-            trim(args);
-            trimEnd(args);
-            
-            if (args[0] == '=')
-            args[0] = ' ';
+
+            trim(args); trimEnd(args);
+            if (args[0] == '=') args[0] = ' ';
             trim(args);
 
             double num = h_atof(args, false);
-
-            if (isnan(num)) {
-                SAFE_FREE(lineCpy);
-                SAFE_FREE(secondCpy);
-                SAFE_FREE(path);
-                SAFE_FCLOSE(f);
-                exit(EXIT_FAILURE);
-            }
-
-            if (!isalldigit(args) || num != (int64_t)num) {
-                fprintf(stderr, "HISTFILE: arguments with invalid data type!\n");
-                SAFE_FREE(lineCpy);
-                SAFE_FREE(secondCpy);
-                SAFE_FREE(path);
-                SAFE_FCLOSE(f);
-                exit(EXIT_FAILURE);
+            if (isnan(num) || !isalldigit(args) || num != (int64_t)num) {
+                fprintf(stderr, "HISTSIZE: arguments with invalid data type!\n");
+                goto fail;
             }
 
             if (num < HISTSIZE_MIN || num > HISTSIZE_MAX) {
-                fprintf(stderr, "HISTFILE: the argument must be between 10 and 10000 (inclusive)\n");
-                SAFE_FREE(lineCpy);
-                SAFE_FREE(secondCpy);
-                SAFE_FREE(path);
-                SAFE_FCLOSE(f);
-                exit(EXIT_FAILURE);                
+                fprintf(stderr, "HISTSIZE: argument must be between 10 and 10000\n");
+                goto fail;
             }
 
             if (isKeyRepeated(data_folder, "HISTSIZE")) {
-                fprintf(stderr, "HISTFILE: double key found, it should work but remove the extra one\n");
-                SAFE_FREE(lineCpy);
-                SAFE_FREE(secondCpy);
-                SAFE_FREE(path);
-                SAFE_FCLOSE(f);
-                exit(EXIT_FAILURE);
+                fprintf(stderr, "HISTSIZE: duplicate key found\n");
+                goto fail;
             }
 
         } else {
-            fprintf(stderr, "LSW: invalid key found in lswrc: '%s'\n", cmd);
-            SAFE_FREE(lineCpy);
-            SAFE_FREE(secondCpy);
-            SAFE_FREE(path);
-            SAFE_FCLOSE(f);
-            exit(EXIT_FAILURE);
+            fprintf(stderr, "LSW: invalid key in lswrc: '%s'\n", cmd);
+            goto fail;
         }
-        SAFE_FREE(lineCpy);
-        SAFE_FREE(secondCpy);
     }
 
     SAFE_FREE(path);
     SAFE_FCLOSE(f);
+    return;
+
+fail:
+    SAFE_FREE(path);
+    SAFE_FCLOSE(f);
+    exit(EXIT_FAILURE);
 }
+
 
 evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
 
     evalOut out;
     out.type = RET_NONE;
 
-    if ((left.type == RET_STRING && right.type != RET_STRING) ||
-        (right.type == RET_STRING && left.type != RET_STRING)) {
-        printf("eval: cannot operate numbers with strings\n");
+    if (left.type == RET_NONE || right.type == RET_NONE) {
+        printf("eval: invalid data type: 'none'\n");
         return out;
     }
 
-    if (left.type == RET_STRING && right.type == RET_STRING) {
+    if (left.type == RET_STRING || right.type == RET_STRING) {
 
-        if (strcmp(operation, "+") != 0) {
-            printf("eval: invalid operation for strings\n");
+        if (strcmp(operation, "+") == 0) {
+            
+            if (left.type != right.type) {
+                char type[0x20] = {0};
+                evalOut wrong = (left.type != RET_STRING) ? left : right;
+
+                getItemTypeStr(type, sizeof(type), wrong);
+
+                printf("eval: cannot concatenate strings with '%s' type\n", type);
+                return out;
+            }
+
+            if (strlen(left.str) < 2 || strlen(right.str) < 2) {
+                printf("eval: invalid string format\n");
+                return out;
+            }
+
+            out.type = RET_STRING;
+            out.str = bc_strcat(left.str, right.str);
+
+            if (!out.str) {
+                out.type = RET_NONE;
+                return out;
+            }
+
+            return out;
+        } else if (strcmp(operation, "*") == 0) {
+
+            evalOut notStr;
+            evalOut Str;
+
+            if (left.type != RET_STRING) {
+                notStr = left;
+                Str = right;
+            } else {
+                notStr = right;
+                Str = left;
+            }
+
+            if (notStr.type != RET_INT) {
+                char type[0x20] = {0};
+
+                getItemTypeStr(type, sizeof(type), notStr);
+
+                printf("eval: cannot multiply strings with type '%s'\n", type);
+                return out;
+            }
+
+            double multiplier = (double)notStr.num; 
+            char *multiplied_str = Str.str;
+
+            if (multiplier <= 0.0) {
+                printf("eval: to multiply strings the multiplier must be at least greater than 0\n");
+                return out;
+            }
+            
+            const double max = 1024;
+            if ((((ssize_t)strlen(multiplied_str)) - 2) * (size_t)multiplier > 1024) {
+                printf("eval: the resultant string must be less than %g characters long\n", max);
+                return out;
+            }
+
+            out.type = RET_STRING;
+            char *result = strdup(multiplied_str);
+            if (!result) return out;
+
+            for (size_t i = 1; i < (size_t)multiplier; i++) {
+                char *old = result;
+                result = bc_strcat(result, multiplied_str);
+
+                SAFE_FREE(old);
+                if (!result) { 
+                    out.type = RET_NONE;
+                    return out;
+                }
+            }
+
+            out.str = result;
+            return out;
+        } 
+
+        if (left.type != right.type) {
+            out.type = RET_BOOL;
+            out.boolean = 0;
             return out;
         }
 
-        size_t len1 = strlen(left.str);
-        size_t len2 = strlen(right.str);
+        int16_t cmp = bc_strcmp(left.str, right.str);
 
-        if (len1 < 2 || len2 < 2) {
-            printf("eval: invalid string format\n");
+        if (strcmp(operation, "==") == 0) {
+            out.type = RET_BOOL;
+            out.boolean = cmp == 0;
+            return out;
+        } else if (strcmp(operation, "!=") == 0) {
+            out.type = RET_BOOL;
+            out.boolean = cmp != 0;
+            return out;
+        } else if (strcmp(operation, ">") == 0) {
+            out.type = RET_BOOL;
+            out.boolean = cmp > 0;
+            return out;
+        } else if (strcmp(operation, ">=") == 0) {
+            out.type = RET_BOOL;
+            out.boolean = cmp >= 0;
+            return out;
+        } else if (strcmp(operation, "<") == 0) {
+            out.type = RET_BOOL;
+            out.boolean = cmp < 0;
+            return out;
+        } else if (strcmp(operation, "<=") == 0) {
+            out.type = RET_BOOL;
+            out.boolean = cmp <= 0;
+            return out;
+        } else {
+            printf("eval: unsupported operand for 'str' type: '%s'\n", operation);
             return out;
         }
-
-        size_t total = (len1 - 2) + (len2 - 2) + 3;
-
-        char *cat = malloc(total);
-        if (!cat)
-            return out;
-
-        snprintf(cat, total, "\"%.*s%.*s\"",
-            (int32_t)(len1 - 2), left.str + 1,
-            (int32_t)(len2 - 2), right.str + 1);
-
-        out.type = RET_STRING;
-        out.str = cat;
-
-        return out;
     }
 
     double num1 = left.num;
@@ -691,37 +738,37 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t         Explanation: 0b01000 >> 2 = 0b00010\n"  
             "\n"
             "\t'&&'   : Logical AND\n"
-            "\t         Example: 5 && 0 = 0\n"
+            "\t         Example: 5 && 0 = false\n"
             "\t         Note: Any non-zero value is treated as true\n"
             "\t         Explanation: Result is true(1) only if both operands are true(1), otherwise returns false(0)\n"
             "\n"
             "\t'||'   : Logical OR\n"
-            "\t         Example: 0 || 5 = 1\n"
+            "\t         Example: 0 || 5 = true\n"
             "\t         Explanation: Result is true(1) if at least one operand is true(1), otherwise returns false(0)\n"
             "\n"
             "\t'<'    : Less than\n"
-            "\t         Example: 2 < 5 = 1\n"
-            "\t         Explanation: returns 1 if the number is less than the other, otherwise returns 0\n"
+            "\t         Example: 3 < 5 = true / \"apple\" < \"banana\" = true\n"
+            "\t         Explanation: returns true(1) if the first value is less than the second, otherwise returns false(0)\n"
             "\n"
             "\t'<='   : Less than or equal\n"
-            "\t         Example: 5 <= 5 = 1\n"
-            "\t         Explanation: returns 1 if the number is less or equal than the other, otherwise returns 0\n"
+            "\t         Example: 5 <= 5 = true / \"apple\" <= \"apple\" = true\n"
+            "\t         Explanation: returns true(1) if the first value is less or equal than the second, otherwise returns false(0)\n"
             "\n"
             "\t'>'    : Greater than\n"
-            "\t         Example: 8 > 3 = 1\n"
-            "\t         Explanation: returns 1 if the number is greater than the other, otherwise returns 0\n"
+            "\t         Example: 8 > 3 = true / \"banana\" > \"apple\" = true\n"
+            "\t         Explanation: returns true(1) if the first value is greater than the second, otherwise returns false(0)\n"
             "\n"
             "\t'>='   : Greater than or equal\n"
-            "\t         Example: 4 >= 4 = 1\n"
-            "\t         Explanation: returns 1 if the number is greater or equal than the other, otherwise returns 0\n"
+            "\t         Example: 4 >= 4 = true / \"banana\" >= \"banana\" = true\n"
+            "\t         Explanation: returns true(1) if the first value is greater or equal than the second, otherwise returns false(0)\n"
             "\n"
             "\t'=='   : Equal to\n"
-            "\t         Example: 6 == 6 = 1\n"
-            "\t         Explanation: returns 1 if the number is equal to the other, otherwise returns 0\n"
+            "\t         Example: 6 == 6 = true / \"same\" == \"same\" = true\n"
+            "\t         Explanation: returns true(1) if the first value is equal to the second, otherwise returns false(0)\n"
             "\n"
             "\t'!='   : Not equal to\n"
-            "\t         Example: 6 != 5 = 1\n"
-            "\t         Explanation: returns 1 if the number is different to the other, otherwise returns 0\n"
+            "\t         Example: 6 != 5 = true / \"apple\" != \"banana\" = true\n"
+            "\t         Explanation: returns true(1) if the first value is different from the second, otherwise returns false(0)\n"
 
 
             "\nFunctions: (mathlib must be on to grant access)\n"
@@ -1272,8 +1319,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
         if (Ans) {
             if (strcasecmp(operation, OLD_ANSWER_STR) == 0) {
-                size_t ansEnd = strlen(Ans) - 1;
-                if (*Ans == '"' && Ans[ansEnd] == '"') {
+                if (isBetweenQuotes(Ans, 1)) {
                     return (evalOut){ .type = RET_STRING, .str = strdup(Ans) };
                 }
             }
@@ -1293,8 +1339,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
             if (strcasecmp(operation, "true") == 0)
                 return (evalOut){ .type = RET_BOOL, .boolean = 1 };
-
-            if (strcasecmp(operation, "false") == 0)
+            else if (strcasecmp(operation, "false") == 0)
                 return (evalOut){ .type = RET_BOOL, .boolean = 0 };
 
             size_t len = strlen(operation);

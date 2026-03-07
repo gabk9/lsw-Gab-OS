@@ -4,7 +4,7 @@
 #include "types.h"
 #include <stdint.h>
 
-void checkLswrcSyntax(char *data_folder);
+void checkLswrcSyntax(const char *data_folder);
 char *stringToVariable(const char *str, int32_t *changed);
 void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash);
 evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib);
