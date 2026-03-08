@@ -569,7 +569,7 @@ void bcCmd(uint16_t argc, char **argv) {
 
         appear = 1;
 
-        printc(">>> ", LIGHT_BLUE, WHITE);
+        printc(">>> ", LIGHT_MAGENTA, WHITE);
         fgets(operation, MAX_CHAR, stdin);
         operation[strcspn(operation, "\n")] = '\0';
 
