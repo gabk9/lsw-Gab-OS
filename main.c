@@ -2,6 +2,7 @@
 #include "libs/types.h"
 
 #ifdef _WIN32
+    #define rmdir _rmdir
     #define chdir _chdir
     #define getcwd _getcwd
     HANDLE hConsole;
