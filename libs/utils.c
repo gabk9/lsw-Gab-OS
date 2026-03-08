@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9000
-#define PROJ_SIZE_APPROX_BYTES 260500
+#define PROJ_SIZE_APPROX_BYTES 262000
 
 #define RC_FILE "lswrc.txt"
 
@@ -35,25 +35,25 @@ LONG handler(EXCEPTION_POINTERS *e) {
 
 void getItemTypeStr(char *buff, size_t size, evalOut item) {
     switch (item.type) {
-        case RET_INT:    snprintf(buff, size, "int"); break;
-        case RET_FLOAT:  snprintf(buff, size, "float"); break;
-        case RET_STRING: snprintf(buff, size, "str"); break;
-        case RET_BOOL:   snprintf(buff, size, "bool"); break;
-        case RET_NONE:   snprintf(buff, size, "none"); break;
-        default:         snprintf(buff, size, "NULL"); break;
+        case BC_INT:    snprintf(buff, size, "int"); break;
+        case BC_FLOAT:  snprintf(buff, size, "float"); break;
+        case BC_STR:    snprintf(buff, size, "str"); break;
+        case BC_BOOL:   snprintf(buff, size, "bool"); break;
+        case BC_NONE:   snprintf(buff, size, "none"); break;
+        default:        snprintf(buff, size, "NULL"); break;
     }
 }
 
 evalOut eval_typeof(char *operation, bool mathLib) {
 
     evalOut out = {0};
-    out.type = RET_NONE;
+    out.type = BC_NONE;
 
     if (!operation)
         return out;
 
     if (isBetweenQuotes(operation, 1)) {
-        out.type = RET_STRING;
+        out.type = BC_STR;
         out.str = strdup(operation);
         return out;
     }
@@ -64,10 +64,10 @@ evalOut eval_typeof(char *operation, bool mathLib) {
         return out;
 
     if (fabs(result - (int64_t)result) < EPS) {
-        out.type = RET_INT;
+        out.type = BC_INT;
         out.num = (int64_t)result;
     } else {
-        out.type = RET_FLOAT;
+        out.type = BC_FLOAT;
         out.num = result;
     }
 
@@ -2463,51 +2463,51 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 
 char *eval(char *operation, bool mathlib) {
     const FuncEntry math_table[] = {
-        {"scale",   s_scale,       RET_INT},
-        {"sqrt",    s_sqrt,        RET_FLOAT},
-        {"root",    s_root,        RET_FLOAT},
-        {"sin",     s_sin,         RET_FLOAT},
-        {"asin",    s_asin,        RET_FLOAT},
-        {"cos",     s_cos,         RET_FLOAT},
-        {"acos",    s_acos,        RET_FLOAT},
-        {"tan",     s_tan,         RET_FLOAT},
-        {"atan",    s_atan,        RET_FLOAT},
-        {"cot",     s_cot,         RET_FLOAT},
-        {"acot",    s_acot,        RET_FLOAT},
-        {"ln",      s_ln,          RET_FLOAT},
-        {"log10",   s_log10,       RET_FLOAT},
-        {"log2",    s_log2,        RET_FLOAT},
-        {"log",     s_log,         RET_FLOAT},
-        {"floor",   s_floor,       RET_INT},
-        {"ceil",    s_ceil,        RET_INT},
-        {"round",   s_round,       RET_INT},
-        {"sign",    s_sign,        RET_INT},
-        {"sum",     s_sum,         RET_FLOAT},
-        {"deg2rad", s_rad,         RET_FLOAT},
-        {"rad2gon", s_gon,         RET_FLOAT},
-        {"rad2deg", s_deg,         RET_FLOAT},
-        {"trunc",   s_trunc,       RET_INT},
-        {"randf",   s_randFloat,   RET_FLOAT},
-        {"fah",     s_fah,         RET_FLOAT},
-        {"cel",     s_cel,         RET_FLOAT},
-        {"rand",    s_randInt,     RET_INT},
-        {"mi",      s_miles,       RET_FLOAT},
-        {"km",      s_km,          RET_FLOAT},
-        {"lb",      s_pounds,      RET_FLOAT},
-        {"kg",      s_kg,          RET_FLOAT},
-        {"isprime", s_isprime,     RET_BOOL},
-        {"bmi",     s_bmi,         RET_FLOAT},
-        {"len",     bc_len,        RET_INT},
-        {"feet",    s_feet,        RET_FLOAT},
-        {"meter",   s_meter,       RET_FLOAT},
-        {"abs",     s_abs,         RET_FLOAT},
-        {"int",     bc_parse,      RET_INT},
-        {"float",   bc_parse,      RET_FLOAT},
-        {"str",     NULL,          RET_STRING}, // special case
-        {"chr",     NULL,          RET_CHAR},   // special case
-        {"bin",     NULL,          RET_STRING}, // special case
-        {"oct",     NULL,          RET_STRING}, // special case
-        {"hex",     NULL,          RET_STRING}, // special case
+        {.name = "scale",   .func = s_scale,       .returnType = BC_INT},
+        {.name = "sqrt",    .func = s_sqrt,        .returnType = BC_FLOAT},
+        {.name = "root",    .func = s_root,        .returnType = BC_FLOAT},
+        {.name = "sin",     .func = s_sin,         .returnType = BC_FLOAT},
+        {.name = "asin",    .func = s_asin,        .returnType = BC_FLOAT},
+        {.name = "cos",     .func = s_cos,         .returnType = BC_FLOAT},
+        {.name = "acos",    .func = s_acos,        .returnType = BC_FLOAT},
+        {.name = "tan",     .func = s_tan,         .returnType = BC_FLOAT},
+        {.name = "atan",    .func = s_atan,        .returnType = BC_FLOAT},
+        {.name = "cot",     .func = s_cot,         .returnType = BC_FLOAT},
+        {.name = "acot",    .func = s_acot,        .returnType = BC_FLOAT},
+        {.name = "ln",      .func = s_ln,          .returnType = BC_FLOAT},
+        {.name = "log10",   .func = s_log10,       .returnType = BC_FLOAT},
+        {.name = "log2",    .func = s_log2,        .returnType = BC_FLOAT},
+        {.name = "log",     .func = s_log,         .returnType = BC_FLOAT},
+        {.name = "floor",   .func = s_floor,       .returnType = BC_INT},
+        {.name = "ceil",    .func = s_ceil,        .returnType = BC_INT},
+        {.name = "round",   .func = s_round,       .returnType = BC_INT},
+        {.name = "sign",    .func = s_sign,        .returnType = BC_INT},
+        {.name = "sum",     .func = s_sum,         .returnType = BC_FLOAT},
+        {.name = "deg2rad", .func = s_rad,         .returnType = BC_FLOAT},
+        {.name = "rad2gon", .func = s_gon,         .returnType = BC_FLOAT},
+        {.name = "rad2deg", .func = s_deg,         .returnType = BC_FLOAT},
+        {.name = "trunc",   .func = s_trunc,       .returnType = BC_INT},
+        {.name = "randf",   .func = s_randFloat,   .returnType = BC_FLOAT},
+        {.name = "fah",     .func = s_fah,         .returnType = BC_FLOAT},
+        {.name = "cel",     .func = s_cel,         .returnType = BC_FLOAT},
+        {.name = "rand",    .func = s_randInt,     .returnType = BC_INT},
+        {.name = "mi",      .func = s_miles,       .returnType = BC_FLOAT},
+        {.name = "km",      .func = s_km,          .returnType = BC_FLOAT},
+        {.name = "lb",      .func = s_pounds,      .returnType = BC_FLOAT},
+        {.name = "kg",      .func = s_kg,          .returnType = BC_FLOAT},
+        {.name = "isprime", .func = s_isprime,     .returnType = BC_BOOL},
+        {.name = "bmi",     .func = s_bmi,         .returnType = BC_FLOAT},
+        {.name = "len",     .func = bc_len,        .returnType = BC_INT},
+        {.name = "feet",    .func = s_feet,        .returnType = BC_FLOAT},
+        {.name = "meter",   .func = s_meter,       .returnType = BC_FLOAT},
+        {.name = "abs",     .func = s_abs,         .returnType = BC_FLOAT},
+        {.name = "int",     .func = bc_parse,      .returnType = BC_INT},
+        {.name = "float",   .func = bc_parse,      .returnType = BC_FLOAT},
+        {.name = "str",     .func = NULL,          .returnType = BC_STR},    // special case
+        {.name = "chr",     .func = NULL,          .returnType = BC_CHAR},   // special case
+        {.name = "bin",     .func = NULL,          .returnType = BC_STR},    // special case
+        {.name = "oct",     .func = NULL,          .returnType = BC_STR},    // special case
+        {.name = "hex",     .func = NULL,          .returnType = BC_STR},    // special case
     };
 
     size_t funcCount = sizeof(math_table) / sizeof(*math_table);
@@ -2545,7 +2545,7 @@ char *eval(char *operation, bool mathlib) {
 
     evalOut buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 
-    if (buff.type == RET_BOOL)
+    if (buff.type == BC_BOOL)
         return (buff.boolean == 1) ? strdup("true") : strdup("false");
 
 
@@ -2555,19 +2555,10 @@ char *eval(char *operation, bool mathlib) {
 char *evalOut2str(evalOut buff) {
     switch (buff.type) {
 
-        case RET_STRING:
+        case BC_STR:
             return buff.str;
 
-        case RET_CHAR: {
-            char *tmp = malloc(2);
-            if (!tmp) return NULL;
-
-            tmp[0] = buff.ch;
-            tmp[1] = '\0';
-            return tmp;
-        }
-
-        case RET_BOOL: {
+        case BC_BOOL: {
             char *tmp = malloc(6);
             if (!tmp) return NULL;
 
@@ -2575,8 +2566,8 @@ char *evalOut2str(evalOut buff) {
             return tmp;
         }
 
-        case RET_INT:
-        case RET_FLOAT: {
+        case BC_INT:
+        case BC_FLOAT: {
             char *tmp = malloc(64);
             if (!tmp) return NULL;
 

@@ -109,7 +109,7 @@ void checkLswrcSyntax(const char *data_folder) {
         line[strcspn(line, "\n")] = '\0';
 
         char lineOrig[MAX_CHAR];
-        strcpy(lineOrig, line); // cópia local para verificações que precisam da linha inteira
+        strcpy(lineOrig, line);
 
         removeComments(line);
         trim(line);
@@ -125,7 +125,7 @@ void checkLswrcSyntax(const char *data_folder) {
         if (!cmd) continue;
 
         if (strcmp(cmd, "alias") == 0) {
-            char *eq = findFirstEqualOutsideQuotes(lineOrig); // usar a cópia original
+            char *eq = findFirstEqualOutsideQuotes(lineOrig);
             if (!eq) {
                 fprintf(stderr, "alias: syntax error\n");
                 goto fail;
@@ -199,20 +199,20 @@ fail:
 evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
 
     evalOut out;
-    out.type = RET_NONE;
+    out.type = BC_NONE;
 
-    if (left.type == RET_NONE || right.type == RET_NONE) {
+    if (left.type == BC_NONE || right.type == BC_NONE) {
         printf("eval: invalid data type: 'none'\n");
         return out;
     }
 
-    if (left.type == RET_STRING || right.type == RET_STRING) {
+    if (left.type == BC_STR || right.type == BC_STR) {
 
         if (strcmp(operation, "+") == 0) {
             
             if (left.type != right.type) {
                 char type[0x20] = {0};
-                evalOut wrong = (left.type != RET_STRING) ? left : right;
+                evalOut wrong = (left.type != BC_STR) ? left : right;
 
                 getItemTypeStr(type, sizeof(type), wrong);
 
@@ -225,11 +225,11 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
                 return out;
             }
 
-            out.type = RET_STRING;
+            out.type = BC_STR;
             out.str = bc_strcat(left.str, right.str);
 
             if (!out.str) {
-                out.type = RET_NONE;
+                out.type = BC_NONE;
                 return out;
             }
 
@@ -239,7 +239,7 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
             evalOut notStr;
             evalOut Str;
 
-            if (left.type != RET_STRING) {
+            if (left.type != BC_STR) {
                 notStr = left;
                 Str = right;
             } else {
@@ -247,7 +247,7 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
                 Str = left;
             }
 
-            if (notStr.type != RET_INT) {
+            if (notStr.type != BC_INT) {
                 char type[0x20] = {0};
 
                 getItemTypeStr(type, sizeof(type), notStr);
@@ -270,10 +270,10 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
                 return out;
             }
 
-            out.type = RET_STRING;
+            out.type = BC_STR;
             char *result = strdup(multiplied_str);
             if (!result) {
-                out.type = RET_NONE;
+                out.type = BC_NONE;
                 return out;
             }
 
@@ -283,7 +283,7 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
 
                 SAFE_FREE(old);
                 if (!result) { 
-                    out.type = RET_NONE;
+                    out.type = BC_NONE;
                     return out;
                 }
             }
@@ -293,7 +293,7 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
         } 
 
         if (left.type != right.type) {
-            out.type = RET_BOOL;
+            out.type = BC_BOOL;
             out.boolean = 0;
             return out;
         }
@@ -301,27 +301,27 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
         int16_t cmp = bc_strcmp(left.str, right.str);
 
         if (strcmp(operation, "==") == 0) {
-            out.type = RET_BOOL;
+            out.type = BC_BOOL;
             out.boolean = cmp == 0;
             return out;
         } else if (strcmp(operation, "!=") == 0) {
-            out.type = RET_BOOL;
+            out.type = BC_BOOL;
             out.boolean = cmp != 0;
             return out;
         } else if (strcmp(operation, ">") == 0) {
-            out.type = RET_BOOL;
+            out.type = BC_BOOL;
             out.boolean = cmp > 0;
             return out;
         } else if (strcmp(operation, ">=") == 0) {
-            out.type = RET_BOOL;
+            out.type = BC_BOOL;
             out.boolean = cmp >= 0;
             return out;
         } else if (strcmp(operation, "<") == 0) {
-            out.type = RET_BOOL;
+            out.type = BC_BOOL;
             out.boolean = cmp < 0;
             return out;
         } else if (strcmp(operation, "<=") == 0) {
-            out.type = RET_BOOL;
+            out.type = BC_BOOL;
             out.boolean = cmp <= 0;
             return out;
         } else {
@@ -402,42 +402,42 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "<") == 0) {
 
-        out.type = RET_BOOL;
+        out.type = BC_BOOL;
         out.boolean = (num1 < num2) && fabs(num1 - num2) > EPS;
         return out;
     }
 
     else if (strcmp(operation, ">") == 0) {
 
-        out.type = RET_BOOL;
+        out.type = BC_BOOL;
         out.boolean = (num1 > num2) && fabs(num1 - num2) > EPS;
         return out;
     }
 
     else if (strcmp(operation, "<=") == 0) {
 
-        out.type = RET_BOOL;
+        out.type = BC_BOOL;
         out.boolean = (num1 < num2) || fabs(num1 - num2) < EPS;
         return out;
     }
 
     else if (strcmp(operation, ">=") == 0) {
 
-        out.type = RET_BOOL;
+        out.type = BC_BOOL;
         out.boolean = (num1 > num2) || fabs(num1 - num2) < EPS;
         return out;
     }
 
     else if (strcmp(operation, "!=") == 0) {
 
-        out.type = RET_BOOL;
+        out.type = BC_BOOL;
         out.boolean = fabs(num1 - num2) > EPS;
         return out;
     }
 
     else if (strcmp(operation, "==") == 0) {
 
-        out.type = RET_BOOL;
+        out.type = BC_BOOL;
 
         if (isnan(num1) || isnan(num2))
             out.boolean = 0;
@@ -504,14 +504,14 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "&&") == 0) {
 
-        out.type = RET_BOOL;
+        out.type = BC_BOOL;
         out.boolean = (num1 != 0 && num2 != 0);
         return out;
     }
 
     else if (strcmp(operation, "||") == 0) {
 
-        out.type = RET_BOOL;
+        out.type = BC_BOOL;
         out.boolean = (num1 != 0 || num2 != 0);
         return out;
     }
@@ -524,12 +524,12 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
 
     if (fabs(result - (int64_t)result) < EPS) {
 
-        out.type = RET_INT;
+        out.type = BC_INT;
         out.num = (int64_t)result;
 
     } else {
 
-        out.type = RET_FLOAT;
+        out.type = BC_FLOAT;
         out.num = result;
     }
 
@@ -1323,7 +1323,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
         if (Ans) {
             if (strcasecmp(operation, OLD_ANSWER_STR) == 0) {
                 if (isBetweenQuotes(Ans, 1)) {
-                    return (evalOut){ .type = RET_STRING, .str = strdup(Ans) };
+                    return (evalOut){ .type = BC_STR, .str = strdup(Ans) };
                 }
             }
 
@@ -1341,9 +1341,9 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
         if (!paren) {
 
             if (strcasecmp(operation, "true") == 0)
-                return (evalOut){ .type = RET_BOOL, .boolean = 1 };
+                return (evalOut){ .type = BC_BOOL, .boolean = 1 };
             else if (strcasecmp(operation, "false") == 0)
-                return (evalOut){ .type = RET_BOOL, .boolean = 0 };
+                return (evalOut){ .type = BC_BOOL, .boolean = 0 };
 
             size_t len = strlen(operation);
 
@@ -1371,7 +1371,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
                     if (*p != '"') {
                         printf("eval: unclosed quote\n");
-                        return (evalOut){ .type = RET_NONE };
+                        return (evalOut){ .type = BC_NONE };
                     }
 
                     p++;
@@ -1382,7 +1382,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                     char *final = malloc(res_len + 3);
                     if (!final) {
                         printf("eval: memory allocation error\n");
-                        return (evalOut){ .type = RET_NONE };
+                        return (evalOut){ .type = BC_NONE };
                     }
 
                     final[0] = '"';
@@ -1390,13 +1390,13 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                     final[res_len + 1] = '"';
                     final[res_len + 2] = '\0';
 
-                    return (evalOut){ .type = RET_STRING, .str = final };
+                    return (evalOut){ .type = BC_STR, .str = final };
                 }
             }
 
             double num = h_atof(operation, mathlib);
             if (isnan(num))
-                return (evalOut){ .type = RET_NONE };
+                return (evalOut){ .type = BC_NONE };
 
             return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = num };
         }
@@ -1409,7 +1409,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             double num = h_atof(operation, mathlib);
 
             if (isnan(num))
-                return (evalOut){ .type = RET_NONE };
+                return (evalOut){ .type = BC_NONE };
 
             return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = num };
         }
@@ -1419,12 +1419,15 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
         trimEnd(name);
 
+        if (!*name)
+            return (evalOut){ .type = BC_NONE };
+
         if (*operation == '~' || *operation == '-') {
 
             double num = h_atof(operation, mathlib);
 
             if (isnan(num))
-                return (evalOut){ .type = RET_NONE };
+                return (evalOut){ .type = BC_NONE };
 
             return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = num };
         }
@@ -1448,19 +1451,19 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             double result = s_fact(operation);
 
             if (isnan(result))
-                return (evalOut){ .type = RET_NONE };
+                return (evalOut){ .type = BC_NONE };
 
             return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = result };
         }
 
         if (close_index == -1 || operation[close_index + 1] != '\0') {
             printf("eval: invalid syntax\n");
-            return (evalOut){ .type = RET_NONE };
+            return (evalOut){ .type = BC_NONE };
         }
 
         if (!isValidBcFuncName(name)) {
             printf("eval: invalid function name: '%s()'\n", name);
-            return (evalOut){ .type = RET_NONE };
+            return (evalOut){ .type = BC_NONE };
         }
 
         if (mathlib) {
@@ -1472,37 +1475,37 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                         double num = functions[i].func(operation);
 
                         if (isnan(num))
-                            return (evalOut){ .type = RET_NONE };
+                            return (evalOut){ .type = BC_NONE };
 
-                        if (functions[i].returnType == RET_BOOL)
-                            return (evalOut){ .type = RET_BOOL, .boolean = (int32_t)num };
+                        if (functions[i].returnType == BC_BOOL)
+                            return (evalOut){ .type = BC_BOOL, .boolean = (int32_t)num };
 
                         return (evalOut){ .type = functions[i].returnType, .num = num };
                     }
 
-                    if (functions[i].returnType == RET_STRING || functions[i].returnType == RET_CHAR) {
+                    if (functions[i].returnType == BC_STR || functions[i].returnType == BC_CHAR) {
 
                         if (strcmp(name, "chr") == 0)
-                            return (evalOut){ .type = RET_CHAR, .ch = *s_chr(operation) };
+                            return (evalOut){ .type = BC_CHAR, .str = s_chr(operation) };
 
                         else if (strcmp(name, "hex") == 0)
-                            return (evalOut){ .type = RET_STRING, .str = s_hex(operation) };
+                            return (evalOut){ .type = BC_STR, .str = s_hex(operation) };
 
                         else if (strcmp(name, "bin") == 0)
-                            return (evalOut){ .type = RET_STRING, .str = s_bin(operation) };
+                            return (evalOut){ .type = BC_STR, .str = s_bin(operation) };
 
                         else if (strcmp(name, "oct") == 0)
-                            return (evalOut){ .type = RET_STRING, .str = s_oct(operation) };
+                            return (evalOut){ .type = BC_STR, .str = s_oct(operation) };
 
                         else if (strcmp(name, "str") == 0)
-                            return (evalOut){ .type = RET_STRING, .str = bc_parse_str(operation) };
+                            return (evalOut){ .type = BC_STR, .str = bc_parse_str(operation) };
                     }
                 }
             }
         }
 
         printf("eval: undefined function: '%s()'\n", name);
-        return (evalOut){ .type = RET_NONE };
+        return (evalOut){ .type = BC_NONE };
     }
 
     char buffer[0x100];
@@ -1519,42 +1522,42 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
     if (!*num1 || !*num2) {
         printf("eval: invalid syntax\n");
-        return (evalOut){ .type = RET_NONE };
+        return (evalOut){ .type = BC_NONE };
     }
 
     char *left = eval(num1, mathlib);
     if (!left)
-        return (evalOut){ .type = RET_NONE };
+        return (evalOut){ .type = BC_NONE };
 
     char *right = eval(num2, mathlib);
     if (!right) {
         SAFE_FREE(left);
-        return (evalOut){ .type = RET_NONE };
+        return (evalOut){ .type = BC_NONE };
     }
 
     evalOut val1 = eval_typeof(left, mathlib);
     evalOut val2 = eval_typeof(right, mathlib);
 
     if (strcasecmp(left, "true") == 0) {
-        val1.type = RET_BOOL;
+        val1.type = BC_BOOL;
         val1.boolean = 1;
     }
     else if (strcasecmp(left, "false") == 0) {
-        val1.type = RET_BOOL;
+        val1.type = BC_BOOL;
         val1.boolean = 0;
     }
 
     if (strcasecmp(right, "true") == 0) {
-        val2.type = RET_BOOL;
+        val2.type = BC_BOOL;
         val2.boolean = 1;
     }
     else if (strcasecmp(right, "false") == 0) {
-        val2.type = RET_BOOL;
+        val2.type = BC_BOOL;
         val2.boolean = 0;
     }
 
-    if (val1.type == RET_NONE || val2.type == RET_NONE)
-        return (evalOut){ .type = RET_NONE };
+    if (val1.type == BC_NONE || val2.type == BC_NONE)
+        return (evalOut){ .type = BC_NONE };
 
     evalOut result = calc(val1, op, val2, mathlib);
 

@@ -4,9 +4,8 @@
 #include <stdint.h>
 
 typedef enum returns {
-    RET_STRING, RET_FLOAT,
-    RET_INT, RET_BOOL, RET_CHAR,
-    RET_NONE
+    BC_STR, BC_FLOAT, BC_INT,
+    BC_BOOL, BC_CHAR, BC_NONE
 } evalRet;
 
 typedef double (*MathFunc)(char *operation);
@@ -23,7 +22,6 @@ typedef struct {
         double num;
         char *str;
         int32_t boolean;
-        char ch;
     };
 } evalOut;
 

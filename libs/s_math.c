@@ -6,7 +6,7 @@
 
 double parse_str_func(char *operation, const FuncEntry function) {    
 
-    if (function.returnType != RET_STRING && function.returnType != RET_CHAR) {
+    if (function.returnType != BC_STR && function.returnType != BC_CHAR) {
         printf("eval: invalid function return type\n");
         return NAN;
     }
@@ -16,7 +16,7 @@ double parse_str_func(char *operation, const FuncEntry function) {
         return NAN;
     }
 
-    bool isChr = function.returnType == RET_CHAR;
+    bool isChr = function.returnType == BC_CHAR;
 
     char *buff = NULL;
 
@@ -826,6 +826,9 @@ char *s_chr(char *operation) {
     operation = p;
 
     char *buff = eval(operation, true);
+
+    if (!buff)
+        return NULL;
 
     double num = h_atof(buff, true);
 

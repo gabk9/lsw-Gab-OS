@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.3.25"
+#define VERSION "r2.3.33"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1625,7 +1625,8 @@ void updatehistory(void) {
         "r2.2.80 - huge changes\n\tEdited: huge refactor on eval()\n\tAdded: support to boolean constants\n",
         "r2.2.85 - small changes\n\tRemoved: numeric a numeric overflow error message\n\tEdited: bc prompt\n",
         "r2.2.93 - small changes\n\tEdited: bc prompt\n\tFixed: Ans now converts true to 1 and false to 0\n",
-        "r2.3.25 - huge changes\n\tEdited: lswrc syntax analyzer, string operations handler were all refactored\n\tAdded: boolean operators and multiplication with strings\n"
+        "r2.3.25 - huge changes\n\tEdited: lswrc syntax analyzer, string operations handler were all refactored\n\tAdded: boolean operators and multiplication with strings\n",
+        "r2.3.33 - small changes\n\tFixed: chr() function seg-fault\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
