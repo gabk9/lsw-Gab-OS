@@ -4,8 +4,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
-#include <inttypes.h>
 
 #define PI 3.14159265358979323846
 #define E  2.71828182845904523536

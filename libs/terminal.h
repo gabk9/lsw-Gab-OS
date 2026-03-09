@@ -1,7 +1,7 @@
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
-#include <inttypes.h>
+#include <stdint.h>
 
 void listDrives(void);
 void updatehistory(void);

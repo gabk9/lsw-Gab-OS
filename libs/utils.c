@@ -58,6 +58,14 @@ evalOut eval_typeof(char *operation, bool mathLib) {
         return out;
     }
 
+    if (strcasecmp(operation, "false") == 0) {
+        out.type = BC_BOOL;
+        out.boolean = false; 
+    } else if (strcasecmp(operation, "true") == 0) {
+        out.type = BC_BOOL;
+        out.type = true;
+    }
+
     double result = h_atof(operation, mathLib);
 
     if (isnan(result))
@@ -2546,7 +2554,7 @@ char *eval(char *operation, bool mathlib) {
     evalOut buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 
     if (buff.type == BC_BOOL)
-        return (buff.boolean == 1) ? strdup("true") : strdup("false");
+        return (buff.boolean == true) ? strdup("true") : strdup("false");
 
 
     return evalOut2str(buff);

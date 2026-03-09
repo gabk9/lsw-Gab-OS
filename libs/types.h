@@ -2,6 +2,7 @@
 #define TYPES_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum returns {
     BC_STR, BC_FLOAT, BC_INT,
@@ -21,7 +22,7 @@ typedef struct {
     union {
         double num;
         char *str;
-        int32_t boolean;
+        bool boolean;
     };
 } evalOut;
 

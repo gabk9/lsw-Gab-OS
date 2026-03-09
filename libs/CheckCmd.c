@@ -290,43 +290,72 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
 
             out.str = result;
             return out;
-        } 
-
-        if (left.type != right.type) {
-            out.type = BC_BOOL;
-            out.boolean = 0;
-            return out;
-        }
-
-        int16_t cmp = bc_strcmp(left.str, right.str);
-
-        if (strcmp(operation, "==") == 0) {
-            out.type = BC_BOOL;
-            out.boolean = cmp == 0;
-            return out;
-        } else if (strcmp(operation, "!=") == 0) {
-            out.type = BC_BOOL;
-            out.boolean = cmp != 0;
-            return out;
-        } else if (strcmp(operation, ">") == 0) {
-            out.type = BC_BOOL;
-            out.boolean = cmp > 0;
-            return out;
-        } else if (strcmp(operation, ">=") == 0) {
-            out.type = BC_BOOL;
-            out.boolean = cmp >= 0;
-            return out;
-        } else if (strcmp(operation, "<") == 0) {
-            out.type = BC_BOOL;
-            out.boolean = cmp < 0;
-            return out;
-        } else if (strcmp(operation, "<=") == 0) {
-            out.type = BC_BOOL;
-            out.boolean = cmp <= 0;
-            return out;
         } else {
-            printf("eval: unsupported operand for 'str' type: '%s'\n", operation);
-            return out;
+
+            if (strcmp(operation, "==") == 0) {
+                out.type = BC_BOOL;
+
+                if (left.type != right.type) {
+                    out.boolean = false;
+                    return out;
+                }
+
+                out.boolean = bc_strcmp(left.str, right.str) == 0;
+                return out;
+            } else if (strcmp(operation, "!=") == 0) {
+                out.type = BC_BOOL;
+
+                if (left.type != right.type) {
+                    out.boolean = false;
+                    return out;
+                }
+
+                out.boolean = bc_strcmp(left.str, right.str) != 0;
+                return out;
+            } else if (strcmp(operation, ">") == 0) {
+                out.type = BC_BOOL;
+
+                if (left.type != right.type) {
+                    out.boolean = false;
+                    return out;
+                }
+
+                out.boolean = bc_strcmp(left.str, right.str) > 0;
+                return out;
+            } else if (strcmp(operation, ">=") == 0) {
+                out.type = BC_BOOL;
+
+                if (left.type != right.type) {
+                    out.boolean = false;
+                    return out;
+                }
+
+                out.boolean = bc_strcmp(left.str, right.str) >= 0;
+                return out;
+            } else if (strcmp(operation, "<") == 0) {
+                out.type = BC_BOOL;
+
+                if (left.type != right.type) {
+                    out.boolean = false;
+                    return out;
+                }
+
+                out.boolean = bc_strcmp(left.str, right.str) < 0;
+                return out;
+            } else if (strcmp(operation, "<=") == 0) {
+                out.type = BC_BOOL;
+
+                if (left.type != right.type) {
+                    out.boolean = false;
+                    return out;
+                }
+
+                out.boolean = bc_strcmp(left.str, right.str) <= 0;
+                return out;
+            } else {
+                printf("eval: unsupported operand for 'str' type: '%s'\n", operation);
+                return out;
+            }
         }
     }
 
@@ -440,7 +469,7 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
         out.type = BC_BOOL;
 
         if (isnan(num1) || isnan(num2))
-            out.boolean = 0;
+            out.boolean = false;
 
         else if (isinf(num1) || isinf(num2))
             out.boolean = (num1 == num2);
@@ -1341,9 +1370,9 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
         if (!paren) {
 
             if (strcasecmp(operation, "true") == 0)
-                return (evalOut){ .type = BC_BOOL, .boolean = 1 };
+                return (evalOut){ .type = BC_BOOL, .boolean = true };
             else if (strcasecmp(operation, "false") == 0)
-                return (evalOut){ .type = BC_BOOL, .boolean = 0 };
+                return (evalOut){ .type = BC_BOOL, .boolean = false };
 
             size_t len = strlen(operation);
 
@@ -1478,7 +1507,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                             return (evalOut){ .type = BC_NONE };
 
                         if (functions[i].returnType == BC_BOOL)
-                            return (evalOut){ .type = BC_BOOL, .boolean = (int32_t)num };
+                            return (evalOut){ .type = BC_BOOL, .boolean = (bool)num };
 
                         return (evalOut){ .type = functions[i].returnType, .num = num };
                     }
@@ -1540,20 +1569,20 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
     if (strcasecmp(left, "true") == 0) {
         val1.type = BC_BOOL;
-        val1.boolean = 1;
+        val1.boolean = true;
     }
     else if (strcasecmp(left, "false") == 0) {
         val1.type = BC_BOOL;
-        val1.boolean = 0;
+        val1.boolean = false;
     }
 
     if (strcasecmp(right, "true") == 0) {
         val2.type = BC_BOOL;
-        val2.boolean = 1;
+        val2.boolean = true;
     }
     else if (strcasecmp(right, "false") == 0) {
         val2.type = BC_BOOL;
-        val2.boolean = 0;
+        val2.boolean = false;
     }
 
     if (val1.type == BC_NONE || val2.type == BC_NONE)
