@@ -1486,19 +1486,19 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                     if (functions[i].returnType == BC_STR || functions[i].returnType == BC_CHAR) {
 
                         if (strcmp(name, "chr") == 0)
-                            return (evalOut){ .type = BC_CHAR, .str = s_chr(operation) };
+                            return (evalOut){ .type = functions[i].returnType, .str = s_chr(operation) };
 
                         else if (strcmp(name, "hex") == 0)
-                            return (evalOut){ .type = BC_STR, .str = s_hex(operation) };
+                            return (evalOut){ .type = functions[i].returnType, .str = s_hex(operation) };
 
                         else if (strcmp(name, "bin") == 0)
-                            return (evalOut){ .type = BC_STR, .str = s_bin(operation) };
+                            return (evalOut){ .type = functions[i].returnType, .str = s_bin(operation) };
 
                         else if (strcmp(name, "oct") == 0)
-                            return (evalOut){ .type = BC_STR, .str = s_oct(operation) };
+                            return (evalOut){ .type = functions[i].returnType, .str = s_oct(operation) };
 
                         else if (strcmp(name, "str") == 0)
-                            return (evalOut){ .type = BC_STR, .str = bc_parse_str(operation) };
+                            return (evalOut){ .type = functions[i].returnType, .str = bc_parse_str(operation) };
                     }
                 }
             }

@@ -2555,6 +2555,7 @@ char *eval(char *operation, bool mathlib) {
 char *evalOut2str(evalOut buff) {
     switch (buff.type) {
 
+        case BC_CHAR:
         case BC_STR:
             return buff.str;
 
@@ -2565,7 +2566,6 @@ char *evalOut2str(evalOut buff) {
             snprintf(tmp, 6, "%d", buff.boolean);
             return tmp;
         }
-
         case BC_INT:
         case BC_FLOAT: {
             char *tmp = malloc(64);
