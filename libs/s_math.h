@@ -48,6 +48,8 @@ double s_rad(char *operation)__attribute__((nonnull));
 double s_abs(char *operation)__attribute__((nonnull));
 double s_gon(char *operation)__attribute__((nonnull));
 double s_deg(char *operation)__attribute__((nonnull));
+char *s_upper(char *operation)__attribute__((nonnull));
+char *s_lower(char *operation)__attribute__((nonnull));
 double s_acos(char *operation)__attribute__((nonnull));
 double s_asin(char *operation)__attribute__((nonnull));
 double s_atan(char *operation)__attribute__((nonnull));

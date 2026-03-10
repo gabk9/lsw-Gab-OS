@@ -2,8 +2,8 @@
 #include "utils.h"
 #include "types.h"
 
-#define PROJ_LINES_APPROX 9000
-#define PROJ_SIZE_APPROX_BYTES 263000
+#define PROJ_LINES_APPROX 9150
+#define PROJ_SIZE_APPROX_BYTES 267000
 
 #define RC_FILE "lswrc.txt"
 
@@ -122,6 +122,55 @@ char *bc_strcat(const char *dest, const char *src) {
     return cat;
 }
 
+int8_t getInvalidEscape(const char *str, const char *error_str) {
+
+    bool inDoubleQuotes = false;
+    bool inSingleQuotes = false;
+
+    size_t len = strlen(str);
+
+    for (size_t i = 0; i < len; i++) {
+
+        int32_t backslashes = 0;
+        size_t j = i;
+
+        while (j > 0 && str[j-1] == '\\') {
+            backslashes++;
+            j--;
+        }
+
+        bool escaped = (backslashes & 1);
+
+        if (str[i] == '"' && !inSingleQuotes && !escaped)
+            inDoubleQuotes = !inDoubleQuotes;
+
+        else if (str[i] == '\'' && !inDoubleQuotes && !escaped)
+            inSingleQuotes = !inSingleQuotes;
+
+        if (!inDoubleQuotes && !inSingleQuotes)
+            continue;
+
+        if (str[i] == '\\') {
+
+            if (i == len - 1) {
+                printf("%s: missing escape char after slash\n", error_str);
+                return 0;
+            }
+
+            char chr = str[i+1];
+
+            if (!isIn(chr, "ntbra'\"?fv0\\")) {
+                printf("%s: invalid escape character: '\\%c'\n", error_str, chr);
+                return 0;
+            }
+
+            i++;
+        }
+    }
+
+    return 1;
+}
+
 int16_t injectEscape(char *str, const char *error_str) {
     bool inQuotes = false;
 
@@ -198,13 +247,12 @@ paren_status parenthesis_check(const char *str) {
     if (!str) return PAREN_OK;
 
     for (const char *s = str; *s; s++) {
+
         int32_t backslashes = 0;
-        const char *p = s - 1;
-        while (p >= str && *p == '\\') {
+        for (const char *p = s; p > str && *(p - 1) == '\\'; p--)
             backslashes++;
-            p--;
-        }
-        bool escaped = ((backslashes & 1) != 0);
+
+        bool escaped = (backslashes & 1);
 
         if (*s == '"' && !in_single_quotes && !escaped) {
             in_double_quotes = !in_double_quotes;
@@ -2516,6 +2564,9 @@ char *eval(char *operation, bool mathlib) {
         {.name = "bin",     .func = NULL,          .returnType = BC_STR},    // special case
         {.name = "oct",     .func = NULL,          .returnType = BC_STR},    // special case
         {.name = "hex",     .func = NULL,          .returnType = BC_STR},    // special case
+        {.name = "hex",     .func = NULL,          .returnType = BC_STR},    // special case
+        {.name = "lower",   .func = NULL,          .returnType = BC_STR},    // special case
+        {.name = "upper",   .func = NULL,          .returnType = BC_STR},    // special case
     };
 
     size_t funcCount = sizeof(math_table) / sizeof(*math_table);
@@ -2550,6 +2601,9 @@ char *eval(char *operation, bool mathlib) {
 
         return NULL;
     }
+
+    if (!getInvalidEscape(operation, "eval"))
+        return NULL;
 
     evalOut buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 

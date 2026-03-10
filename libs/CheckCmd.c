@@ -957,6 +957,12 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tisprime(X)     : Returns 1 if X is prime, otherwise it returns 0\n"
             "\t                 Example: isprime(5) = 1\n"
             "\t                 Note: it requires an integer which is greater 1\n"
+            "\n"
+            "\tlower(X)       : Returns the string in lower case form\n"
+            "\t                 Example: lower(\"STRING\") = \"string\"\n"
+            "\n"
+            "\tupper(X)       : Returns the string in upper case form\n"
+            "\t                 Example: lower(\"string\") = \"STRING\"\n"
 
             "\nBuiltin Variables: (mathlib must be on to grant access)\n"
             "\tAns   : stores the result of the last operation\n"
@@ -1349,19 +1355,9 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
     if (op_pos == -1) {
 
-        if (Ans) {
-            if (strcasecmp(operation, OLD_ANSWER_STR) == 0) {
-                if (isBetweenQuotes(Ans, 1)) {
-                    return (evalOut){ .type = BC_STR, .str = strdup(Ans) };
-                }
-            }
-
-            if (strcasecmp(Ans, "false") == 0) {
-                SAFE_FREE(Ans);
-                Ans = strdup("0.0");
-            } else if (strcasecmp(Ans, "true") == 0) {
-                SAFE_FREE(Ans);
-                Ans = strdup("1.0");
+        if (Ans && strcasecmp(operation, OLD_ANSWER_STR) == 0) {
+            if (isBetweenQuotes(Ans, 1)) {
+                return (evalOut){ .type = BC_STR, .str = strdup(Ans) };
             }
         }
 
@@ -1393,7 +1389,22 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
                     p++;
 
-                    while (*p && !(*p == '"' && *(p - 1) != '\\')) {
+                    while (*p) {
+
+                        if (*p == '"') {
+
+                            int backslashes = 0;
+                            const char *q = p - 1;
+
+                            while (q >= operation && *q == '\\') {
+                                backslashes++;
+                                q--;
+                            }
+
+                            if ((backslashes & 1) == 0)
+                                break;
+                        }
+
                         result[res_len++] = *p;
                         p++;
                     }
@@ -1422,7 +1433,6 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                     return (evalOut){ .type = BC_STR, .str = final };
                 }
             }
-
             double num = h_atof(operation, mathlib);
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
@@ -1528,6 +1538,12 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
                         else if (strcmp(name, "str") == 0)
                             return (evalOut){ .type = functions[i].returnType, .str = bc_parse_str(operation) };
+
+                        else if (strcmp(name, "lower") == 0)
+                            return (evalOut){ .type = functions[i].returnType, .str = s_lower(operation) };
+
+                        else if (strcmp(name, "upper") == 0)
+                            return (evalOut){ .type = functions[i].returnType, .str = s_upper(operation) };
                     }
                 }
             }

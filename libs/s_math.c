@@ -410,24 +410,25 @@ int64_t parseBinToInt(const char *str) {
     return n;
 }
 
-static uint8_t validPtrFuncArgs(char *arg) {
+static uint8_t validPtrFuncArgs(char *arg, const char *error_str) {
     size_t len = strlen(arg);
 
     if (!len)
         return 1;
 
-    if (*arg != '"' || arg[len-1] != '"') {
+    if (!isBetweenQuotes(arg, 1)) {
         char *buff = eval(arg, true);
 
-        double num = h_atof(buff, true);
-
-        SAFE_FREE(buff);
-
-        if (isnan(num))
+        if (!buff)
             return 0;
 
-        printf("eval: invalid argument: '%g', it must be of type string\n", num);
-        return 0;
+        if (!isBetweenQuotes(buff, 1)) {
+            printf("eval: %s() requires an argument of type 'str'\n", error_str);
+            SAFE_FREE(buff);
+            return 0;
+        }
+
+        SAFE_FREE(buff);
     }
 
     return 1;
@@ -597,12 +598,15 @@ double bc_len(char *operation) {
         return NAN;
     }
 
-    if (!validPtrFuncArgs(operation))
-        return NAN;
-
     char *buff = eval(operation, true);
 
+    if (!buff)
+        return NAN;
+
     if (!injectEscape(buff, "eval"))
+        return NAN;
+
+    if (!validPtrFuncArgs(buff, "len"))
         return NAN;
 
     len = strlen(buff);
@@ -817,6 +821,73 @@ char *s_oct(char *operation) {
     snprintf(buffer, 64, isNeg ? "\"-0o%"PRIo64"\"" : "\"0o%"PRIo64"\"", value);
 
     return buffer;
+}
+
+char *s_lower(char *operation) {
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NULL;
+    operation = p;
+
+    char *buff = eval(operation, true);
+
+    if (!buff || !*buff)
+        return NULL;
+
+    if (!validPtrFuncArgs(buff, "lower"))
+        return NULL;
+
+    for (size_t i = 0; buff[i]; i++) {
+        char chr = buff[i];
+
+        if (isupper(chr)) {
+            buff[i] = tolower(chr);
+            continue;
+        }
+
+        buff[i] = chr;
+    }
+
+    return buff;
+}
+
+char *s_upper(char *operation) {
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NULL;
+    operation = p;
+
+    char *buff = eval(operation, true);
+
+    if (!buff || !*buff)
+        return NULL;
+
+    if (!validPtrFuncArgs(buff, "upper"))
+        return NULL;
+
+    for (size_t i = 0; buff[i]; i++) {
+        char chr = buff[i];
+
+        int32_t backslashes = 0;
+        size_t j = i;
+
+        while (j > 0 && buff[j-1] == '\\') {
+            backslashes++;
+            j--;
+        }
+
+        bool escaped = backslashes & 1;
+
+        if (escaped && isIn(chr, "ntbra'\"?fv0\\")) {
+            buff[i] = chr;
+            continue;
+        }
+
+        if (islower(chr))
+            buff[i] = toupper(chr);
+    }
+
+    return buff;
 }
 
 char *s_chr(char *operation) {

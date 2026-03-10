@@ -185,6 +185,7 @@ char **copyMat(char **dest, const char **src, uint16_t size);
 void printInFileNTimes(FILE *stream, char *str, int64_t count);
 double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok);
 char **extract_args(char *args, uint16_t *argc, char *firstArg);
+int8_t getInvalidEscape(const char *str, const char *error_str);
 bool isKeyRepeated(const char *data_folder, const char *key_name);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
 void saveHist(char *operation, char *history_path, char *data_folder);
