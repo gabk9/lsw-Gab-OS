@@ -30,6 +30,10 @@ double parse_str_func(char *operation, const FuncEntry function) {
         buff = s_oct(operation);
     else if (strcmp(function.name, "str") == 0)
         buff = bc_parse_str(operation);
+    else if (strcmp(function.name, "lower") == 0)
+        buff = s_lower(operation);
+    else if (strcmp(function.name, "upper") == 0)
+        buff = s_upper(operation);
     else {
         printf("eval: undefined function: '%s()'\n", function.name);
         return NAN;

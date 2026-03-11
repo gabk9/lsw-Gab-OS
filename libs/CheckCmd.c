@@ -1355,7 +1355,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
     if (op_pos == -1) {
 
-        if (Ans && strcasecmp(operation, OLD_ANSWER_STR) == 0) {
+        if (mathlib && Ans && strcasecmp(operation, OLD_ANSWER_STR) == 0) {
             if (isBetweenQuotes(Ans, 1)) {
                 return (evalOut){ .type = BC_STR, .str = strdup(Ans) };
             }
