@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9200
-#define PROJ_SIZE_APPROX_BYTES 267500
+#define PROJ_SIZE_APPROX_BYTES 270500
 
 #define RC_FILE "lswrc.txt"
 
@@ -1085,7 +1085,7 @@ void int64_to_hex_min(int64_t v, char *out, size_t size) {
     uint64_t mask = (1ULL << (hex_digits * 4)) - 1;
     u &= mask;
 
-    snprintf(out, size, "\"0x%0*"PRIX64"\"", hex_digits, u);
+    snprintf(out, size, "\""HEX_PREF"%0*"PRIX64"\"", hex_digits, u);
 }
 
 int64_t hex_to_long(char *str) {
@@ -1094,9 +1094,7 @@ int64_t hex_to_long(char *str) {
 
     if (*end == '\0') {
 
-        const char *p = str;
-        if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X'))
-            p += 2;
+        const char *p = str + strlen(HEX_PREF);
 
         size_t digits = 0;
         for (; *p; ++p)
@@ -1118,61 +1116,60 @@ int64_t hex_to_long(char *str) {
 }
 
 bool isBin(const char *str) {
-    if (!str) return false;
+    if (!str || !*str) return false;
 
-    char *suffixes = "kmbt";
+    size_t end = strlen(str) - 1;
+    while (isIn(str[end], "kmbt") || isIn(str[end], "KMBT")) end --;
 
-    uint16_t len = strlen(str);
+    const size_t bin_index = strlen(BIN_PREF);
 
-    if (strncasecmp(str, "0b", 2) != 0)
+    if (strncasecmp(str, BIN_PREF, bin_index != 0))
         return false;
 
-    bool isValidSuffix = false;
-    for (uint16_t i = 0; i < strlen(suffixes); i++) {
-        if (str[len-1] == suffixes[i] && !isdigit(str[len-1])) {
-            isValidSuffix = true;
-            break;
-        }
-    }
-
-    if (!isValidSuffix && !isdigit(str[len-1]))
-        return false;
-
-    for (uint16_t i = 2; i < len - 1; i++) {
+    for (uint16_t i = bin_index; i <= end; i++) {
         if (str[i] != '1' && str[i] != '0')
             return false;
     }
 
-    return strlen(str) > 2;
+    return end >= strlen(BIN_PREF);
 }
 
 bool isHex(const char *str) {
-    if (!str) return false;
+    if (!str || !*str) return false;
 
-    if (strncasecmp(str, "0x", 2) != 0)
+    const size_t hex_index = strlen(HEX_PREF);
+
+    if (strncasecmp(str, HEX_PREF, hex_index) != 0)
         return false;
 
-    for (uint16_t i = 2; str[i]; i++) {
-        if (!isxdigit((unsigned char) str[i]))
-            return false;
-    }
-
-    return strlen(str) > 2;
-}
-
-bool isOct(const char *str) {
-    if (!str || !*str)
+    if (!str[hex_index])
         return false;
 
-    if (strncasecmp(str, "0o", 2) != 0)
-        return false;
-
-    for (uint16_t i = 2; str[i]; i++) {
-        if (str[i] < '0' || str[i] > '7')
+    for (size_t i = hex_index; str[i]; i++) {
+        if (!isxdigit((unsigned char)str[i]))
             return false;
     }
 
     return true;
+}
+
+bool isOct(const char *str) {
+    if (!str || !*str) return false;
+
+    size_t end = strlen(str) - 1;
+    while (isIn(str[end], "kmbt") || isIn(str[end], "KMBT")) end --;
+
+    const size_t oct_index = strlen(OCT_PREF);
+
+    if (strncasecmp(str, OCT_PREF, oct_index) != 0)
+        return false;
+
+    for (uint16_t i = oct_index; i <= end; i++) {
+        if (str[i] < '0' || str[i] > '7')
+            return false;
+    }
+
+    return end >= strlen(OCT_PREF);
 }
 
 bool isValidBcCommand(char *str, char *command) {
@@ -2328,13 +2325,13 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     }
 
     bool isBinary = false; 
-    if (strncasecmp(cpy + pos, "0x", 2) == 0) {
+    if (strncasecmp(cpy + pos, HEX_PREF, strlen(HEX_PREF)) == 0) {
         base = 16;
         pos += 2;
-    } else if (strncasecmp(cpy + pos, "0b", 2) == 0) {
+    } else if (strncasecmp(cpy + pos, BIN_PREF, strlen(BIN_PREF)) == 0) {
         base = 2;
         pos += 2;
-    } else if (strncasecmp(cpy + pos, "0o", 2) == 0) {
+    } else if (strncasecmp(cpy + pos, OCT_PREF, strlen(OCT_PREF)) == 0) {
         base = 8;
         pos += 2;
     } else
@@ -2375,11 +2372,11 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
 
     double mult = 0.0;
 
-    if (strcasecmp(cpy + pos, "pi") == 0)
+    if (strcmp(cpy + pos, PI_VAR) == 0)
         mult = PI;
-    else if (strcasecmp(cpy + pos, "e") == 0)
+    else if (strcmp(cpy + pos, E_VAR) == 0)
         mult = E;
-    else if (strcasecmp(cpy + pos, "ans") == 0) {
+    else if (strcmp(cpy + pos, OLD_ANSWER_STR) == 0) {
         if (!Ans) {
             puts("Warning: Ans is undefined");
             return NAN;

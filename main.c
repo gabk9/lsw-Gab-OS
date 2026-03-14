@@ -5,7 +5,7 @@
     #define rmdir _rmdir
     #define chdir _chdir
     #define getcwd _getcwd
-    HANDLE hConsole;
+    HANDLEchConsole;
 #elif !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif

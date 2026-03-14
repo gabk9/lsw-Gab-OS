@@ -40,7 +40,16 @@
 
 extern char *Ans;
 
+#define E_VAR "E"
+#define PI_VAR "PI"
+#define INF_VAR "inf"
+#define TRUE_VAR "true"
+#define FALSE_VAR "false"
 #define OLD_ANSWER_STR "ans"
+
+#define HEX_PREF "0x"
+#define OCT_PREF "0o"
+#define BIN_PREF "0b"
 
 #define EPS 1e-9
 

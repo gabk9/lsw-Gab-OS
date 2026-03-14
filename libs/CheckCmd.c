@@ -851,7 +851,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\n"
             "\tacot(X)        : Arc cotangent (inverse cotangent) of X\n"
             "\t                 Example: acot(1) = 0.785398\n"
-            "\t                 Note: Returns value in radians (range: 0 < result < pi)\n"
+            "\t                 Note: Returns value in radians (range: 0 < result < PI)\n"
             "\n"
             "\tdeg2rad(X)     : Degrees to radians\n"
             "\t                 Example: rad(3.1415) = 180\n"
@@ -897,13 +897,13 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t                 Example: randf(0, 1)\n"
             "\n"
             "\thex(X)         : Convert X to hexadecimal\n"
-            "\t                 Example: hex(255) = 0x0FF\n"
+            "\t                 Example: hex(255) = "HEX_PREF"0FF\n"
             "\n"
             "\toct(X)         : Convert X to octal\n"
-            "\t                 Example: oct(8) = 0o10\n"
+            "\t                 Example: oct(8) = "OCT_PREF"10\n"
             "\n"
             "\tbin(X)         : Convert X to binary\n"
-            "\t                 Example: bin(5) = 0b0101\n"
+            "\t                 Example: bin(5) = "BIN_PREF"0101\n"
         );
         printf(
             "\n"
@@ -919,7 +919,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t                 Example: float(\"3.1415\") = 3.1415\n"
             "\n"
             "\tstr(X)         : Converts X to string\n"
-            "\t                 Example: str(pi) = \"3.14159\"\n"
+            "\t                 Example: str(PI) = \"3.14159\"\n"
             "\n"
             "\tfah(X)         : Celsius to Fahrenheit\n"
             "\t                 Example: fah(0) = 32\n"
@@ -977,7 +977,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t          Example: ln(E) = 1\n"
             "\n"
             "\tINF     : 1.797e+308 (64 bit)\n"
-            "\t          Example: acot(-inf) = pi\n"
+            "\t          Example: acot(-inf) = PI\n"
             "\n"
             "\ttrue    : 1 (boolean)\n"
             "\t         Example: sen(deg2rad(30)) == sen(deg2rad(150))\n"
@@ -1002,13 +1002,13 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t      Example: 5! = 120 / 5!! = 15\n"
 
             "\nNumeric systems: (mathlib must be on to grant full access)\n"
-            "\tBinary: (prefix: '0b')        base 2 numbers e.g. 0b010000000000 = 1024\n"
+            "\tBinary: (prefix: '"BIN_PREF"')        base 2 numbers e.g. "BIN_PREF"010000000000 = 1024\n"
             "\n"
             "\tDecimal: (default):           base 10 numbers e.g. 1024\n"
             "\n"
-            "\tOctal: (prefix: '0o')         base 8 numbers e.g. 0o2000 = 1024\n"
+            "\tOctal: (prefix: '"OCT_PREF"')         base 8 numbers e.g. "OCT_PREF"2000 = 1024\n"
             "\n"
-            "\tHexadecimal: (prefix: '0x')   base 16 numbers e.g. 0x400 = 1024\n"
+            "\tHexadecimal: (prefix: '"HEX_PREF"')   base 16 numbers e.g. "HEX_PREF"400 = 1024\n"
             "\n"
             "\tAscii: (characters)           1 bytes chars only e.g. 'a' = 97\n"
         );
@@ -1355,7 +1355,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
     if (op_pos == -1) {
 
-        if (mathlib && Ans && strcasecmp(operation, OLD_ANSWER_STR) == 0) {
+        if (mathlib && Ans && strcmp(operation, OLD_ANSWER_STR) == 0) {
             if (isBetweenQuotes(Ans, 1)) {
                 return (evalOut){ .type = BC_STR, .str = strdup(Ans) };
             }
@@ -1365,9 +1365,9 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
         if (!paren) {
 
-            if (strcasecmp(operation, "true") == 0)
+            if (strcmp(operation, TRUE_VAR) == 0)
                 return (evalOut){ .type = BC_BOOL, .boolean = true };
-            else if (strcasecmp(operation, "false") == 0)
+            else if (strcmp(operation, FALSE_VAR) == 0)
                 return (evalOut){ .type = BC_BOOL, .boolean = false };
 
             size_t len = strlen(operation);

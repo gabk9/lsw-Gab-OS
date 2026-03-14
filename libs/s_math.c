@@ -126,9 +126,6 @@ double h_atof(const char *str, bool mathlib) {
     trim(buf);
     trimEnd(buf);
 
-    bool isUnaryNot = false;
-    bool isUnaryNeg = false;
-
     size_t len = strlen(buf);
     if (len == 0)
         return NAN;
@@ -136,17 +133,24 @@ double h_atof(const char *str, bool mathlib) {
     if (mathlib && buf[len-1] == '!')
         return s_fact(buf);
 
-    if (*buf == '~' || *buf == '-') {
-        if (*buf == '~')
-            isUnaryNot = true;
-        else
-            isUnaryNeg = true;
+    bool isUnaryNeg = false;
+    bool isUnaryNot = false;
 
-        *buf = ' ';
+    while (*buf == '-' || *buf == '~') {
+        if (*buf == '-')
+            isUnaryNeg = !isUnaryNeg;
+        else
+            isUnaryNot = !isUnaryNot;
+
+        memmove(buf, buf + 1, strlen(buf));
         trim(buf);
     }
 
-    if (mathlib && strcasecmp(buf, "inf") == 0) {
+    bool isInf = strcasecmp(buf, INF_VAR) == 0;
+    if (mathlib && isInf) {
+
+        if (isInf && strcmp(buf, INF_VAR) != 0)
+            return 0.0;
 
         if (isUnaryNot) {
             printf("eval: to use the not(~) operator the number must be integer\n");
@@ -154,9 +158,9 @@ double h_atof(const char *str, bool mathlib) {
         }
 
         return isUnaryNeg ? -INFINITY : INFINITY;
-    }
+    } 
 
-    bool isAns = mathlib && strcasecmp(buf, OLD_ANSWER_STR) == 0;
+    bool isAns = mathlib && strcmp(buf, OLD_ANSWER_STR) == 0;
 
     if (isAns && !Ans) {
         puts("Warning: Ans is undefined");
@@ -236,9 +240,9 @@ double h_atof(const char *str, bool mathlib) {
     if (isAns)
         return h_atof(Ans, mathlib);
 
-    if (strcasecmp(buf, "true") == 0)
+    if (strcmp(buf, TRUE_VAR) == 0)
         return 1.0;
-    else if (strcasecmp(buf, "false") == 0)
+    else if (strcmp(buf, FALSE_VAR) == 0)
         return 0.0;
 
     len = strlen(buf);
@@ -282,13 +286,86 @@ double h_atof(const char *str, bool mathlib) {
             return hex_pi_e;
     }
 
-    if (mathlib) {
-        bool is_hex = isHex(buf);
+    bool is_hex = isHex(buf);
 
-        bool is_octal = isOct(buf);
+    bool is_octal = isOct(buf);
+    
+    bool is_bin = isBin(buf);
+
+    if (*buf == '0' && !is_bin && !is_octal && !is_hex) {
+        if (strncasecmp(buf, BIN_PREF, strlen(BIN_PREF)) == 0) {
+            size_t len = strlen(buf);
+
+            const size_t pref_len = strlen(BIN_PREF);
+
+            if (len <= pref_len) {
+                printf("eval: invalid binary literal\n");
+                return NAN;
+            }
+
+            size_t end = len - 1;
+            while (isIn(buf[end], "kmbt") || isIn(buf[end], "KMBT")) end --;
+
+            for (size_t i = pref_len; i <= end; i++) {
+                if (buf[i] != '0' && buf[i] != '1') {
+                    printf("eval: invalid binary digit: '%c'\n", buf[i]);
+                    break;
+                }
+            }
+
+            return NAN;
+        } else if (strncasecmp(buf, HEX_PREF, strlen(HEX_PREF)) == 0) {
+            size_t len = strlen(buf);
+
+            const size_t pref_len = strlen(HEX_PREF);
+
+            if (len <= pref_len) {
+                printf("eval: invalid hexadecimal literal\n");
+                return NAN;
+            }
+
+            for (size_t i = pref_len; buf[i]; i++) {
+
+                if (isIn(buf[i], "kmbt") || isIn(buf[i], "KMBT")) {
+                    printf("eval: hexadecimal literal does not support suffixes\n");
+                    return NAN;
+                }
+
+                if (!isxdigit(buf[i])) {
+                    printf("eval: invalid hexadecimal digit: '%c'\n", buf[i]);
+                    break;
+                }
+            }
+
+            return NAN;
+        } else if (strncasecmp(buf, OCT_PREF, strlen(OCT_PREF)) == 0) {
+            size_t len = strlen(buf);
+
+            const size_t pref_len = strlen(OCT_PREF);
+
+            if (len <= pref_len) {
+                printf("eval: invalid octal literal\n");
+                return NAN;
+            }
+
+            size_t end = len - 1;
+            while (isIn(buf[end], "kmbt") || isIn(buf[end], "KMBT")) end --;
+
+            for (size_t i = pref_len; i <= end; i++) {
+                if (buf[i] < '0' || buf[i] > '7') {
+                    printf("eval: invalid octal digit: '%c'\n", buf[i]);
+                    break;
+                }
+            }
+
+            return NAN;
+        }
         
-        bool is_bin = isBin(buf);
+        printf("eval: invalid literal prefix: '%c'\n", *buf);
+        return NAN;
+    }
 
+    if (mathlib) {
         const struct {
             char suffix;
             double mult;
@@ -299,7 +376,7 @@ double h_atof(const char *str, bool mathlib) {
             {.suffix = 't', .mult = 1e12},
         };
 
-        bool has_exp = strncasecmp(buf, "0x", 2) == 0;
+        bool has_exp = strncasecmp(buf, HEX_PREF, strlen(HEX_PREF)) == 0;
         bool allow_suffix = (!is_hex && !has_exp);
 
         if (allow_suffix) {
@@ -322,14 +399,14 @@ double h_atof(const char *str, bool mathlib) {
             }
         }
 
-        if (strcasecmp(buf, "pi") == 0) return PI;
-        else if (strcasecmp(buf, "e") == 0)  return E;
+        if (strcmp(buf, PI_VAR) == 0) return PI;
+        else if (strcmp(buf, E_VAR) == 0)  return E;
 
         uint16_t i = 0;
         while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))
             i++;
 
-        if (i > 0 && strcasecmp(buf + i, "pi") == 0) {
+        if (i > 0 && strcmp(buf + i, E_VAR) == 0) {
             char temp[0x40];
             strncpy(temp, buf, i);
             temp[i] = '\0';
@@ -342,9 +419,7 @@ double h_atof(const char *str, bool mathlib) {
 
             SAFE_FREE(buff);
             return (isnan(num)) ? NAN : num * PI;
-        }
-
-        if (i > 0 && strcasecmp(buf + i, "e") == 0) {
+        }else if (i > 0 && strcmp(buf + i, E_VAR) == 0) {
             char temp[0x40];
             strncpy(temp, buf, i);
             temp[i] = '\0';
@@ -359,16 +434,15 @@ double h_atof(const char *str, bool mathlib) {
             return (isnan(num)) ? NAN : num * E;
         }
 
-        if (is_hex)
-            return (double)hex_to_long(buf);
-
-        if (is_octal) {
-            return (double)strtol(buf+2, NULL, 8);
-        }
-
-        if (is_bin)
-            return parseBinToInt(buf);
     }
+
+    if (is_hex)
+        return (double)hex_to_long(buf);
+    else if (is_octal)
+        return (double)strtol(buf+strlen(OCT_PREF), NULL, 8);
+    else if (is_bin)
+        return parseBinToInt(buf);
+
     if (*buf == '"' && buf[len-1] == '"') {
         printf("eval: cannot operate with string type values\n");
         return NAN;
@@ -822,7 +896,7 @@ char *s_oct(char *operation) {
     if (!buffer)
         return NULL;
 
-    snprintf(buffer, 64, isNeg ? "\"-0o%"PRIo64"\"" : "\"0o%"PRIo64"\"", value);
+    snprintf(buffer, 64, isNeg ? "\"-"OCT_PREF"%"PRIo64"\"" : "\""OCT_PREF"%"PRIo64"\"", value);
 
     return buffer;
 }
@@ -993,9 +1067,9 @@ char *s_hex(char *operation) {
 
     int64_to_hex_min(value, buffer, 0x40);
 
-    for (uint16_t i = 3; buffer[i]; i++)
+    for (uint16_t i = strlen(HEX_PREF) + 1; buffer[i]; i++)
         buffer[i] = toupper((unsigned char)buffer[i]);
-    
+
     return buffer;
 }
 

@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.3.54"
+#define VERSION "r2.3.64"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1629,7 +1629,8 @@ void updatehistory(void) {
         "r2.3.33 - small changes\n\tFixed: chr() function seg-fault\n",
         "r2.3.38 - small changes\n\tFixed: operations with strings should work properly now\n",
         "r2.3.50 - big changes\n\tAdded: lower() and upper() to the calculator\n",
-        "r2.3.54 - minor changes\n\tFixed: Ans returning it's string type values when mathlib is turned off\n"
+        "r2.3.54 - minor changes\n\tFixed: Ans returning it's string type values when mathlib is turned off\n",
+        "r2.3.64 - big changes\n\tAdded: more error messages for the other numeric systems\n\tEdited: the builtin variables and constants are no longer case insensitive\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
