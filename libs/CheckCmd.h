@@ -7,7 +7,7 @@
 void checkLswrcSyntax(const char *data_folder);
 char *stringToVariable(const char *str, int32_t *changed);
 void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash);
-evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib);
+evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib);
 evalOut parse_operation(char *operation, const FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib);
 
 __attribute__((hot))

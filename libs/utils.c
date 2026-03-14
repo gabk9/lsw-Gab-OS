@@ -2,8 +2,8 @@
 #include "utils.h"
 #include "types.h"
 
-#define PROJ_LINES_APPROX 9200
-#define PROJ_SIZE_APPROX_BYTES 270500
+#define PROJ_LINES_APPROX 9400
+#define PROJ_SIZE_APPROX_BYTES 278000
 
 #define RC_FILE "lswrc.txt"
 
@@ -32,6 +32,13 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+color4 GetBaseColor(color4 color) {
+    if (color < LIGHT_BLUE)
+        return color;
+
+    return (color4)(color - 8);
+}
 
 void getItemTypeStr(char *buff, size_t size, evalOut item) {
     switch (item.type) {
@@ -155,14 +162,26 @@ int8_t getInvalidEscape(const char *str, const char *error_str) {
         if (str[i] == '\\') {
 
             if (i == len - 1) {
-                printf("%s: missing escape char after slash\n", error_str);
+                color4 color1 = (strcasecmp(error_str, "eval") == 0) ? BC_PROMPT_COLOR : WHITE;
+                color4 color2 = (color1 == BC_PROMPT_COLOR) ? GetBaseColor(color1) : WHITE;
+
+                printc("%s", color1, WHITE, error_str);
+                printf(": ");
+                printc("missing escape char after slash\n", color2, WHITE);
+
                 return 0;
             }
 
             char chr = str[i+1];
 
             if (!isIn(chr, "ntbra'\"?fv0\\")) {
-                printf("%s: invalid escape character: '\\%c'\n", error_str, chr);
+                color4 color1 = (strcasecmp(error_str, "eval") == 0) ? BC_PROMPT_COLOR : WHITE;
+                color4 color2 = (color1 == BC_PROMPT_COLOR) ? GetBaseColor(color1) : WHITE;
+
+                printc("%s", color1, WHITE, error_str);
+                printf(": ");
+                printc("invalid escape character: '\\%c'\n", color2, WHITE, chr);
+
                 return 0;
             }
 
@@ -202,9 +221,16 @@ int16_t injectEscape(char *str, const char *error_str) {
                 case 'f':  replace = '\f'; break;
                 case 'v':  replace = '\v'; break;
                 case '0':  replace = '\0'; break;
-                default: 
-                    printf("%s: invalid escape character: '\\%c'\n", error_str, next);
+                default: {
+                    color4 color1 = (strcasecmp(error_str, "eval") == 0) ? BC_PROMPT_COLOR : WHITE;
+                    color4 color2 = (color1 == BC_PROMPT_COLOR) ? GetBaseColor(color1) : WHITE;
+
+                    printc("%s", color1, WHITE, error_str);
+                    printf(": ");
+                    printc("invalid escape character: '\\%c'\n", color2, WHITE, next);
+
                     return 0;
+                }
             }
 
             str[i] = replace;
@@ -2380,12 +2406,18 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
         mult = E;
     else if (strcmp(cpy + pos, OLD_ANSWER_STR) == 0) {
         if (!Ans) {
-            puts("Warning: Ans is undefined");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("'ans' is undefined\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         }
 
         if (*Ans == '"' && Ans[strlen(Ans)-1] == '"') {
-            printf("eval: cannot make juxtaposition operations with strings\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("cannot make juxtapositions operations with strings\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         }
 
@@ -2583,15 +2615,24 @@ char *eval(char *operation, bool mathlib) {
 
         switch (result) {
             case PAREN_MISSING_CLOSE:
-                printf("eval: expected ')'\n");
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("eval: expected ')'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
                 break;
 
             case PAREN_MISSING_OPEN:
-                printf("eval: unexpected ')'\n");
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("unexpected ')'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
                 break;
 
             case PAREN_UNCLOSED_QUOTE:
-                printf("eval: unclosed quote\n");
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("unclosed quote\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
                 break;
 
             default:
@@ -2607,7 +2648,7 @@ char *eval(char *operation, bool mathlib) {
     evalOut buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 
     if (buff.type == BC_BOOL)
-        return (buff.boolean == true) ? strdup("true") : strdup("false");
+        return (buff.boolean == true) ? strdup(TRUE_VAR) : strdup(FALSE_VAR);
 
 
     return evalOut2str(buff);

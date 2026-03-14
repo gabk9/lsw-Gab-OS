@@ -62,6 +62,8 @@ extern char *Ans;
 #define MIN_SAFE_INT64_D -9223372036854775808.0
 #define U64_NAN ((uint64_t)(UINT64_MAX - 1ULL))
 
+#define BC_PROMPT_COLOR 0x0D
+
 #define RM_FORCE 0x0001
 #define RM_BIN   0x0002
 
@@ -146,6 +148,7 @@ int8_t isAppend(const char *str);
 void safe_lower_inplace(char *s);
 char *tolowerstr(const char *str);
 int16_t move_to_trash(char *path);
+color4 GetBaseColor(color4 color);
 char *get_env_var(const char *name);
 void charRm(char *str, int8_t targ);
 char *handle_cd_dash(char *address);

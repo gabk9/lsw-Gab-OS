@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.3.68"
+#define VERSION "r2.3.82"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -569,7 +569,7 @@ void bcCmd(uint16_t argc, char **argv) {
 
         appear = 1;
 
-        printc(">>> ", LIGHT_MAGENTA, WHITE);
+        printc(">>> ", BC_PROMPT_COLOR, WHITE);
         fgets(operation, MAX_CHAR, stdin);
         operation[strcspn(operation, "\n")] = '\0';
 
@@ -1631,7 +1631,8 @@ void updatehistory(void) {
         "r2.3.50 - big changes\n\tAdded: lower() and upper() to the calculator\n",
         "r2.3.54 - minor changes\n\tFixed: Ans returning it's string type values when mathlib is turned off\n",
         "r2.3.64 - big changes\n\tAdded: more error messages for the other numeric systems\n\tEdited: the builtin variables and constants are no longer case insensitive\n",
-        "r2.3.68 - small changes\n\tAdded: none constant to bc\n"
+        "r2.3.68 - small changes\n\tAdded: none constant to bc\n",
+        "r2.3.82 - big changes\n\tEdited: first part of making bc more customizable\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

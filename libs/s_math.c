@@ -7,12 +7,18 @@
 double parse_str_func(char *operation, const FuncEntry function) {    
 
     if (function.returnType != BC_STR && function.returnType != BC_CHAR) {
-        printf("eval: invalid function return type\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("invalid function return type\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
     if (!isValidBcFuncName(function.name)) {
-        printf("eval: invalid function name: '%s()'\n", function.name);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("invalid function name: '%s()'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, function.name);
+
         return NAN;
     }
 
@@ -35,7 +41,10 @@ double parse_str_func(char *operation, const FuncEntry function) {
     else if (strcmp(function.name, "upper") == 0)
         buff = s_upper(operation);
     else {
-        printf("eval: undefined function: '%s()'\n", function.name);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("undefined function: '%s()'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, function.name);
+
         return NAN;
     }
 
@@ -146,16 +155,21 @@ double h_atof(const char *str, bool mathlib) {
         trim(buf);
     }
 
-    
+
     if (strcmp(buf, NONE_VAR) == 0) {
-        if (isUnaryNeg)
-            printf("eval: bad operand type for unary negative(-): '"NONE_VAR"'\n");
-        else if (isUnaryNot)
-            printf("eval: bad operand type for unary not(~): '"NONE_VAR"'\n");
+        if (isUnaryNeg) {
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("bad operand type for unary negative(-): '"NONE_VAR"'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        } else if (isUnaryNot) {
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("bad operand type for unary not(~): '"NONE_VAR"'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        }
 
         return NAN;
     }
-    
+
     bool isInf = strcasecmp(buf, INF_VAR) == 0;
     if (mathlib && isInf) {
 
@@ -163,7 +177,9 @@ double h_atof(const char *str, bool mathlib) {
             return 0.0;
 
         if (isUnaryNot) {
-            printf("eval: bad operand type for unary not(~): '"INF_VAR"'\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("bad operand type for unary not(~) '"INF_VAR"'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
             return NAN;
         }
 
@@ -173,13 +189,18 @@ double h_atof(const char *str, bool mathlib) {
     bool isAns = mathlib && strcmp(buf, OLD_ANSWER_STR) == 0;
 
     if (isAns && !Ans) {
-        puts("Warning: Ans is undefined");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("'ans' is undefined\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
         return NAN;
     }
 
     if (isUnaryNeg) {
         if (!*buf) {
-            printf("eval: missing value for unary negative(-)\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("missing value for unary negative(-)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         }
 
@@ -201,7 +222,10 @@ double h_atof(const char *str, bool mathlib) {
             return NAN;
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
-            printf("eval: numeric overflow (too large)\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("numeric overflow (too large)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         }
 
@@ -210,7 +234,10 @@ double h_atof(const char *str, bool mathlib) {
 
     if (isUnaryNot) {
         if (!*buf) {
-            printf("eval: missing value for unary not(~)\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("missing value for unary not(~)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         }
         
@@ -233,12 +260,18 @@ double h_atof(const char *str, bool mathlib) {
             return NAN;
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
-            printf("eval: numeric overflow (too large)\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("numeric overflow (too large)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         }
 
         if (num != (int64_t)num) {
-            printf("eval: to use the not(~) operator the number must be integer\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("unary not(~) requires an integer\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         }
 
@@ -275,10 +308,16 @@ double h_atof(const char *str, bool mathlib) {
         }
 
         if (len > 1) {
-            printf("eval: to use sigle quotes it must be a single character\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("to use single quotes it must be a single character\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         } else if (!isNullChr && len < 1) {
-            printf("eval: missing the character inside quotes\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("missing the character inside quotes\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         }
     
@@ -302,14 +341,17 @@ double h_atof(const char *str, bool mathlib) {
     
     bool is_bin = isBin(buf);
 
-    if (*buf == '0' && buf[1] != '.' && !is_bin && !is_octal && !is_hex) {
+    if (*buf == '0' && buf[1] && buf[1] != '.'&& !is_bin && !is_octal && !is_hex) {
         if (strncasecmp(buf, BIN_PREF, strlen(BIN_PREF)) == 0) {
             size_t len = strlen(buf);
 
             const size_t pref_len = strlen(BIN_PREF);
 
             if (len <= pref_len) {
-                printf("eval: invalid binary literal\n");
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("invalid binary literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
                 return NAN;
             }
 
@@ -318,7 +360,10 @@ double h_atof(const char *str, bool mathlib) {
 
             for (size_t i = pref_len; i <= end; i++) {
                 if (buf[i] != '0' && buf[i] != '1') {
-                    printf("eval: invalid binary digit: '%c'\n", buf[i]);
+                    printc("eval", BC_PROMPT_COLOR, WHITE);
+                    printf(": ");
+                    printc("invalid binary digit: '%c\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+
                     break;
                 }
             }
@@ -330,19 +375,28 @@ double h_atof(const char *str, bool mathlib) {
             const size_t pref_len = strlen(HEX_PREF);
 
             if (len <= pref_len) {
-                printf("eval: invalid hexadecimal literal\n");
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("invalid hexadecimal literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
                 return NAN;
             }
 
             for (size_t i = pref_len; buf[i]; i++) {
 
                 if (isIn(buf[i], "kmbt") || isIn(buf[i], "KMBT")) {
-                    printf("eval: hexadecimal literal does not support suffixes\n");
+                    printc("eval", BC_PROMPT_COLOR, WHITE);
+                    printf(": ");
+                    printc("hexadecimal literal does not support suffixes\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
                     return NAN;
                 }
 
                 if (!isxdigit(buf[i])) {
-                    printf("eval: invalid hexadecimal digit: '%c'\n", buf[i]);
+                    printc("eval", BC_PROMPT_COLOR, WHITE);
+                    printf(": ");
+                    printc("invalid hexadecimal digit: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+
                     break;
                 }
             }
@@ -354,7 +408,10 @@ double h_atof(const char *str, bool mathlib) {
             const size_t pref_len = strlen(OCT_PREF);
 
             if (len <= pref_len) {
-                printf("eval: invalid octal literal\n");
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("invalid octal literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
                 return NAN;
             }
 
@@ -363,7 +420,10 @@ double h_atof(const char *str, bool mathlib) {
 
             for (size_t i = pref_len; i <= end; i++) {
                 if (buf[i] < '0' || buf[i] > '7') {
-                    printf("eval: invalid octal digit: '%c'\n", buf[i]);
+                    printc("eval", BC_PROMPT_COLOR, WHITE);
+                    printf(": ");
+                    printc("invalid octal digit: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+
                     break;
                 }
             }
@@ -371,7 +431,10 @@ double h_atof(const char *str, bool mathlib) {
             return NAN;
         }
 
-        printf("eval: invalid literal prefix: '%c'\n", *buf);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("invalid literal prefix: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, *buf);
+
         return NAN;
     }
 
@@ -454,7 +517,10 @@ double h_atof(const char *str, bool mathlib) {
         return parseBinToInt(buf);
 
     if (*buf == '"' && buf[len-1] == '"') {
-        printf("eval: cannot operate with string type values\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("cannot operate with string type values\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -468,12 +534,18 @@ double h_atof(const char *str, bool mathlib) {
                     continue;
 
                 if (!isalnum((unsigned char)buf[i])) {
-                    printf("eval: illegal character: '%c'\n", buf[i]);
+                    printc("eval", BC_PROMPT_COLOR, WHITE);
+                    printf(": ");
+                    printc("illegal character: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+
                     return NAN;
                 }
             }
 
-            printf("eval: invalid syntax\n");
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("invalid syntax\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
             return NAN;
         }
     }
