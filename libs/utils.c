@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9200
-#define PROJ_SIZE_APPROX_BYTES 270500
+#define PROJ_SIZE_APPROX_BYTES 270000
 
 #define RC_FILE "lswrc.txt"
 
@@ -44,7 +44,7 @@ void getItemTypeStr(char *buff, size_t size, evalOut item) {
     }
 }
 
-evalOut eval_typeof(char *operation, bool mathLib) {
+evalOut eval_typeof(const char *operation, bool mathLib) {
 
     evalOut out = {0};
     out.type = BC_NONE;
@@ -58,12 +58,14 @@ evalOut eval_typeof(char *operation, bool mathLib) {
         return out;
     }
 
-    if (strcasecmp(operation, "false") == 0) {
+    if (strcmp(operation, FALSE_VAR) == 0) {
         out.type = BC_BOOL;
-        out.boolean = false; 
-    } else if (strcasecmp(operation, "true") == 0) {
+        out.boolean = false;
+        return out;
+    } else if (strcmp(operation, TRUE_VAR) == 0) {
         out.type = BC_BOOL;
-        out.type = true;
+        out.boolean = true;
+        return out;
     }
 
     double result = h_atof(operation, mathLib);
@@ -1123,7 +1125,7 @@ bool isBin(const char *str) {
 
     const size_t bin_index = strlen(BIN_PREF);
 
-    if (strncasecmp(str, BIN_PREF, bin_index != 0))
+    if (strncasecmp(str, BIN_PREF, bin_index) != 0)
         return false;
 
     for (uint16_t i = bin_index; i <= end; i++) {

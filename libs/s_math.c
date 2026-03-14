@@ -292,7 +292,7 @@ double h_atof(const char *str, bool mathlib) {
     
     bool is_bin = isBin(buf);
 
-    if (*buf == '0' && !is_bin && !is_octal && !is_hex) {
+    if (*buf == '0' && buf[1] != '.' && !is_bin && !is_octal && !is_hex) {
         if (strncasecmp(buf, BIN_PREF, strlen(BIN_PREF)) == 0) {
             size_t len = strlen(buf);
 
@@ -304,7 +304,7 @@ double h_atof(const char *str, bool mathlib) {
             }
 
             size_t end = len - 1;
-            while (isIn(buf[end], "kmbt") || isIn(buf[end], "KMBT")) end --;
+            while (isIn(buf[end], "kmbtKMBT")) end --;
 
             for (size_t i = pref_len; i <= end; i++) {
                 if (buf[i] != '0' && buf[i] != '1') {
@@ -360,7 +360,7 @@ double h_atof(const char *str, bool mathlib) {
 
             return NAN;
         }
-        
+
         printf("eval: invalid literal prefix: '%c'\n", *buf);
         return NAN;
     }

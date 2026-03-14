@@ -4,21 +4,21 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef enum returns {
+typedef enum types {
     BC_STR, BC_FLOAT, BC_INT,
     BC_BOOL, BC_CHAR, BC_NONE
-} evalRet;
+} eval_types;
 
 typedef double (*MathFunc)(char *operation);
 
 typedef struct Functions {
     const char *name;
     MathFunc func;
-    evalRet returnType;
+    eval_types returnType;
 } FuncEntry;
 
 typedef struct {
-    evalRet type;
+    eval_types type;
     union {
         double num;
         char *str;

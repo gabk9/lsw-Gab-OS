@@ -209,7 +209,7 @@ evalOut calc(evalOut left, char *operation, evalOut right, bool mathLib) {
     if (left.type == BC_STR || right.type == BC_STR) {
 
         if (strcmp(operation, "+") == 0) {
-            
+
             if (left.type != right.type) {
                 char type[0x20] = {0};
                 evalOut wrong = (left.type != BC_STR) ? left : right;
@@ -1582,27 +1582,6 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
     evalOut val1 = eval_typeof(left, mathlib);
     evalOut val2 = eval_typeof(right, mathlib);
-
-    if (strcasecmp(left, "true") == 0) {
-        val1.type = BC_BOOL;
-        val1.boolean = true;
-    }
-    else if (strcasecmp(left, "false") == 0) {
-        val1.type = BC_BOOL;
-        val1.boolean = false;
-    }
-
-    if (strcasecmp(right, "true") == 0) {
-        val2.type = BC_BOOL;
-        val2.boolean = true;
-    }
-    else if (strcasecmp(right, "false") == 0) {
-        val2.type = BC_BOOL;
-        val2.boolean = false;
-    }
-
-    if (val1.type == BC_NONE || val2.type == BC_NONE)
-        return (evalOut){ .type = BC_NONE };
 
     evalOut result = calc(val1, op, val2, mathlib);
 
