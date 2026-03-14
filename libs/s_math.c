@@ -146,6 +146,16 @@ double h_atof(const char *str, bool mathlib) {
         trim(buf);
     }
 
+    
+    if (strcmp(buf, NONE_VAR) == 0) {
+        if (isUnaryNeg)
+            printf("eval: bad operand type for unary negative(-): '"NONE_VAR"'\n");
+        else if (isUnaryNot)
+            printf("eval: bad operand type for unary not(~): '"NONE_VAR"'\n");
+
+        return NAN;
+    }
+    
     bool isInf = strcasecmp(buf, INF_VAR) == 0;
     if (mathlib && isInf) {
 
@@ -153,7 +163,7 @@ double h_atof(const char *str, bool mathlib) {
             return 0.0;
 
         if (isUnaryNot) {
-            printf("eval: to use the not(~) operator the number must be integer\n");
+            printf("eval: bad operand type for unary not(~): '"INF_VAR"'\n");
             return NAN;
         }
 

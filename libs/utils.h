@@ -43,6 +43,7 @@ extern char *Ans;
 #define E_VAR "E"
 #define PI_VAR "PI"
 #define INF_VAR "inf"
+#define NONE_VAR "none"
 #define TRUE_VAR "true"
 #define FALSE_VAR "false"
 #define OLD_ANSWER_STR "ans"

@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9200
-#define PROJ_SIZE_APPROX_BYTES 270000
+#define PROJ_SIZE_APPROX_BYTES 270500
 
 #define RC_FILE "lswrc.txt"
 
@@ -35,12 +35,12 @@ LONG handler(EXCEPTION_POINTERS *e) {
 
 void getItemTypeStr(char *buff, size_t size, evalOut item) {
     switch (item.type) {
-        case BC_INT:    snprintf(buff, size, "int"); break;
-        case BC_FLOAT:  snprintf(buff, size, "float"); break;
-        case BC_STR:    snprintf(buff, size, "str"); break;
-        case BC_BOOL:   snprintf(buff, size, "bool"); break;
-        case BC_NONE:   snprintf(buff, size, "none"); break;
-        default:        snprintf(buff, size, "NULL"); break;
+        case BC_INT:    snprintf(buff, size, "int");    break;
+        case BC_FLOAT:  snprintf(buff, size, "float");  break;
+        case BC_STR:    snprintf(buff, size, "str");    break;
+        case BC_BOOL:   snprintf(buff, size, "bool");   break;
+        case BC_NONE:   snprintf(buff, size, NONE_VAR); break;
+        default:        snprintf(buff, size, "NULL");   break;
     }
 }
 
