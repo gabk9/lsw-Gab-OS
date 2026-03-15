@@ -2,8 +2,8 @@
 #include "utils.h"
 #include "types.h"
 
-#define PROJ_LINES_APPROX 9600
-#define PROJ_SIZE_APPROX_BYTES 290000
+#define PROJ_LINES_APPROX 9700
+#define PROJ_SIZE_APPROX_BYTES 292000
 
 #define RC_FILE "lswrc.txt"
 
@@ -2655,7 +2655,6 @@ char *eval(char *operation, bool mathlib) {
 
     if (buff.type == BC_BOOL)
         return (buff.boolean == true) ? strdup(TRUE_VAR) : strdup(FALSE_VAR);
-
 
     return evalOut2str(buff);
 }

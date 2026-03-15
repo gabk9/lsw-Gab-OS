@@ -314,19 +314,23 @@ evalOut h_atof(const char *str, bool mathlib) {
     if (len == 0)
         return (evalOut){.type = BC_FLOAT, .num = NAN};
 
-    if (mathlib && buf[len-1] == '!')
+    if (len > 1 && mathlib && buf[len-1] == '!')
         return (evalOut){.type = BC_INT, .num = s_fact(buf)};
 
     bool isUnaryNeg = false;
     bool isUnaryNot = false;
 
     while (*buf == '-' || *buf == '~') {
-        if (*buf == '-')
-            isUnaryNeg = !isUnaryNeg;
-        else
-            isUnaryNot = !isUnaryNot;
+        switch (*buf) {
+            case '-':
+                isUnaryNeg = !isUnaryNeg;
+                break;
+            case '~':
+                isUnaryNot = !isUnaryNot;
+                break;
+        }
 
-        memmove(buf, buf + 1, strlen(buf));
+        memmove(buf, buf+1, strlen(buf)+1);
         trim(buf);
     }
 
@@ -381,7 +385,7 @@ evalOut h_atof(const char *str, bool mathlib) {
 
         double num;
         if (isAns) {
-            evalOut tmp = h_atof(buf, mathlib);
+            evalOut tmp = h_atof(Ans, mathlib);
             num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
         } else {
             char *buff = eval(buf, mathlib);
@@ -407,9 +411,7 @@ evalOut h_atof(const char *str, bool mathlib) {
         }
 
         return (evalOut){.type = BC_FLOAT, .num = -num};
-    }
-
-    if (isUnaryNot) {
+    } else if (isUnaryNot) {
         if (!*buf) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
@@ -421,7 +423,7 @@ evalOut h_atof(const char *str, bool mathlib) {
         double num;
 
         if (isAns) {
-            evalOut tmp = h_atof(buf, mathlib);
+            evalOut tmp = h_atof(Ans, mathlib);
             num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
         } else {
             char *buff = eval(buf, mathlib);
@@ -468,12 +470,11 @@ evalOut h_atof(const char *str, bool mathlib) {
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
 
-        evalOut tmp = h_atof(buf, mathlib);
+        evalOut tmp = h_atof(Ans, mathlib);
         double val = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
         if (isnan(val))
             return (evalOut){.type = BC_FLOAT, .num = NAN};
-    
 
         eval_types type = CLOSE_ENOUGH(val, (int64_t)val) ? BC_INT : BC_FLOAT;
 

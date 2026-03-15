@@ -815,7 +815,11 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\n"
             "\t'>>'   : Bitwise right shift\n"
             "\t         Example: 8 >> 2 = 2\n"
-            "\t         Explanation: 0b01000 >> 2 = 0b00010\n"  
+            "\t         Explanation: 0b01000 >> 2 = 0b00010, the bits were dislocated 2 times to the right\n"  
+            "\n"
+            "\t'!'    : Logical NOT\n"
+            "\t         Example: !true = false / !false = true\n"
+            "\t         Explanation: the inverse of true is false and the inverse of false is true\n"
             "\n"
             "\t'&&'   : Logical AND\n"
             "\t         Example: 5 && 0 = false\n"
@@ -1410,6 +1414,50 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             }
         }
 
+        if (*operation == '!') {
+
+            size_t count = 0;
+            while (operation[count] == '!')
+                count++;
+
+            char *expr = operation + count;
+
+            if (isBetweenQuotes(expr, 1)) {
+                if (count & 1)
+                    return (evalOut){ .type = BC_BOOL, .boolean = false };
+                else
+                    return (evalOut){ .type = BC_BOOL, .boolean = true };
+            }
+
+            if (mathlib) {
+                if (strcmp(expr, OLD_ANSWER_STR) == 0 && Ans && isBetweenQuotes(Ans, 1)) {
+                    if (count & 1)
+                        return (evalOut){ .type = BC_BOOL, .boolean = false };
+                    else
+                        return (evalOut){ .type = BC_BOOL, .boolean = true };
+                }
+            }
+
+            char *buff = eval(expr, mathlib);
+            if (!buff)
+                return (evalOut){ .type = BC_NONE };
+
+            evalOut tmp = h_atof(buff, mathlib);
+            SAFE_FREE(buff);
+
+            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+
+            if (isnan(num))
+                return (evalOut){ .type = BC_NONE };
+
+            bool value = (num != 0.0);
+
+            if (count & 1)
+                value = !value;
+
+            return (evalOut){ .type = BC_BOOL, .boolean = value };
+        }
+
         char *paren = strchr(operation, '(');
 
         if (!paren) {
@@ -1492,7 +1540,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
 
-            return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = num };
+            return (evalOut){ .type = tmp.type, .num = num };
         }
 
         char name[0x100] = {0};
@@ -1506,7 +1554,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
 
-            return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = num };
+            return (evalOut){ .type = tmp.type, .num = num };
         }
 
         memcpy(name, operation, parenthesis_index);
@@ -1525,7 +1573,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
 
-            return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = num };
+            return (evalOut){ .type = tmp.type, .num = num };
         }
 
         int32_t depth = 0;
