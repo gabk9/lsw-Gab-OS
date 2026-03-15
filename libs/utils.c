@@ -2,8 +2,8 @@
 #include "utils.h"
 #include "types.h"
 
-#define PROJ_LINES_APPROX 9400
-#define PROJ_SIZE_APPROX_BYTES 278000
+#define PROJ_LINES_APPROX 9500
+#define PROJ_SIZE_APPROX_BYTES 282500
 
 #define RC_FILE "lswrc.txt"
 

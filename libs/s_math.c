@@ -595,7 +595,10 @@ static uint8_t validPtrFuncArgs(char *arg, const char *error_str) {
             return 0;
 
         if (!isBetweenQuotes(buff, 1)) {
-            printf("eval: %s() requires an argument of type 'str'\n", error_str);
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("%s() requires an argument of type 'str'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, error_str);
+
             SAFE_FREE(buff);
             return 0;
         }
@@ -690,7 +693,10 @@ char *bc_parse_str(char *operation) {
     size_t len = strlen(operation);
 
     if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
-        printf("eval: str() requires exactly 1 argument\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("str() requires exactly 1 argument\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NULL;
     }
 
@@ -723,8 +729,11 @@ double bc_parse(char *operation) {
     operation = p;
 
     if (countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
-        printf("eval: %s() requires exactly 1 argument\n",
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("%s() requires exactly 1 argument\n", GetBaseColor(BC_PROMPT_COLOR), WHITE,
                 enablePrecision ? "float" : "int");
+
         return NAN;
     }
 
@@ -748,7 +757,10 @@ double bc_parse(char *operation) {
         return NAN;
 
     if (!enablePrecision && num != (int64_t)num) {
-        printf("eval: int() requires an integer\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("int() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -766,7 +778,10 @@ double bc_len(char *operation) {
     len--;
 
     if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
-        printf("eval: len() requires exactly 1 argument\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("len() requires exactly 1 argument\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -974,7 +989,10 @@ char *s_oct(char *operation) {
         return NULL;
 
     if (num != (int64_t)num) {
-        printf("eval: oct() requires an integer!\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("oct() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NULL;
     }
 
@@ -1081,14 +1099,20 @@ char *s_chr(char *operation) {
         return NULL;
 
     if (num != (int64_t)num) {
-        printf("eval: chr() requires an integer\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("chr() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NULL;
     }
 
     int64_t value = (int64_t)num;
 
     if (value < 0 || value > 127) {
-        printf("eval: chr() requires an integer between 0 and 127 (inclusive)\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("chr() requires an integer between 0 <= x <= 127\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NULL;
     }
 
@@ -1113,7 +1137,10 @@ char *s_chr(char *operation) {
         case 92: strcpy(chr + 1, "\\\\"); break;
         default:
             if (value < 32 || value == 127) {
-                printf("eval: chr() does not work with certain control and escape characters\n");
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("chr() does not work with certain control and escape characters\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
                 SAFE_FREE(chr);
                 return NULL;
             }
@@ -1145,7 +1172,10 @@ char *s_hex(char *operation) {
         return NULL;
 
     if (val != (int64_t)val) {
-        printf("eval: hex() requires an integer!\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("hex() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NULL;
     }
 
@@ -1183,7 +1213,10 @@ char *s_bin(char *operation) {
         return NULL;
 
     if (val != (int64_t)val) {
-        printf("Bin: bin() requires an integer!\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("bin() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NULL;
     }
 
@@ -1313,7 +1346,10 @@ double s_sqrt(char *operation) {
         return NAN;
 
     if (num < 0) {
-        puts("eval: sqrt() requires a non negative!");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("sqrt() requires a non negative integer\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -1396,7 +1432,10 @@ double s_asin(char *operation) {
         return NAN;
 
     if (num < -1.0 || num > 1.0) {
-        puts("eval: asin() is defined only for -1 <= x <= 1");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("asin() is defined only for -1 <= x <= 1\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
     
@@ -1421,7 +1460,10 @@ double s_cot(char *operation) {
     double t = tan(num);
 
     if (fabs(t) < 1e-12) {
-        printf("eval: cot() undefined for %.10g rad\n", num);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("cot() is undefined for %.10g rad\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, num);
+
         return NAN;
     }
 
@@ -1485,7 +1527,10 @@ double s_acos(char *operation) {
         return NAN;
 
     if (num < -1.0 || num > 1.0) {
-        puts("eval: acos() is defined only for -1 <= x <= 1");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("acos() is defined only for -1 <= x <= 1\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -1509,7 +1554,10 @@ double s_tan(char *operation) {
 
     double modPi = fmod(fabs(angle), PI);
     if (fabs(modPi - PI / 2.0) < 1e-8) {
-        printf("eval: tan() undefined for %.10g rad\n", angle);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("tan() is undefined for %.10g rad\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, angle);
+
         return NAN;
     }
 
@@ -1603,7 +1651,10 @@ double s_root(char *operation) {
     char *comma = find_top_level_comma(operation);
     
     if (!comma) {
-        printf("eval: root() requires exactly 2 arguments\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("root requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -1613,7 +1664,10 @@ double s_root(char *operation) {
     
     uint8_t nullCount = isnull(2, indexStr, rootingStr);
     if (nullCount) {
-        printf("eval: root() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("root() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+
         return NAN;
     }
 
@@ -1641,12 +1695,18 @@ double s_root(char *operation) {
     bool invert = false;
 
     if (index == 0) {
-        printf("eval: root() requires an index that is not 0\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("root() requires an index that is not 0\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
     if (index != (int64_t)index) {
-        printf("eval: troot() requires an integer index\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("root(0) requires an index of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -1656,7 +1716,10 @@ double s_root(char *operation) {
     }
 
     if (rooting < 0 && (((int64_t)index & 1) == 0)) {
-        printf("eval: root() requires an odd index when there is a negative number\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("root() requires an odd index when there is a negative number\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -1684,7 +1747,10 @@ double s_bmi(char *operation) {
     char *comma = find_top_level_comma(operation);
 
     if (!comma) {
-        printf("eval: bmi() requires exactly 2 arguments\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("bmi() requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -1694,7 +1760,10 @@ double s_bmi(char *operation) {
 
     uint8_t nullCount = isnull(2, weightStr, heightStr);
     if (nullCount) {
-        printf("eval: bmi() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("bmi() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+
         return NAN;
     }
 
@@ -1732,7 +1801,10 @@ double s_log(char *operation) {
     char *comma = find_top_level_comma(operation);
 
     if (!comma) {
-        printf("eval: log() requires exactly 2 arguments\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("log() requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -1742,7 +1814,10 @@ double s_log(char *operation) {
 
     uint8_t nullCount = isnull(2, baseStr, numStr);
     if (nullCount) {
-        printf("eval: log() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("log() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+
         return NAN;
     }
 
@@ -1768,7 +1843,10 @@ double s_log(char *operation) {
         return NAN;
 
     if (base <= 1 || num <= 0) {
-        printf("eval: invalid values for log()\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("invalid values for log()\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -1785,7 +1863,10 @@ double s_randFloat(char *operation) {
     char *comma = find_top_level_comma(operation);
 
     if (!comma) {
-        printf("eval: randf() requires exactly 2 arguments\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("randf() requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -1795,7 +1876,10 @@ double s_randFloat(char *operation) {
 
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
-        printf("eval: randf() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("randf() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+
         return NAN;
     }
 
@@ -1848,7 +1932,10 @@ double s_randInt(char *operation) {
     char *comma = find_top_level_comma(operation);
 
     if (!comma) {
-        printf("eval: rand() requires exactly 2 arguments\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("rand() requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
     
@@ -1858,7 +1945,10 @@ double s_randInt(char *operation) {
     
     uint8_t nullCount = isnull(2, str_min, str_max);
     if (nullCount) {
-        printf("eval: rand() requires exactly 2 arguments (missing %"PRIu8")\n", nullCount);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("rand() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+
         return NAN;
     }
 
@@ -1898,7 +1988,10 @@ double s_randInt(char *operation) {
     }
 
     if (minInt != (int64_t)minInt || maxInt != (int64_t)maxInt) {
-        printf("eval: rand() requires an integer!\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("rand() requires arguments of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -2000,12 +2093,18 @@ double s_isprime(char *operation) {
         return NAN;
 
     if (num <= 1) {
-        printf("eval: isprime() requires a number greater than 1\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("isprime() requires a number grater than 1\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
     if (num != (int64_t)num) {
-        printf("eval: isprime() requires an integer!\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("isprime() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -2035,7 +2134,10 @@ double s_fact(char *operation) {
     char *test = strdup(operation);
 
     if (!test) {
-        printf("eval: strdup failed\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("strdup failed\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -2057,7 +2159,10 @@ double s_fact(char *operation) {
     if (stepsCount == len)
         *test = '\0';
     else if (stepsCount == 0) {
-        printf("eval: to factor you need '!' as a suffix\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("to factor you need '!' as a suffix\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         SAFE_FREE(test);
         return NAN;
     } else if (stepsCount > 0)
@@ -2066,7 +2171,10 @@ double s_fact(char *operation) {
     trimEnd(test);
 
     if (strlen(test) < 1) {
-        printf("eval: missing a value to factor\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("missing a value to factor\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         SAFE_FREE(test);
         return NAN;
     }
@@ -2082,12 +2190,18 @@ double s_fact(char *operation) {
         return NAN;
 
     if (num < 0) {
-        printf("eval: cannot factor negative values\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("cannot factor negative values\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
     if (num != (int64_t)num) {
-        printf("eval: cannot factor a floating point number\n");
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("cannot factor a floating point number\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
         return NAN;
     }
 
@@ -2128,9 +2242,13 @@ double s_sum(char *operation) {
     uint16_t commaCount = count_top_level_commas(operation);
 
     if (commaCount < 1 || commaCount > 2) {
-        printf(
-            "eval: sum() function requires at least 2 arguments and at most 3 arguments\n"
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc(
+            "sum() function requires at least 2 arguments and at most 3 arguments\n", 
+            GetBaseColor(BC_PROMPT_COLOR), WHITE
         );
+
         return NAN;
     }
 
@@ -2160,7 +2278,10 @@ double s_sum(char *operation) {
         nullCount = isnull(2, initStr, endStr);
 
     if (nullCount) {
-        printf("eval: sum() missing %"PRIu8" argument(s)\n", nullCount);
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("sum() missing %"PRIu8" argument(s)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+
         return NAN;
     }
 
