@@ -15,10 +15,10 @@ typedef double (*F_Func)(char *operation);
 typedef struct Functions {
     eval_types returnType;
     const char *name;
-    union {
-        F_Func float_func;
-        S_Func str_func;
-    };
+    union func {
+        F_Func f;
+        S_Func s;
+    } fn;
 } FuncEntry;
 
 typedef struct {

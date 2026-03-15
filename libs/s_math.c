@@ -24,7 +24,7 @@ double parse_str_func(char *operation, const FuncEntry function) {
 
     bool isChr = function.returnType == BC_CHAR;
 
-    char *buff = function.str_func(operation);
+    char *buff = function.fn.s(operation);
 
     if (!buff)
         return NAN;

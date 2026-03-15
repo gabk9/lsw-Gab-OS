@@ -1631,7 +1631,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
                 if (functions[i].returnType != BC_STR && functions[i].returnType != BC_CHAR) {
 
-                    double num = functions[i].float_func(operation);
+                    double num = functions[i].fn.f(operation);
 
                     if (isnan(num))
                         return (evalOut){ .type = BC_NONE };
@@ -1641,7 +1641,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
                     return (evalOut){ .type = functions[i].returnType, .num = num };
                 } else {
-                    char *result = functions[i].str_func(operation);
+                    char *result = functions[i].fn.s(operation);
 
                     if (!result)
                         return (evalOut){ .type = BC_NONE };
