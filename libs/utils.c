@@ -2,8 +2,8 @@
 #include "utils.h"
 #include "types.h"
 
-#define PROJ_LINES_APPROX 9500
-#define PROJ_SIZE_APPROX_BYTES 282500
+#define PROJ_LINES_APPROX 9600
+#define PROJ_SIZE_APPROX_BYTES 290000
 
 #define RC_FILE "lswrc.txt"
 
@@ -75,12 +75,13 @@ evalOut eval_typeof(const char *operation, bool mathLib) {
         return out;
     }
 
-    double result = h_atof(operation, mathLib);
+    evalOut tmp = h_atof(operation, mathLib);
+    double result = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     if (isnan(result))
         return out;
 
-    if (fabs(result - (int64_t)result) < EPS) {
+    if (CLOSE_ENOUGH(result, (int64_t)result)) {
         out.type = BC_INT;
         out.num = (int64_t)result;
     } else {
@@ -548,7 +549,9 @@ uint16_t getHistSizeConfig(char *lswrc_path) {
         }
 
         if (key && val && strcmp(key, "HISTSIZE") == 0) {
-            result = h_atof(val, false);
+            evalOut tmp = h_atof(val, false);
+            result = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+
             SAFE_FREE(lineCpy);
             break;
         }
@@ -941,7 +944,9 @@ double parse_len(char *s) {
 
     char *buff = eval(s, true);
 
-    double len = h_atof(buff, true);
+    evalOut tmp = h_atof(buff, true);
+    double len = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+
     SAFE_FREE(buff);
 
     return len;
@@ -2421,7 +2426,8 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
             return NAN;
         }
 
-        mult = h_atof(Ans, true);
+        evalOut tmp = h_atof(Ans, true);
+        mult = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
     } else {
         SAFE_FREE(cpy);
         return 0.0;

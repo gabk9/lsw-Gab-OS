@@ -54,6 +54,8 @@ extern char *Ans;
 
 #define EPS 1e-9
 
+#define CLOSE_ENOUGH(num1, num2) (fabs((num1) - (num2)) < (EPS))
+
 #define MAX_ARGS 0x20
 #define MAX_CHAR 0x400
 #define TIME_FMT "%a %d %b %Y %H:%M:%S %z"

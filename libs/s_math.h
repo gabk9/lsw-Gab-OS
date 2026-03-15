@@ -26,7 +26,7 @@
 
 bool isprime(int64_t n);
 uint64_t fact(int64_t num, int32_t steps);
-double h_atof(const char *str, bool mathlib);
+evalOut h_atof(const char *str, bool mathlib);
 double tetration(double base, int32_t height);
 double s_ln(char *operation)__attribute__((nonnull));
 char *s_chr(char *operation)__attribute__((nonnull));

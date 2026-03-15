@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.3.90"
+#define VERSION "r2.3.95"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -254,7 +254,8 @@ void sleepCmd(char *instruction) {
     double time;
     char *buff = eval(instruction, true);
 
-    time = h_atof(buff, true);
+    evalOut tmp = h_atof(buff, true);
+    time = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -802,7 +803,8 @@ void historyCmd(char *operation, const char *path) {
 
     char *tmp = eval(operation, true);
 
-    double num = h_atof(tmp, true);
+    evalOut debug1 = h_atof(tmp, true);
+    double num = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp);
 
@@ -811,7 +813,7 @@ void historyCmd(char *operation, const char *path) {
         return;
     }
 
-    if (num != (int64_t)num) {
+    if (debug1.type != BC_INT) {
         printf("history: must be integer\n");
         SAFE_FCLOSE(f);
         return;
@@ -1633,7 +1635,8 @@ void updatehistory(void) {
         "r2.3.64 - big changes\n\tAdded: more error messages for the other numeric systems\n\tEdited: the builtin variables and constants are no longer case insensitive\n",
         "r2.3.68 - small changes\n\tAdded: none constant to bc\n",
         "r2.3.82 - big changes\n\tEdited: first part of making bc more customizable\n",
-        "r2.3.90 - big changes\n\tEdited: finished the eval strings customizations\n"
+        "r2.3.90 - big changes\n\tEdited: finished the eval strings customizations\n",
+        "r2.3.95 - small changes\n\tEdited: improved a number parser in bc\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

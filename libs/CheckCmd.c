@@ -163,9 +163,13 @@ void checkLswrcSyntax(const char *data_folder) {
             if (args[0] == '=') args[0] = ' ';
             trim(args);
 
-            double num = h_atof(args, false);
+            evalOut tmp = h_atof(args, false);
+            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
-            if (isnan(num) || !isalldigit(args) || num != (int64_t)num) {
+            if (isnan(num))
+                goto fail;
+
+            if (!isalldigit(args) || tmp.type != BC_INT) {
                 fprintf(stderr, "HISTSIZE: arguments with invalid data type!\n");
                 goto fail;
             }
@@ -423,7 +427,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "^") == 0) {
 
-        if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
+        if (left.type == BC_INT || right.type == BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("'^' requires integers\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -435,7 +439,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "&") == 0) {
 
-        if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
+        if (left.type == BC_INT || right.type == BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("'&' requires integers\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -447,7 +451,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "|") == 0) {
 
-        if ((int64_t)num1 != num1 || (int64_t)num2 != num2) {
+        if (left.type == BC_INT || right.type == BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("'|' requires integers\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -460,35 +464,35 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
     else if (strcmp(operation, "<") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 < num2) && fabs(num1 - num2) > EPS;
+        out.boolean = (num1 < num2) && CLOSE_ENOUGH(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, ">") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 > num2) && fabs(num1 - num2) > EPS;
+        out.boolean = (num1 > num2) && CLOSE_ENOUGH(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, "<=") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 < num2) || fabs(num1 - num2) < EPS;
+        out.boolean = (num1 < num2) || CLOSE_ENOUGH(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, ">=") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 > num2) || fabs(num1 - num2) < EPS;
+        out.boolean = (num1 > num2) || CLOSE_ENOUGH(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, "!=") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = fabs(num1 - num2) > EPS;
+        out.boolean = CLOSE_ENOUGH(num1, num2);
         return out;
     }
 
@@ -503,14 +507,14 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
             out.boolean = (num1 == num2);
 
         else
-            out.boolean = fabs(num1 - num2) < EPS;
+            out.boolean = CLOSE_ENOUGH(num1, num2);
 
         return out;
     }
 
     else if (strcmp(operation, "**") == 0) {
 
-        if (num1 < 0 && (int64_t)num2 != num2) {
+        if (num1 < 0 && right.type == BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("negative base with non-integer exponent\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -523,7 +527,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "^^") == 0) {
 
-        if (num2 != (int64_t)num2) {
+        if (right.type == BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("tetration height must be an integer\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -595,7 +599,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
         return out;
     }
 
-    if (fabs(result - (int64_t)result) < EPS) {
+    if (CLOSE_ENOUGH(result, (int64_t)result)) {
 
         out.type = BC_INT;
         out.num = (int64_t)result;
@@ -1483,7 +1487,8 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                     return (evalOut){ .type = BC_STR, .str = final };
                 }
             }
-            double num = h_atof(operation, mathlib);
+            evalOut tmp = h_atof(operation, mathlib);
+            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
 
@@ -1495,7 +1500,8 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
         ssize_t parenthesis_index = strchar(operation, '(');
         if (parenthesis_index == -1) {
 
-            double num = h_atof(operation, mathlib);
+            evalOut tmp = h_atof(operation, mathlib);
+            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
@@ -1513,7 +1519,8 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
         if (*operation == '~' || *operation == '-') {
 
-            double num = h_atof(operation, mathlib);
+            evalOut tmp = h_atof(operation, mathlib);
+            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
