@@ -446,7 +446,7 @@ evalOut h_atof(const char *str, bool mathlib) {
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
 
-        if (num != (int64_t)num) {
+        if (!CLOSE_ENOUGH(num, (int64_t)num)) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("unary not(~) requires an integer\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -792,13 +792,8 @@ double bc_parse(char *operation) {
     if (isnan(num))
         return NAN;
 
-    if (!enablePrecision && num != (int64_t)num) {
-        printc("eval", BC_PROMPT_COLOR, WHITE);
-        printf(": ");
-        printc("int() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
-
-        return NAN;
-    }
+    if (!enablePrecision && !CLOSE_ENOUGH(num, (int64_t)num))
+        num = trunc(num);
 
     return num;
 }
@@ -1034,7 +1029,7 @@ char *s_oct(char *operation) {
     if (isnan(num))
         return NULL;
 
-    if (num != (int64_t)num) {
+    if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("oct() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -1145,7 +1140,7 @@ char *s_chr(char *operation) {
     if (isnan(num))
         return NULL;
 
-    if (num != (int64_t)num) {
+    if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("chr() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -1219,7 +1214,7 @@ char *s_hex(char *operation) {
     if (isnan(val))
         return NULL;
 
-    if (val != (int64_t)val) {
+    if (!CLOSE_ENOUGH(val, (int64_t)val)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("hex() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -1261,7 +1256,7 @@ char *s_bin(char *operation) {
     if (isnan(val))
         return NULL;
 
-    if (val != (int64_t)val) {
+    if (!CLOSE_ENOUGH(val, (int64_t)val)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("bin() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -1770,7 +1765,7 @@ double s_root(char *operation) {
         return NAN;
     }
 
-    if (index != (int64_t)index) {
+    if (!CLOSE_ENOUGH(index, (int64_t)index)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("root(0) requires an index of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -2063,7 +2058,7 @@ double s_randInt(char *operation) {
         return NAN;
     }
 
-    if (minInt != (int64_t)minInt || maxInt != (int64_t)maxInt) {
+    if (!CLOSE_ENOUGH(minInt, (int64_t)minInt) || !CLOSE_ENOUGH(maxInt, (int64_t)maxInt)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("rand() requires arguments of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -2180,7 +2175,7 @@ double s_isprime(char *operation) {
         return NAN;
     }
 
-    if (num != (int64_t)num) {
+    if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("isprime() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -2278,7 +2273,7 @@ double s_fact(char *operation) {
         return NAN;
     }
 
-    if (num != (int64_t)num) {
+    if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("cannot factor a floating point number\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);

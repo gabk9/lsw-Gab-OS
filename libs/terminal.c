@@ -813,7 +813,7 @@ void historyCmd(char *operation, const char *path) {
         return;
     }
 
-    if (debug1.type != BC_INT) {
+    if (debug1.type != BC_INT && debug1.type != BC_BOOL) {
         printf("history: must be integer\n");
         SAFE_FCLOSE(f);
         return;
