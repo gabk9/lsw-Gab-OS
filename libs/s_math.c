@@ -123,6 +123,177 @@ uint16_t count_top_level_commas(const char *s) {
     return count;
 }
 
+
+static double numericDebug(const char *buf) {
+    if (strncasecmp(buf, BIN_PREF, strlen(BIN_PREF)) == 0) {
+        size_t len = strlen(buf);
+
+        const size_t pref_len = strlen(BIN_PREF);
+
+        if (len <= pref_len) {
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("invalid binary literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
+            return NAN;
+        }
+
+        size_t end = len - 1;
+        while (isIn(buf[end], "kmbtKMBT")) end --;
+
+        for (size_t i = pref_len; i <= end; i++) {
+            if (buf[i] != '0' && buf[i] != '1') {
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("invalid binary digit: '%c\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+
+                break;
+            }
+        }
+
+        return NAN;
+    } else if (strncasecmp(buf, HEX_PREF, strlen(HEX_PREF)) == 0) {
+        size_t len = strlen(buf);
+
+        const size_t pref_len = strlen(HEX_PREF);
+
+        if (len <= pref_len) {
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("invalid hexadecimal literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
+            return NAN;
+        }
+
+        for (size_t i = pref_len; buf[i]; i++) {
+
+            if (isIn(buf[i], "kmbt") || isIn(buf[i], "KMBT")) {
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("hexadecimal literal does not support suffixes\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
+                return NAN;
+            }
+
+            if (!isxdigit(buf[i])) {
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("invalid hexadecimal digit: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+
+                break;
+            }
+        }
+
+        return NAN;
+    } else if (strncasecmp(buf, OCT_PREF, strlen(OCT_PREF)) == 0) {
+        size_t len = strlen(buf);
+
+        const size_t pref_len = strlen(OCT_PREF);
+
+        if (len <= pref_len) {
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("invalid octal literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
+            return NAN;
+        }
+
+        size_t end = len - 1;
+        while (isIn(buf[end], "kmbt") || isIn(buf[end], "KMBT")) end --;
+
+        for (size_t i = pref_len; i <= end; i++) {
+            if (buf[i] < '0' || buf[i] > '7') {
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("invalid octal digit: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+
+                break;
+            }
+        }
+
+        return NAN;
+    }
+
+    printc("eval", BC_PROMPT_COLOR, WHITE);
+    printf(": ");
+    printc("invalid literal prefix: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, *buf);
+
+    return NAN;
+}
+
+static double mathlibPart(char *buf, bool mathlib) {
+    const struct {
+        char suffix;
+        double mult;
+    } suffix[] = {
+        {.suffix = 'k', .mult = 1e3},
+        {.suffix = 'm', .mult = 1e6},
+        {.suffix = 'b', .mult = 1e9},
+        {.suffix = 't', .mult = 1e12},
+    };
+
+    bool has_exp = strncasecmp(buf, HEX_PREF, strlen(HEX_PREF)) == 0;
+    bool allow_suffix = (!isHex(buf) && !has_exp);
+
+    size_t len = strlen(buf);
+    if (allow_suffix) {
+        for (size_t mi = 0; mi < sizeof(suffix) / sizeof(*suffix); mi++) {
+            if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
+                buf[len-1] = '\0';
+                if (buf[len-2] == '!')
+                    return 0.0;
+
+                char *buff = eval(buf, mathlib);
+
+                if (!buff)
+                    return NAN;
+
+                double num = h_atof(buff, mathlib);
+
+                SAFE_FREE(buff);
+                return (isnan(num)) ? NAN : num * suffix[mi].mult;
+            }
+        }
+    }
+
+    if (strcmp(buf, PI_VAR) == 0) return PI;
+    else if (strcmp(buf, E_VAR) == 0)  return E;
+
+    uint16_t i = 0;
+    while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))
+        i++;
+
+    if (i > 0 && strcmp(buf + i, E_VAR) == 0) {
+        char temp[0x40];
+        strncpy(temp, buf, i);
+        temp[i] = '\0';
+        char *buff = eval(temp, mathlib);
+
+        if (!buff)
+            return NAN;
+
+        double num = h_atof(buff, mathlib);
+
+        SAFE_FREE(buff);
+        return (isnan(num)) ? NAN : num * PI;
+    }else if (i > 0 && strcmp(buf + i, E_VAR) == 0) {
+        char temp[0x40];
+        strncpy(temp, buf, i);
+        temp[i] = '\0';
+        char *buff = eval(temp, mathlib);
+
+        if (!buff)
+            return NAN;
+
+        double num = h_atof(buff, mathlib);
+
+        SAFE_FREE(buff);
+        return (isnan(num)) ? NAN : num * E;
+    }
+
+    return (double)U64_NAN;
+}
+
 double h_atof(const char *str, bool mathlib) {
 
     if (!str || !*str)
@@ -341,172 +512,13 @@ double h_atof(const char *str, bool mathlib) {
     
     bool is_bin = isBin(buf);
 
-    if (*buf == '0' && buf[1] && buf[1] != '.'&& !is_bin && !is_octal && !is_hex) {
-        if (strncasecmp(buf, BIN_PREF, strlen(BIN_PREF)) == 0) {
-            size_t len = strlen(buf);
-
-            const size_t pref_len = strlen(BIN_PREF);
-
-            if (len <= pref_len) {
-                printc("eval", BC_PROMPT_COLOR, WHITE);
-                printf(": ");
-                printc("invalid binary literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
-
-                return NAN;
-            }
-
-            size_t end = len - 1;
-            while (isIn(buf[end], "kmbtKMBT")) end --;
-
-            for (size_t i = pref_len; i <= end; i++) {
-                if (buf[i] != '0' && buf[i] != '1') {
-                    printc("eval", BC_PROMPT_COLOR, WHITE);
-                    printf(": ");
-                    printc("invalid binary digit: '%c\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
-
-                    break;
-                }
-            }
-
-            return NAN;
-        } else if (strncasecmp(buf, HEX_PREF, strlen(HEX_PREF)) == 0) {
-            size_t len = strlen(buf);
-
-            const size_t pref_len = strlen(HEX_PREF);
-
-            if (len <= pref_len) {
-                printc("eval", BC_PROMPT_COLOR, WHITE);
-                printf(": ");
-                printc("invalid hexadecimal literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
-
-                return NAN;
-            }
-
-            for (size_t i = pref_len; buf[i]; i++) {
-
-                if (isIn(buf[i], "kmbt") || isIn(buf[i], "KMBT")) {
-                    printc("eval", BC_PROMPT_COLOR, WHITE);
-                    printf(": ");
-                    printc("hexadecimal literal does not support suffixes\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
-
-                    return NAN;
-                }
-
-                if (!isxdigit(buf[i])) {
-                    printc("eval", BC_PROMPT_COLOR, WHITE);
-                    printf(": ");
-                    printc("invalid hexadecimal digit: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
-
-                    break;
-                }
-            }
-
-            return NAN;
-        } else if (strncasecmp(buf, OCT_PREF, strlen(OCT_PREF)) == 0) {
-            size_t len = strlen(buf);
-
-            const size_t pref_len = strlen(OCT_PREF);
-
-            if (len <= pref_len) {
-                printc("eval", BC_PROMPT_COLOR, WHITE);
-                printf(": ");
-                printc("invalid octal literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
-
-                return NAN;
-            }
-
-            size_t end = len - 1;
-            while (isIn(buf[end], "kmbt") || isIn(buf[end], "KMBT")) end --;
-
-            for (size_t i = pref_len; i <= end; i++) {
-                if (buf[i] < '0' || buf[i] > '7') {
-                    printc("eval", BC_PROMPT_COLOR, WHITE);
-                    printf(": ");
-                    printc("invalid octal digit: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
-
-                    break;
-                }
-            }
-
-            return NAN;
-        }
-
-        printc("eval", BC_PROMPT_COLOR, WHITE);
-        printf(": ");
-        printc("invalid literal prefix: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, *buf);
-
-        return NAN;
-    }
+    if (*buf == '0' && buf[1] && buf[1] != '.'&& !is_bin && !is_octal && !is_hex)
+        return numericDebug(buf);
 
     if (mathlib) {
-        const struct {
-            char suffix;
-            double mult;
-        } suffix[] = {
-            {.suffix = 'k', .mult = 1e3},
-            {.suffix = 'm', .mult = 1e6},
-            {.suffix = 'b', .mult = 1e9},
-            {.suffix = 't', .mult = 1e12},
-        };
-
-        bool has_exp = strncasecmp(buf, HEX_PREF, strlen(HEX_PREF)) == 0;
-        bool allow_suffix = (!is_hex && !has_exp);
-
-        if (allow_suffix) {
-            for (size_t mi = 0; mi < sizeof(suffix) / sizeof(*suffix); mi++) {
-                if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
-                    buf[len-1] = '\0';
-                    if (buf[len-2] == '!')
-                        return 0.0;
-
-                    char *buff = eval(buf, mathlib);
-
-                    if (!buff)
-                        return NAN;
-
-                    double num = h_atof(buff, mathlib);
-
-                    SAFE_FREE(buff);
-                    return (isnan(num)) ? NAN : num * suffix[mi].mult;
-                }
-            }
-        }
-
-        if (strcmp(buf, PI_VAR) == 0) return PI;
-        else if (strcmp(buf, E_VAR) == 0)  return E;
-
-        uint16_t i = 0;
-        while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))
-            i++;
-
-        if (i > 0 && strcmp(buf + i, E_VAR) == 0) {
-            char temp[0x40];
-            strncpy(temp, buf, i);
-            temp[i] = '\0';
-            char *buff = eval(temp, mathlib);
-
-            if (!buff)
-                return NAN;
-
-            double num = h_atof(buff, mathlib);
-
-            SAFE_FREE(buff);
-            return (isnan(num)) ? NAN : num * PI;
-        }else if (i > 0 && strcmp(buf + i, E_VAR) == 0) {
-            char temp[0x40];
-            strncpy(temp, buf, i);
-            temp[i] = '\0';
-            char *buff = eval(temp, mathlib);
-
-            if (!buff)
-                return NAN;
-
-            double num = h_atof(buff, mathlib);
-
-            SAFE_FREE(buff);
-            return (isnan(num)) ? NAN : num * E;
-        }
-
+        double tmp = mathlibPart(buf, mathlib);
+        if (tmp != (double)U64_NAN)
+            return tmp;
     }
 
     if (is_hex)
