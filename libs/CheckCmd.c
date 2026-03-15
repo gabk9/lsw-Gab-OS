@@ -464,14 +464,14 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
     else if (strcmp(operation, "<") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 < num2) && CLOSE_ENOUGH(num1, num2);
+        out.boolean = (num1 < num2) && !CLOSE_ENOUGH(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, ">") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 > num2) && CLOSE_ENOUGH(num1, num2);
+        out.boolean = (num1 > num2) && !CLOSE_ENOUGH(num1, num2);
         return out;
     }
 
