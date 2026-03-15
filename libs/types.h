@@ -9,12 +9,16 @@ typedef enum types {
     BC_BOOL, BC_CHAR, BC_NONE
 } eval_types;
 
-typedef double (*MathFunc)(char *operation);
+typedef char *(*S_Func)(char *operation);
+typedef double (*F_Func)(char *operation);
 
 typedef struct Functions {
-    const char *name;
-    MathFunc func;
     eval_types returnType;
+    const char *name;
+    union {
+        F_Func float_func;
+        S_Func str_func;
+    };
 } FuncEntry;
 
 typedef struct {

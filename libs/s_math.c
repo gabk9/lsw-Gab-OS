@@ -24,29 +24,7 @@ double parse_str_func(char *operation, const FuncEntry function) {
 
     bool isChr = function.returnType == BC_CHAR;
 
-    char *buff = NULL;
-
-    if (strcmp(function.name, "chr") == 0)
-        buff = s_chr(operation);
-    else if (strcmp(function.name, "hex") == 0)
-        buff = s_hex(operation);
-    else if (strcmp(function.name, "bin") == 0)
-        buff = s_bin(operation);
-    else if (strcmp(function.name, "oct") == 0)
-        buff = s_oct(operation);
-    else if (strcmp(function.name, "str") == 0)
-        buff = bc_parse_str(operation);
-    else if (strcmp(function.name, "lower") == 0)
-        buff = s_lower(operation);
-    else if (strcmp(function.name, "upper") == 0)
-        buff = s_upper(operation);
-    else {
-        printc("eval", BC_PROMPT_COLOR, WHITE);
-        printf(": ");
-        printc("undefined function: '%s()'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, function.name);
-
-        return NAN;
-    }
+    char *buff = function.str_func(operation);
 
     if (!buff)
         return NAN;

@@ -1422,6 +1422,14 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
             char *expr = operation + count;
 
+            if (!*expr) {
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("syntax error\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+
+                return (evalOut){ .type = BC_NONE };
+            }
+
             if (isBetweenQuotes(expr, 1)) {
                 if (count & 1)
                     return (evalOut){ .type = BC_BOOL, .boolean = false };
@@ -1618,44 +1626,27 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
         if (mathlib) {
             for (size_t i = 0; i < funcCount; i++) {
-                if (strcmp(name, functions[i].name) == 0) {
+                if (strcmp(name, functions[i].name) != 0)
+                    continue;
 
-                    if (functions[i].func != NULL) {
+                if (functions[i].returnType != BC_STR && functions[i].returnType != BC_CHAR) {
 
-                        double num = functions[i].func(operation);
+                    double num = functions[i].float_func(operation);
 
-                        if (isnan(num))
-                            return (evalOut){ .type = BC_NONE };
+                    if (isnan(num))
+                        return (evalOut){ .type = BC_NONE };
 
-                        if (functions[i].returnType == BC_BOOL)
-                            return (evalOut){ .type = BC_BOOL, .boolean = (bool)num };
+                    if (functions[i].returnType == BC_BOOL)
+                        return (evalOut){ .type = BC_BOOL, .boolean = (bool)num };
 
-                        return (evalOut){ .type = functions[i].returnType, .num = num };
-                    }
+                    return (evalOut){ .type = functions[i].returnType, .num = num };
+                } else {
+                    char *result = functions[i].str_func(operation);
 
-                    if (functions[i].returnType == BC_STR || functions[i].returnType == BC_CHAR) {
+                    if (!result)
+                        return (evalOut){ .type = BC_NONE };
 
-                        if (strcmp(name, "chr") == 0)
-                            return (evalOut){ .type = functions[i].returnType, .str = s_chr(operation) };
-
-                        else if (strcmp(name, "hex") == 0)
-                            return (evalOut){ .type = functions[i].returnType, .str = s_hex(operation) };
-
-                        else if (strcmp(name, "bin") == 0)
-                            return (evalOut){ .type = functions[i].returnType, .str = s_bin(operation) };
-
-                        else if (strcmp(name, "oct") == 0)
-                            return (evalOut){ .type = functions[i].returnType, .str = s_oct(operation) };
-
-                        else if (strcmp(name, "str") == 0)
-                            return (evalOut){ .type = functions[i].returnType, .str = bc_parse_str(operation) };
-
-                        else if (strcmp(name, "lower") == 0)
-                            return (evalOut){ .type = functions[i].returnType, .str = s_lower(operation) };
-
-                        else if (strcmp(name, "upper") == 0)
-                            return (evalOut){ .type = functions[i].returnType, .str = s_upper(operation) };
-                    }
+                    return (evalOut){ .type = functions[i].returnType, .str = result};
                 }
             }
         }

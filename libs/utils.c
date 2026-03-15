@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9700
-#define PROJ_SIZE_APPROX_BYTES 292000
+#define PROJ_SIZE_APPROX_BYTES 290500
 
 #define RC_FILE "lswrc.txt"
 
@@ -2556,54 +2556,53 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 
 char *eval(char *operation, bool mathlib) {
     const FuncEntry math_table[] = {
-        {.name = "scale",   .func = s_scale,       .returnType = BC_INT},
-        {.name = "sqrt",    .func = s_sqrt,        .returnType = BC_FLOAT},
-        {.name = "root",    .func = s_root,        .returnType = BC_FLOAT},
-        {.name = "sin",     .func = s_sin,         .returnType = BC_FLOAT},
-        {.name = "asin",    .func = s_asin,        .returnType = BC_FLOAT},
-        {.name = "cos",     .func = s_cos,         .returnType = BC_FLOAT},
-        {.name = "acos",    .func = s_acos,        .returnType = BC_FLOAT},
-        {.name = "tan",     .func = s_tan,         .returnType = BC_FLOAT},
-        {.name = "atan",    .func = s_atan,        .returnType = BC_FLOAT},
-        {.name = "cot",     .func = s_cot,         .returnType = BC_FLOAT},
-        {.name = "acot",    .func = s_acot,        .returnType = BC_FLOAT},
-        {.name = "ln",      .func = s_ln,          .returnType = BC_FLOAT},
-        {.name = "log10",   .func = s_log10,       .returnType = BC_FLOAT},
-        {.name = "log2",    .func = s_log2,        .returnType = BC_FLOAT},
-        {.name = "log",     .func = s_log,         .returnType = BC_FLOAT},
-        {.name = "floor",   .func = s_floor,       .returnType = BC_INT},
-        {.name = "ceil",    .func = s_ceil,        .returnType = BC_INT},
-        {.name = "round",   .func = s_round,       .returnType = BC_INT},
-        {.name = "sign",    .func = s_sign,        .returnType = BC_INT},
-        {.name = "sum",     .func = s_sum,         .returnType = BC_FLOAT},
-        {.name = "deg2rad", .func = s_rad,         .returnType = BC_FLOAT},
-        {.name = "rad2gon", .func = s_gon,         .returnType = BC_FLOAT},
-        {.name = "rad2deg", .func = s_deg,         .returnType = BC_FLOAT},
-        {.name = "trunc",   .func = s_trunc,       .returnType = BC_INT},
-        {.name = "randf",   .func = s_randFloat,   .returnType = BC_FLOAT},
-        {.name = "fah",     .func = s_fah,         .returnType = BC_FLOAT},
-        {.name = "cel",     .func = s_cel,         .returnType = BC_FLOAT},
-        {.name = "rand",    .func = s_randInt,     .returnType = BC_INT},
-        {.name = "mi",      .func = s_miles,       .returnType = BC_FLOAT},
-        {.name = "km",      .func = s_km,          .returnType = BC_FLOAT},
-        {.name = "lb",      .func = s_pounds,      .returnType = BC_FLOAT},
-        {.name = "kg",      .func = s_kg,          .returnType = BC_FLOAT},
-        {.name = "isprime", .func = s_isprime,     .returnType = BC_BOOL},
-        {.name = "bmi",     .func = s_bmi,         .returnType = BC_FLOAT},
-        {.name = "len",     .func = bc_len,        .returnType = BC_INT},
-        {.name = "feet",    .func = s_feet,        .returnType = BC_FLOAT},
-        {.name = "meter",   .func = s_meter,       .returnType = BC_FLOAT},
-        {.name = "abs",     .func = s_abs,         .returnType = BC_FLOAT},
-        {.name = "int",     .func = bc_parse,      .returnType = BC_INT},
-        {.name = "float",   .func = bc_parse,      .returnType = BC_FLOAT},
-        {.name = "str",     .func = NULL,          .returnType = BC_STR},    // special case
-        {.name = "chr",     .func = NULL,          .returnType = BC_CHAR},   // special case
-        {.name = "bin",     .func = NULL,          .returnType = BC_STR},    // special case
-        {.name = "oct",     .func = NULL,          .returnType = BC_STR},    // special case
-        {.name = "hex",     .func = NULL,          .returnType = BC_STR},    // special case
-        {.name = "hex",     .func = NULL,          .returnType = BC_STR},    // special case
-        {.name = "lower",   .func = NULL,          .returnType = BC_STR},    // special case
-        {.name = "upper",   .func = NULL,          .returnType = BC_STR},    // special case
+        {.returnType = BC_INT,     .name = "scale",     .float_func = s_scale},
+        {.returnType = BC_FLOAT,   .name = "sqrt",      .float_func = s_sqrt},
+        {.returnType = BC_FLOAT,   .name = "root",      .float_func = s_root},
+        {.returnType = BC_FLOAT,   .name = "sin",       .float_func = s_sin},
+        {.returnType = BC_FLOAT,   .name = "asin",      .float_func = s_asin},
+        {.returnType = BC_FLOAT,   .name = "cos",       .float_func = s_cos},
+        {.returnType = BC_FLOAT,   .name = "acos",      .float_func = s_acos},
+        {.returnType = BC_FLOAT,   .name = "tan",       .float_func = s_tan},
+        {.returnType = BC_FLOAT,   .name = "atan",      .float_func = s_atan},
+        {.returnType = BC_FLOAT,   .name = "cot",       .float_func = s_cot},
+        {.returnType = BC_FLOAT,   .name = "acot",      .float_func = s_acot},
+        {.returnType = BC_FLOAT,   .name = "ln",        .float_func = s_ln},
+        {.returnType = BC_FLOAT,   .name = "log10",     .float_func = s_log10},
+        {.returnType = BC_FLOAT,   .name = "log2",      .float_func = s_log2},
+        {.returnType = BC_FLOAT,   .name = "log",       .float_func = s_log},
+        {.returnType = BC_INT,     .name = "floor",     .float_func = s_floor},
+        {.returnType = BC_INT,     .name = "ceil",      .float_func = s_ceil},
+        {.returnType = BC_INT,     .name = "round",     .float_func = s_round},
+        {.returnType = BC_INT,     .name = "sign",      .float_func = s_sign},
+        {.returnType = BC_FLOAT,   .name = "sum",       .float_func = s_sum},
+        {.returnType = BC_FLOAT,   .name = "deg2rad",   .float_func = s_rad},
+        {.returnType = BC_FLOAT,   .name = "rad2gon",   .float_func = s_gon},
+        {.returnType = BC_FLOAT,   .name = "rad2deg",   .float_func = s_deg},
+        {.returnType = BC_INT,     .name = "trunc",     .float_func = s_trunc},
+        {.returnType = BC_FLOAT,   .name = "randf",     .float_func = s_randFloat},
+        {.returnType = BC_FLOAT,   .name = "fah",       .float_func = s_fah},
+        {.returnType = BC_FLOAT,   .name = "cel",       .float_func = s_cel},
+        {.returnType = BC_INT,     .name = "rand",      .float_func = s_randInt},
+        {.returnType = BC_FLOAT,   .name = "mi",        .float_func = s_miles},
+        {.returnType = BC_FLOAT,   .name = "km",        .float_func = s_km},
+        {.returnType = BC_FLOAT,   .name = "lb",        .float_func = s_pounds},
+        {.returnType = BC_FLOAT,   .name = "kg",        .float_func = s_kg},
+        {.returnType = BC_BOOL,    .name = "isprime",   .float_func = s_isprime},
+        {.returnType = BC_FLOAT,   .name = "bmi",       .float_func = s_bmi},
+        {.returnType = BC_INT,     .name = "len",       .float_func = bc_len},
+        {.returnType = BC_FLOAT,   .name = "feet",      .float_func = s_feet},
+        {.returnType = BC_FLOAT,   .name = "meter",     .float_func = s_meter},
+        {.returnType = BC_FLOAT,   .name = "abs",       .float_func = s_abs},
+        {.returnType = BC_INT,     .name = "int",       .float_func = bc_parse},
+        {.returnType = BC_FLOAT,   .name = "float",     .float_func = bc_parse},
+        {.returnType = BC_STR,     .name = "str",       .str_func = bc_parse_str},
+        {.returnType = BC_CHAR,    .name = "chr",       .str_func = s_chr},
+        {.returnType = BC_STR,     .name = "bin",       .str_func = s_bin},
+        {.returnType = BC_STR,     .name = "oct",       .str_func = s_oct},
+        {.returnType = BC_STR,     .name = "hex",       .str_func = s_hex},
+        {.returnType = BC_STR,     .name = "lower",     .str_func = s_lower},
+        {.returnType = BC_STR,     .name = "upper",     .str_func = s_upper},
     };
 
     size_t funcCount = sizeof(math_table) / sizeof(*math_table);
