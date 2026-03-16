@@ -415,7 +415,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
             if (!mathLib) {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
-                printc("'|' cannot divide by 0\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+                printc("cannot divide by 0\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
                 return out;
             }
 
@@ -440,7 +440,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "^") == 0) {
 
-        if (left.type == BC_INT || right.type == BC_INT) {
+        if (left.type != BC_INT || right.type != BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("'^' requires integers\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -452,7 +452,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "&") == 0) {
 
-        if (left.type == BC_INT || right.type == BC_INT) {
+        if (left.type != BC_INT || right.type != BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("'&' requires integers\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -464,7 +464,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "|") == 0) {
 
-        if (left.type == BC_INT || right.type == BC_INT) {
+        if (left.type != BC_INT || right.type != BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("'|' requires integers\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -540,7 +540,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
 
     else if (strcmp(operation, "^^") == 0) {
 
-        if (right.type == BC_INT) {
+        if (right.type != BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("tetration height must be an integer\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
@@ -615,7 +615,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
     if (CLOSE_ENOUGH(result, (int64_t)result)) {
 
         out.type = BC_INT;
-        out.num = (int64_t)result;
+        out.num = result;
 
     } else {
 
