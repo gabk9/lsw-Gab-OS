@@ -380,8 +380,8 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
         }
     }
 
-    double num1 = (left.type == BC_BOOL) ? left.boolean : left.num;
-    double num2 = (right.type == BC_BOOL) ? right.boolean : right.num;
+    double num1 = (left.type == BC_BOOL) ? (double)left.boolean : left.num;
+    double num2 = (right.type == BC_BOOL) ? (double)right.boolean : right.num;
 
     double result = 0;
 
