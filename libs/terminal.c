@@ -10,12 +10,7 @@
 void revCmd(char *instruction) {
 
     if (!*instruction) {
-        char *string = calloc(MAX_CHAR, sizeof(char));
-
-        if (!string) {
-            printf("rev: memory allocation Error!!\n");
-            return;
-        }
+        char string[MAX_CHAR] = {0};
 
         uint8_t appear = 1;
 
@@ -27,7 +22,7 @@ void revCmd(char *instruction) {
 
             appear = 0;
 
-            fgets(string, MAX_CHAR, stdin);
+            fgets(string, sizeof(string), stdin);
             string[strcspn(string, "\n")] = '\0';
 
             if (!*string) {
@@ -51,7 +46,6 @@ void revCmd(char *instruction) {
 
             if (stop) {
                 SAFE_FREE(copy);
-                SAFE_FREE(string);
                 break;
             }
 
@@ -544,12 +538,7 @@ void bcCmd(uint16_t argc, char **argv) {
     bool mathlib = flags & BC_MATHLIB;
     initRandom();
 
-    char *operation = calloc(MAX_CHAR, sizeof(char));
-
-    if (!operation) {
-        puts("bc: Allocation error!!");
-        return;
-    }
+    char operation[MAX_CHAR] = {0};
 
     if (Ans)
         SAFE_FREE(Ans);
@@ -567,11 +556,10 @@ void bcCmd(uint16_t argc, char **argv) {
                 printc("off\n\n", RED, WHITE);
         }
 
-
         appear = 1;
 
         printc(">>> ", BC_PROMPT_COLOR, WHITE);
-        fgets(operation, MAX_CHAR, stdin);
+        fgets(operation, sizeof(operation), stdin);
         operation[strcspn(operation, "\n")] = '\0';
 
         removeComments(operation);
@@ -611,7 +599,6 @@ void bcCmd(uint16_t argc, char **argv) {
             continue;
         }
 
-
         SAFE_FREE(Ans);
         Ans = strdup(result);
 
@@ -641,8 +628,6 @@ void bcCmd(uint16_t argc, char **argv) {
         SAFE_FREE(result);
         fflush(stdout);
     }
-
-    SAFE_FREE(operation);
 }
 
 void grepCmd(char *instruction) {

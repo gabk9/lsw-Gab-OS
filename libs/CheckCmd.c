@@ -281,12 +281,11 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
                 printc("to multiply strings the multiplier must be at least greater than 0\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
                 return out;
             }
-            
-            const double max = 1024;
-            if (((ssize_t)strlen(multiplied_str) - 2) * (size_t)multiplier > 1024) {
+
+            if (((ssize_t)strlen(multiplied_str) - 2) * (size_t)multiplier > MAX_CHAR) {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
-                printc("the resultant string must be less than %g characters long\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, max);
+                printc("the resultant string must be less than %d characters long\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, MAX_CHAR);
                 return out;
             }
 
@@ -379,6 +378,20 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
                 return out;
             }
         }
+    }
+
+    if (left.type == BC_BOOL) {
+        double val = (double)left.boolean;
+        left.type = CLOSE_ENOUGH(val, (int64_t)val) ? BC_INT : BC_FLOAT;
+
+        left.num = val;
+    }
+
+    if (right.type == BC_BOOL) {
+        double val = (double)right.boolean;
+        right.type = CLOSE_ENOUGH(val, (int64_t)val) ? BC_INT : BC_FLOAT;
+
+        right.num = val;
     }
 
     double num1 = left.num;
