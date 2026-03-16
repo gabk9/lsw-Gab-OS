@@ -9,7 +9,7 @@ double parse_str_func(char *operation, const FuncEntry function) {
     if (function.returnType != BC_STR && function.returnType != BC_CHAR) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("invalid function return type\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("invalid function return type\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -17,7 +17,7 @@ double parse_str_func(char *operation, const FuncEntry function) {
     if (!isValidBcFuncName(function.name)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("invalid function name: '%s()'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, function.name);
+        printc("invalid function name: '%s()'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, function.name);
 
         return NAN;
     }
@@ -112,7 +112,7 @@ static double numericDebug(const char *buf) {
         if (len <= pref_len) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("invalid binary literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("invalid binary literal\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return NAN;
         }
@@ -124,7 +124,7 @@ static double numericDebug(const char *buf) {
             if (buf[i] != '0' && buf[i] != '1') {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
-                printc("invalid binary digit: '%c\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+                printc("invalid binary digit: '%c\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, buf[i]);
 
                 break;
             }
@@ -139,7 +139,7 @@ static double numericDebug(const char *buf) {
         if (len <= pref_len) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("invalid hexadecimal literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("invalid hexadecimal literal\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return NAN;
         }
@@ -149,7 +149,7 @@ static double numericDebug(const char *buf) {
             if (isIn(buf[i], "kmbt") || isIn(buf[i], "KMBT")) {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
-                printc("hexadecimal literal does not support suffixes\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+                printc("hexadecimal literal does not support suffixes\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
                 return NAN;
             }
@@ -157,7 +157,7 @@ static double numericDebug(const char *buf) {
             if (!isxdigit(buf[i])) {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
-                printc("invalid hexadecimal digit: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+                printc("invalid hexadecimal digit: '%c'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, buf[i]);
 
                 break;
             }
@@ -172,7 +172,7 @@ static double numericDebug(const char *buf) {
         if (len <= pref_len) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("invalid octal literal\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("invalid octal literal\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return NAN;
         }
@@ -184,7 +184,7 @@ static double numericDebug(const char *buf) {
             if (buf[i] < '0' || buf[i] > '7') {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
-                printc("invalid octal digit: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+                printc("invalid octal digit: '%c'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, buf[i]);
 
                 break;
             }
@@ -195,7 +195,7 @@ static double numericDebug(const char *buf) {
 
     printc("eval", BC_PROMPT_COLOR, WHITE);
     printf(": ");
-    printc("invalid literal prefix: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, *buf);
+    printc("invalid literal prefix: '%c'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, *buf);
 
     return NAN;
 }
@@ -317,11 +317,11 @@ evalOut h_atof(const char *str, bool mathlib) {
         if (isUnaryNeg) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("bad operand type for unary negative(-): '"NONE_VAR"'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("bad operand type for unary negative(-): '"NONE_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
         } else if (isUnaryNot) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("bad operand type for unary not(~): '"NONE_VAR"'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("bad operand type for unary not(~): '"NONE_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
         }
 
         return (evalOut){.type = BC_FLOAT, .num = NAN};
@@ -336,7 +336,7 @@ evalOut h_atof(const char *str, bool mathlib) {
         if (isUnaryNot) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("bad operand type for unary not(~) '"INF_VAR"'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("bad operand type for unary not(~) '"INF_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
 
@@ -348,7 +348,7 @@ evalOut h_atof(const char *str, bool mathlib) {
     if (isAns && !Ans) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("'ans' is undefined\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("'ans' is undefined\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
         return (evalOut){.type = BC_FLOAT, .num = NAN};
     }
 
@@ -356,7 +356,7 @@ evalOut h_atof(const char *str, bool mathlib) {
         if (!*buf) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("missing value for unary negative(-)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("missing value for unary negative(-)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
@@ -383,7 +383,7 @@ evalOut h_atof(const char *str, bool mathlib) {
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("numeric overflow (too large)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
@@ -393,7 +393,7 @@ evalOut h_atof(const char *str, bool mathlib) {
         if (!*buf) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("missing value for unary not(~)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("missing value for unary not(~)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
@@ -421,7 +421,7 @@ evalOut h_atof(const char *str, bool mathlib) {
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("numeric overflow (too large)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
@@ -429,7 +429,7 @@ evalOut h_atof(const char *str, bool mathlib) {
         if (!CLOSE_ENOUGH(num, (int64_t)num)) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("unary not(~) requires an integer\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("unary not(~) requires an integer\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
@@ -443,7 +443,7 @@ evalOut h_atof(const char *str, bool mathlib) {
         if (isBetweenQuotes(Ans, 1)) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("cannot operate with strings\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("cannot operate with strings\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
@@ -486,13 +486,13 @@ evalOut h_atof(const char *str, bool mathlib) {
         if (len > 1) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("to use single quotes it must be a single character\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("to use single quotes it must be a single character\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         } else if (!isNullChr && len < 1) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("missing the character inside quotes\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("missing the character inside quotes\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
@@ -539,7 +539,7 @@ evalOut h_atof(const char *str, bool mathlib) {
     if (*buf == '"' && buf[len-1] == '"') {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("cannot operate with string type values\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("cannot operate with string type values\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return (evalOut){.type = BC_FLOAT, .num = NAN};
     }
@@ -556,7 +556,7 @@ evalOut h_atof(const char *str, bool mathlib) {
                 if (!isalnum((unsigned char)buf[i])) {
                     printc("eval", BC_PROMPT_COLOR, WHITE);
                     printf(": ");
-                    printc("illegal character: '%c'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, buf[i]);
+                    printc("illegal character: '%c'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, buf[i]);
 
                     return (evalOut){.type = BC_FLOAT, .num = NAN};
                 }
@@ -564,7 +564,7 @@ evalOut h_atof(const char *str, bool mathlib) {
 
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("invalid syntax\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+            printc("invalid syntax\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
@@ -608,7 +608,7 @@ static uint8_t validPtrFuncArgs(char *arg, const char *error_str) {
         if (!isBetweenQuotes(buff, 1)) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("%s() requires an argument of type 'str'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, error_str);
+            printc("%s() requires an argument of type 'str'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, error_str);
 
             SAFE_FREE(buff);
             return 0;
@@ -706,7 +706,7 @@ char *bc_parse_str(char *operation) {
     if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("str() requires exactly 1 argument\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("str() requires exactly 1 argument\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -742,7 +742,7 @@ double bc_parse(char *operation) {
     if (countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("%s() requires exactly 1 argument\n", GetBaseColor(BC_PROMPT_COLOR), WHITE,
+        printc("%s() requires exactly 1 argument\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE,
                 enablePrecision ? "float" : "int");
 
         return NAN;
@@ -790,7 +790,7 @@ double bc_len(char *operation) {
     if (!len || countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("len() requires exactly 1 argument\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("len() requires exactly 1 argument\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1011,7 +1011,7 @@ char *s_oct(char *operation) {
     if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("oct() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("oct() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1122,7 +1122,7 @@ char *s_chr(char *operation) {
     if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("chr() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("chr() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1132,7 +1132,7 @@ char *s_chr(char *operation) {
     if (value < 0 || value > 127) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("chr() requires an integer between 0 <= x <= 127\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("chr() requires an integer between 0 <= x <= 127\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1160,7 +1160,7 @@ char *s_chr(char *operation) {
             if (value < 32 || value == 127) {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
-                printc("chr() does not work with certain control and escape characters\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+                printc("chr() does not work with certain control and escape characters\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
                 SAFE_FREE(chr);
                 return NULL;
@@ -1196,7 +1196,7 @@ char *s_hex(char *operation) {
     if (!CLOSE_ENOUGH(val, (int64_t)val)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("hex() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("hex() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1238,7 +1238,7 @@ char *s_bin(char *operation) {
     if (!CLOSE_ENOUGH(val, (int64_t)val)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("bin() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("bin() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1376,7 +1376,7 @@ double s_sqrt(char *operation) {
     if (num < 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("sqrt() requires a non negative integer\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("sqrt() requires a non negative integer\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1465,7 +1465,7 @@ double s_asin(char *operation) {
     if (num < -1.0 || num > 1.0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("asin() is defined only for -1 <= x <= 1\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("asin() is defined only for -1 <= x <= 1\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1494,7 +1494,7 @@ double s_cot(char *operation) {
     if (fabs(t) < 1e-12) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("cot() is undefined for %.10g rad\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, num);
+        printc("cot() is undefined for %.10g rad\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, num);
 
         return NAN;
     }
@@ -1564,7 +1564,7 @@ double s_acos(char *operation) {
     if (num < -1.0 || num > 1.0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("acos() is defined only for -1 <= x <= 1\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("acos() is defined only for -1 <= x <= 1\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1592,7 +1592,7 @@ double s_tan(char *operation) {
     if (fabs(modPi - PI / 2.0) < 1e-8) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("tan() is undefined for %.10g rad\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, angle);
+        printc("tan() is undefined for %.10g rad\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, angle);
 
         return NAN;
     }
@@ -1693,7 +1693,7 @@ double s_root(char *operation) {
     if (!comma) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("root requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("root requires exactly 2 arguments\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1706,7 +1706,7 @@ double s_root(char *operation) {
     if (nullCount) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("root() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+        printc("root() requires exactly 2 arguments (missing %"PRIu8")\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, nullCount);
 
         return NAN;
     }
@@ -1739,7 +1739,7 @@ double s_root(char *operation) {
     if (index == 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("root() requires an index that is not 0\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("root() requires an index that is not 0\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1747,7 +1747,7 @@ double s_root(char *operation) {
     if (!CLOSE_ENOUGH(index, (int64_t)index)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("root(0) requires an index of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("root(0) requires an index of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1760,7 +1760,7 @@ double s_root(char *operation) {
     if (rooting < 0 && (((int64_t)index & 1) == 0)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("root() requires an odd index when there is a negative number\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("root() requires an odd index when there is a negative number\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1791,7 +1791,7 @@ double s_bmi(char *operation) {
     if (!comma) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("bmi() requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("bmi() requires exactly 2 arguments\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1804,7 +1804,7 @@ double s_bmi(char *operation) {
     if (nullCount) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("bmi() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+        printc("bmi() requires exactly 2 arguments (missing %"PRIu8")\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, nullCount);
 
         return NAN;
     }
@@ -1847,7 +1847,7 @@ double s_log(char *operation) {
     if (!comma) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("log() requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("log() requires exactly 2 arguments\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1860,7 +1860,7 @@ double s_log(char *operation) {
     if (nullCount) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("log() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+        printc("log() requires exactly 2 arguments (missing %"PRIu8")\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, nullCount);
 
         return NAN;
     }
@@ -1891,7 +1891,7 @@ double s_log(char *operation) {
     if (base <= 1 || num <= 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("invalid values for log()\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("invalid values for log()\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1911,7 +1911,7 @@ double s_randFloat(char *operation) {
     if (!comma) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("randf() requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("randf() requires exactly 2 arguments\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1924,7 +1924,7 @@ double s_randFloat(char *operation) {
     if (nullCount) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("randf() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+        printc("randf() requires exactly 2 arguments (missing %"PRIu8")\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, nullCount);
 
         return NAN;
     }
@@ -1982,7 +1982,7 @@ double s_randInt(char *operation) {
     if (!comma) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("rand() requires exactly 2 arguments\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("rand() requires exactly 2 arguments\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1995,7 +1995,7 @@ double s_randInt(char *operation) {
     if (nullCount) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("rand() requires exactly 2 arguments (missing %"PRIu8")\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+        printc("rand() requires exactly 2 arguments (missing %"PRIu8")\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, nullCount);
 
         return NAN;
     }
@@ -2040,7 +2040,7 @@ double s_randInt(char *operation) {
     if (!CLOSE_ENOUGH(minInt, (int64_t)minInt) || !CLOSE_ENOUGH(maxInt, (int64_t)maxInt)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("rand() requires arguments of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("rand() requires arguments of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -2149,7 +2149,7 @@ double s_isprime(char *operation) {
     if (num <= 1) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("isprime() requires a number grater than 1\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("isprime() requires a number grater than 1\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -2157,7 +2157,7 @@ double s_isprime(char *operation) {
     if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("isprime() requires an argument of type 'int'\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("isprime() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -2190,7 +2190,7 @@ double s_fact(char *operation) {
     if (!test) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("strdup failed\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("strdup failed\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -2215,7 +2215,7 @@ double s_fact(char *operation) {
     else if (stepsCount == 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("to factor you need '!' as a suffix\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("to factor you need '!' as a suffix\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         SAFE_FREE(test);
         return NAN;
@@ -2227,7 +2227,7 @@ double s_fact(char *operation) {
     if (strlen(test) < 1) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("missing a value to factor\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("missing a value to factor\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         SAFE_FREE(test);
         return NAN;
@@ -2247,7 +2247,7 @@ double s_fact(char *operation) {
     if (num < 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("cannot factor negative values\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("cannot factor negative values\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -2255,7 +2255,7 @@ double s_fact(char *operation) {
     if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("cannot factor a floating point number\n", GetBaseColor(BC_PROMPT_COLOR), WHITE);
+        printc("cannot factor a floating point number\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -2302,7 +2302,7 @@ double s_sum(char *operation) {
         printf(": ");
         printc(
             "sum() function requires at least 2 arguments and at most 3 arguments\n", 
-            GetBaseColor(BC_PROMPT_COLOR), WHITE
+            GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE
         );
 
         return NAN;
@@ -2336,7 +2336,7 @@ double s_sum(char *operation) {
     if (nullCount) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("sum() missing %"PRIu8" argument(s)\n", GetBaseColor(BC_PROMPT_COLOR), WHITE, nullCount);
+        printc("sum() missing %"PRIu8" argument(s)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, nullCount);
 
         return NAN;
     }
@@ -2377,5 +2377,31 @@ double s_sum(char *operation) {
     if (isnan(diff))
         return NAN;
 
-    return gauss_range_double(init, end, diff);
+    if (diff <= 0.0) {
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("step value must be greater than 0\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+        return NAN;
+    }
+
+    if ((diff > 0.0 && init > end) || (diff < 0.0 && init < end)) {
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("step direction does not progress from X to Y\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+        return NAN;
+    }
+
+    double result = gauss_range_double(init, end, diff);
+
+    if (isnan(result) || isinf(result)) {
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("numeric overflow or invalid result during summation\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+        return NAN;
+    }
+
+    return result;
 }

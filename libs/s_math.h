@@ -104,36 +104,21 @@ static inline uint32_t better_rand32(void) {
 }
 
 static inline double gauss_range_double(double a, double b, double d) {
-    if (d == 0.0) {
-        puts("Error: step value cannot be zero");
+    if (d <= 0.0)
         return NAN;
-    }
 
-    if ((d > 0.0 && a > b) || (d < 0.0 && a < b)) {
-        puts("Error: step direction does not progress from X to Y");
+    if ((d > 0.0 && a > b) || (d < 0.0 && a < b))
         return NAN;
-    }
 
     double raw_n = (b - a) / d;
 
     double steps = floor(raw_n);
 
-    if (steps < 0.0) {
-        puts("Error: calculated number of steps is negative");
-        return NAN;
-    }
-
     double n = steps + 1.0;
 
     double last = a + steps * d;
 
-    double sum = n * (a + last) / 2.0;
-
-    if (isnan(sum) || isinf(sum)) {
-        puts("Error: Numeric overflow or invalid result during summation");
-        return NAN;
-    }
-    return sum;
+    return n * (a + last) / 2.0;
 }
 
 __attribute__((always_inline))
