@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.4.23"
+#define VERSION "r2.4.27"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1624,7 +1624,8 @@ void updatehistory(void) {
         "r2.3.95 - small changes\n\tEdited: improved a number parser in bc\n",
         "r2.4.10 - big changes\n\tAdded: logical not(!) operator\n",
         "r2.4.16 - small changes\n\tFixed: wrong logic with some operators\n",
-        "r2.4.23 - small changes\n\tFixed: sum() error messages in bc\n"
+        "r2.4.23 - small changes\n\tFixed: sum() error messages in bc\n",
+        "r2.4.27 - small changes\n\tFixed: now bc displays the multi-byte characters properly\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

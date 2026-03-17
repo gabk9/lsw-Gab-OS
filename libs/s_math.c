@@ -554,11 +554,29 @@ evalOut h_atof(const char *str, bool mathlib) {
                     continue;
 
                 if (!isalnum((unsigned char)buf[i])) {
+                    unsigned char chr = buf[i];
                     printc("eval", BC_PROMPT_COLOR, WHITE);
-                    printf(": ");
-                    printc("illegal character: '%c'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, buf[i]);
+                    printc(": ", WHITE, GET_BASE_COLOR(BC_PROMPT_COLOR));
 
-                    return (evalOut){.type = BC_FLOAT, .num = NAN};
+                    if (chr < 0x80)
+                        printf("illegal character: '%c'\n", chr);
+                    else {
+                        uint16_t len = 1;
+
+                        if ((chr & 0xE0) == 0xC0) len = 2;
+                        else if ((chr & 0xF0) == 0xE0) len = 3;
+                        else if ((chr & 0xF8) == 0xF0) len = 4;
+
+                        printf("illegal character: '");
+
+                        for (int j = 0; j < len && buf[i+j]; j++)
+                            putchar((unsigned char)buf[i+j]);
+
+                        printf("'\n");
+                    }
+
+                    setColor(GET_BASE_COLOR(WHITE));
+                    return (evalOut){.type = BC_NONE};
                 }
             }
 
