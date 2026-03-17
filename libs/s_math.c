@@ -448,6 +448,11 @@ evalOut h_atof(const char *str, bool mathlib) {
             return (evalOut){.type = BC_FLOAT, .num = NAN};
         }
 
+        if (strcmp(Ans, TRUE_VAR) == 0)
+            return (evalOut){.type = BC_BOOL, .boolean = true};
+        else if (strcmp(Ans, FALSE_VAR) == 0)
+            return (evalOut){.type = BC_BOOL, .boolean = false};
+
         evalOut tmp = h_atof(Ans, mathlib);
         double val = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 

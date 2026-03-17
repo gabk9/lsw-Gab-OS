@@ -1543,11 +1543,15 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                 }
             }
             evalOut tmp = h_atof(operation, mathlib);
+
             double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
 
-            return (evalOut){ .type = tmp.type, .num = num };
+            if (tmp.type != BC_BOOL)
+                return (evalOut){ .type = tmp.type, .num = num };
+            else
+                return (evalOut){ .type = tmp.type, .boolean = (bool)num };
         }
 
         char name[0x100] = {0};
@@ -1561,7 +1565,10 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
 
-            return (evalOut){ .type = tmp.type, .num = num };
+            if (tmp.type != BC_BOOL)
+                return (evalOut){ .type = tmp.type, .num = num };
+            else
+                return (evalOut){ .type = tmp.type, .boolean = (bool)num };
         }
 
         memcpy(name, operation, parenthesis_index);
@@ -1580,7 +1587,10 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             if (isnan(num))
                 return (evalOut){ .type = BC_NONE };
 
-            return (evalOut){ .type = tmp.type, .num = num };
+            if (tmp.type != BC_BOOL)
+                return (evalOut){ .type = tmp.type, .num = num };
+            else
+                return (evalOut){ .type = tmp.type, .boolean = (bool)num };
         }
 
         int32_t depth = 0;
