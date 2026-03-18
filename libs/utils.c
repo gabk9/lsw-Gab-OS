@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9700
-#define PROJ_SIZE_APPROX_BYTES 292000
+#define PROJ_SIZE_APPROX_BYTES 292500
 
 #define RC_FILE "lswrc.txt"
 
@@ -2535,7 +2535,22 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
             if (k < 0)
                 continue;
 
-            if (strchr(uniOps, s[k]) || s[k] == '(')
+            bool is_prev_operator = false;
+
+            if (strchr(uniOps, s[k]) || s[k] == '(') {
+                is_prev_operator = true;
+            } else {
+                for (int m = 0; multiOps[m]; m++) {
+                    int len = strlen(multiOps[m]);
+                    if (k - len + 1 >= 0 &&
+                        strncmp(&s[k - len + 1], multiOps[m], len) == 0) {
+                        is_prev_operator = true;
+                        break;
+                    }
+                }
+            }
+
+            if (is_prev_operator)
                 continue;
 
             foundOp[0] = c;
