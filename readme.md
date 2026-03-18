@@ -93,7 +93,7 @@ To build LSW, you need the following tools installed:
 
 - **C compiler**
   - GCC or Clang on Linux
-  - MinGW (GCC) or MSVC on Windows
+  - MinGW (GCC), MSYS2, or MSVC on Windows
 - **CMake** (version 3.10 or newer)
 - **Git**
 
