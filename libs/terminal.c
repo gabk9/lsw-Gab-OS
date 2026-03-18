@@ -1954,7 +1954,7 @@ void neofetchCmd(char *lswrc_path) {
     printc("SHELL\n", title_color, WHITE);
 
     printc("HISTSIZE: ", label_color, WHITE);
-    printf("%u\n", getHistSizeConfig(lswrc_path));
+    printf("%g\n", getKeyVal("HISTSIZE", lswrc_path));
 
 
     printc("LANGUAGES USED: ", label_color, WHITE);

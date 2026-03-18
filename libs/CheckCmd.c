@@ -188,17 +188,13 @@ void checkLswrcSyntax(const char *data_folder) {
                 goto fail;
             }
 
-            trim(args); trimEnd(args);
-            if (args[0] == '=') args[0] = ' ';
-            trim(args);
-
-            evalOut tmp = h_atof(args, false);
-            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+            double num = getKeyVal("HISTSIZE", path);
+            SAFE_FREE(path);
 
             if (isnan(num))
                 goto fail;
 
-            if (!isalldigit(args) || tmp.type != BC_INT) {
+            if (!isalldigit(args) || !CLOSE_ENOUGH(num, (int64_t)num)) {
                 fprintf(stderr, ""RC_FILE":%zu: arguments with invalid data type!\n", lineC);
                 goto fail;
             }
@@ -1241,6 +1237,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
     else if (strcmp(instruction, cmds[3]) == 0) { //! neofetch
         char *path = buildLswRcPath(data_folder);
         neofetchCmd(path);
+        SAFE_FREE(path);
     }
 
     else if (strcmp(instruction, cmds[4]) == 0) //! updatehistory

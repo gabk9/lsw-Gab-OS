@@ -21,7 +21,7 @@ typedef struct Functions {
     } fn;
 } FuncEntry;
 
-typedef struct {
+typedef struct eval_o {
     eval_types type;
     union {
         double num;

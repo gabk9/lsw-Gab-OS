@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9700
-#define PROJ_SIZE_APPROX_BYTES 293500
+#define PROJ_SIZE_APPROX_BYTES 293000
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -404,11 +404,17 @@ char *get_env_var(const char *name) {
 
 void saveHist(char *operation, char *history_path, char *data_folder) {
     char *path = buildLswRcPath(data_folder);
-    uint16_t lines = getSavedHistSize(history_path);
-    uint16_t MaxLines = getHistSizeConfig(path);
+    uint32_t lines = getSavedHistSize(history_path);
+    double MaxLines = getKeyVal("HISTSIZE", path);
+
+    SAFE_FREE(path);
+
+    if (MaxLines < 0)
+        return;
+
     MaxLines++;
 
-    if (lines < MaxLines) {
+    if ((double)lines < MaxLines) {
         FILE *file = fopen(history_path, "a");
         if (!file) {
             printf("Error: could not open 'history.txt'\n");
@@ -445,7 +451,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
     buffer[read] = '\0';
     SAFE_FCLOSE(f);
 
-    uint16_t to_remove = lines - MaxLines + 1;
+    uint32_t to_remove = lines - (int32_t)MaxLines + 1;
     char *content = buffer;
 
     while (to_remove > 0 && content) {
@@ -496,14 +502,12 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
     SAFE_FREE(newBuffer);
 }
 
-uint16_t getHistSizeConfig(char *lswrc_path) {
-    uint16_t result = DEFAULT_HISTSIZE;
+double getKeyVal(const char *key_name, const char *path) {
+    double result = NAN;
 
-    FILE *f = fopen(lswrc_path, "r");
-    if (!f) {
-        SAFE_FREE(lswrc_path);
+    FILE *f = fopen(path, "r");
+    if (!f)
         return result;
-    }
 
     char line[0x400];
     while (fgets(line, sizeof(line), f)) {
@@ -516,42 +520,26 @@ uint16_t getHistSizeConfig(char *lswrc_path) {
 
         if (!*line)
             continue;
-            
-        char *lineCpy = strdup(line);
-        if (!lineCpy)
-            continue;
 
         char *save;
-        char *key = strtok_r(lineCpy, "=", &save);
+        char *key = strtok_r(line, "=", &save);
         char *val = strtok_r(NULL, "=", &save);
 
-        if (key) {
-            trim(key);
-            trimEnd(key);
-        }
+        if (!key || !val)
+            break;
 
-        if (val) {
-            trim(val);
-            trimEnd(val);
-            
-            if (val[0] == '=')
-                val[0] = ' ';
-            trim(val);
-        }
-
-        if (key && val && strcmp(key, "HISTSIZE") == 0) {
+        if (strcmp(key, key_name) == 0) {
             evalOut tmp = h_atof(val, false);
-            result = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
-            SAFE_FREE(lineCpy);
+            if (tmp.type == BC_NONE)
+                break;
+
+            result = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
             break;
         }
-
-        SAFE_FREE(lineCpy);
     }
 
     SAFE_FCLOSE(f);
-    SAFE_FREE(lswrc_path);
     return result;
 }
 
