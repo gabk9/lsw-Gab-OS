@@ -189,7 +189,6 @@ void checkLswrcSyntax(const char *data_folder) {
             }
 
             double num = getKeyVal("HISTSIZE", path);
-            SAFE_FREE(path);
 
             if (isnan(num))
                 goto fail;
