@@ -948,7 +948,7 @@ double parse_len(char *s) {
 char randChr(void) {
     if (rand() % 4) {
         char c = 'a' + rand() % 26;
-        if (rand() % 2) {
+        if (!(rand() & 1)) {
             c = toupper(c);
         }
         return c;
