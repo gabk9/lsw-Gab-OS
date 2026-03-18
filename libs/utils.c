@@ -3,9 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9700
-#define PROJ_SIZE_APPROX_BYTES 292500
-
-#define RC_FILE "lswrc.txt"
+#define PROJ_SIZE_APPROX_BYTES 293500
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -2630,7 +2628,7 @@ char *eval(char *operation, bool mathlib) {
             case PAREN_MISSING_CLOSE:
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
-                printc("eval: expected ')'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+                printc("expected ')'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
                 break;
 

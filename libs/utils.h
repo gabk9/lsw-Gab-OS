@@ -40,6 +40,8 @@
 
 extern char *Ans;
 
+#define RC_FILE "lswrc.txt"
+
 #define E_VAR "E"
 #define PI_VAR "PI"
 #define INF_VAR "inf"

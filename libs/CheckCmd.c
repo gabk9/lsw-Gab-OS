@@ -105,7 +105,12 @@ void checkLswrcSyntax(const char *data_folder) {
     }
 
     char line[MAX_CHAR];
+
+    size_t lineC = 0;
+
     while (fgets(line, sizeof(line), f)) {
+        lineC++;
+
         line[strcspn(line, "\n")] = '\0';
 
         char lineOrig[MAX_CHAR];
@@ -119,6 +124,30 @@ void checkLswrcSyntax(const char *data_folder) {
         if (*line == '\0')
             continue;
 
+        paren_status result = parenthesis_check(line);
+
+        if (result != PAREN_OK) {
+
+            switch (result) {
+                case PAREN_MISSING_CLOSE:
+                    printf(""RC_FILE":%zu: expected ')'\n", lineC);
+                    break;
+
+                case PAREN_MISSING_OPEN:
+                    printf(""RC_FILE":%zu: unexpected ')'\n", lineC);
+                    break;
+
+                case PAREN_UNCLOSED_QUOTE:
+                    printf(""RC_FILE":%zu: unclosed quote\n", lineC);
+                    break;
+
+                default:
+                    break;
+            }
+
+            goto fail;
+        }
+
         char *args = NULL;
         char *cmd = extractCommandOrKey(line, &args);
 
@@ -127,7 +156,7 @@ void checkLswrcSyntax(const char *data_folder) {
         if (strcmp(cmd, "alias") == 0) {
             char *eq = findFirstEqualOutsideQuotes(lineOrig);
             if (!eq) {
-                fprintf(stderr, "alias: syntax error\n");
+                fprintf(stderr, ""RC_FILE":%zu: syntax error\n", lineC);
                 goto fail;
             }
 
@@ -139,23 +168,23 @@ void checkLswrcSyntax(const char *data_folder) {
             trim(action); trimEnd(action);
 
             if (!shortcutName || !*shortcutName) {
-                fprintf(stderr, "alias: missing shortcut name\n");
+                fprintf(stderr, ""RC_FILE":%zu: missing shortcut name\n", lineC);
                 goto fail;
             }
 
             if (!action || !*action) {
-                fprintf(stderr, "alias: missing action\n");
+                fprintf(stderr, ""RC_FILE":%zu: missing action\n", lineC);
                 goto fail;
             }
 
             if (!isBetweenQuotes(action, 2)) {
-                fprintf(stderr, "alias: the action should be between quotes\n");
+                fprintf(stderr, ""RC_FILE":%zu: the action should be between quotes\n", lineC);
                 goto fail;
             }
 
         } else if (strcmp(cmd, "HISTSIZE") == 0) {
             if (!args || !*args) {
-                fprintf(stderr, "HISTSIZE: missing arguments!\n");
+                fprintf(stderr, ""RC_FILE":%zu: missing arguments!\n", lineC);
                 goto fail;
             }
 
@@ -170,23 +199,23 @@ void checkLswrcSyntax(const char *data_folder) {
                 goto fail;
 
             if (!isalldigit(args) || tmp.type != BC_INT) {
-                fprintf(stderr, "HISTSIZE: arguments with invalid data type!\n");
+                fprintf(stderr, ""RC_FILE":%zu: arguments with invalid data type!\n", lineC);
                 goto fail;
             }
 
 
             if (num < HISTSIZE_MIN || num > HISTSIZE_MAX) {
-                fprintf(stderr, "HISTSIZE: argument must be between 10 and 10000\n");
+                fprintf(stderr, ""RC_FILE":%zu: argument must be between 10 >= x <= 10000\n", lineC);
                 goto fail;
             }
 
             if (isKeyRepeated(data_folder, "HISTSIZE")) {
-                fprintf(stderr, "HISTSIZE: duplicate key found\n");
+                fprintf(stderr, ""RC_FILE":%zu: duplicate key found\n", lineC);
                 goto fail;
             }
 
         } else {
-            fprintf(stderr, "LSW: invalid key in lswrc: '%s'\n", cmd);
+            fprintf(stderr, ""RC_FILE":%zu: invalid key: '%s'\n", lineC, cmd);
             goto fail;
         }
     }
