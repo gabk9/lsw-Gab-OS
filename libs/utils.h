@@ -193,7 +193,7 @@ int16_t injectEscape(char *str, const char *error_str);
 uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
 evalOut eval_typeof(const char *operation, bool mathLib);
-double getKeyVal(const char *key_name, const char *path);
+char *getKeyVal(const char *key_name, const char *path);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
 void getItemTypeStr(char *buff, size_t size, evalOut item);
 bool isBetweenQuotes(const char *action, int16_t quoteMode);

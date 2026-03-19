@@ -183,21 +183,24 @@ void checkLswrcSyntax(const char *data_folder) {
             }
 
         } else if (strcmp(cmd, "HISTSIZE") == 0) {
-            if (!args || !*args) {
+            char *val = getKeyVal("HISTSIZE", path);
+
+            if (!val) {
                 fprintf(stderr, ""RC_FILE":%zu: missing arguments!\n", lineC);
                 goto fail;
             }
 
-            double num = getKeyVal("HISTSIZE", path);
+            double num = atof(val);
 
             if (isnan(num))
                 goto fail;
 
-            if (!isalldigit(args) || !CLOSE_ENOUGH(num, (int64_t)num)) {
+            if (!isalldigit(val) || !CLOSE_ENOUGH(num, (int64_t)num)) {
                 fprintf(stderr, ""RC_FILE":%zu: arguments with invalid data type!\n", lineC);
                 goto fail;
             }
 
+            SAFE_FREE(val);
 
             if (num < HISTSIZE_MIN || num > HISTSIZE_MAX) {
                 fprintf(stderr, ""RC_FILE":%zu: argument must be between 10 >= x <= 10000\n", lineC);

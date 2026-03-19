@@ -405,7 +405,15 @@ char *get_env_var(const char *name) {
 void saveHist(char *operation, char *history_path, char *data_folder) {
     char *path = buildLswRcPath(data_folder);
     uint32_t lines = getSavedHistSize(history_path);
-    double MaxLines = getKeyVal("HISTSIZE", path);
+    char *buff = getKeyVal("HISTSIZE", path);
+
+    if (!buff)
+        return;
+
+    double MaxLines = atof(buff);
+
+    if (isnan(MaxLines) || isinf(MaxLines))
+        return;
 
     SAFE_FREE(path);
 
@@ -502,8 +510,8 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
     SAFE_FREE(newBuffer);
 }
 
-double getKeyVal(const char *key_name, const char *path) {
-    double result = NAN;
+char *getKeyVal(const char *key_name, const char *path) {
+    char *result = NULL;
 
     FILE *f = fopen(path, "r");
     if (!f)
@@ -528,13 +536,17 @@ double getKeyVal(const char *key_name, const char *path) {
         if (!key || !val)
             break;
 
+        trim(key); trimEnd(key);
+        trim(val); trimEnd(val);
+
         if (strcmp(key, key_name) == 0) {
-            evalOut tmp = h_atof(val, false);
+            size_t len = strlen(val);
+            result = malloc(len);
 
-            if (tmp.type == BC_NONE)
-                break;
+            if (!result)
+                return NULL;
 
-            result = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+            memcpy(result, val, len+1);
             break;
         }
     }
