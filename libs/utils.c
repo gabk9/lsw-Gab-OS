@@ -21,8 +21,8 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
+static int32_t eval_depth = 0;
 static char *last_directory = NULL;
-static int eval_depth = 0;
 
 #ifdef _WIN32
 LONG handler(EXCEPTION_POINTERS *e) {
