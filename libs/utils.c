@@ -22,6 +22,7 @@
 #endif
 
 static char *last_directory = NULL;
+static int eval_depth = 0;
 
 #ifdef _WIN32
 LONG handler(EXCEPTION_POINTERS *e) {
@@ -31,7 +32,7 @@ LONG handler(EXCEPTION_POINTERS *e) {
 }
 #endif
 
-void getItemTypeStr(char *buff, size_t size, evalOut item) {
+void getItemTypeStr(char *buff, size_t size, var item) {
     switch (item.type) {
         case BC_INT:    snprintf(buff, size, "int");    break;
         case BC_FLOAT:  snprintf(buff, size, "float");  break;
@@ -42,9 +43,9 @@ void getItemTypeStr(char *buff, size_t size, evalOut item) {
     }
 }
 
-evalOut eval_typeof(const char *operation, bool mathLib) {
+var eval_typeof(const char *operation, bool mathLib) {
 
-    evalOut out = {0};
+    var out = {0};
     out.type = BC_NONE;
 
     if (!operation)
@@ -66,21 +67,7 @@ evalOut eval_typeof(const char *operation, bool mathLib) {
         return out;
     }
 
-    evalOut tmp = h_atof(operation, mathLib);
-    double result = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
-
-    if (isnan(result))
-        return out;
-
-    if (CLOSE_ENOUGH(result, (int64_t)result)) {
-        out.type = BC_INT;
-        out.num = (int64_t)result;
-    } else {
-        out.type = BC_FLOAT;
-        out.num = result;
-    }
-
-    return out;
+    return h_atof(operation, mathLib);
 }
 
 int32_t bc_strcmp(char *str1, char *str2) {
@@ -935,7 +922,7 @@ double parse_len(char *s) {
 
     char *buff = eval(s, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double len = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -2401,7 +2388,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     else if (strcmp(cpy + pos, E_VAR) == 0)
         mult = E;
     else if (strcmp(cpy + pos, OLD_ANSWER_STR) == 0) {
-        if (!Ans) {
+        if (Ans.type == BC_NONE) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("'ans' is undefined\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -2409,7 +2396,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
             return NAN;
         }
 
-        if (*Ans == '"' && Ans[strlen(Ans)-1] == '"') {
+        if (Ans.type == BC_STR) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("cannot make juxtapositions operations with strings\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -2417,8 +2404,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
             return NAN;
         }
 
-        evalOut tmp = h_atof(Ans, true);
-        mult = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+        mult = (Ans.type == BC_BOOL) ? (double)Ans.boolean : Ans.num;
     } else {
         SAFE_FREE(cpy);
         return 0.0;
@@ -2620,11 +2606,11 @@ char *eval(char *operation, bool mathlib) {
         NULL
     };
 
-    paren_status result = parenthesis_check(operation);
+    paren_status status = parenthesis_check(operation);
 
-    if (result != PAREN_OK) {
+    if (status != PAREN_OK) {
 
-        switch (result) {
+        switch (status) {
             case PAREN_MISSING_CLOSE:
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
@@ -2656,15 +2642,37 @@ char *eval(char *operation, bool mathlib) {
     if (!getInvalidEscape(operation, "eval"))
         return NULL;
 
-    evalOut buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
+    eval_depth++;
 
-    if (buff.type == BC_BOOL)
-        return (buff.boolean == true) ? strdup(TRUE_VAR) : strdup(FALSE_VAR);
+    var buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 
-    return evalOut2str(buff);
+    if (Ans.type == BC_STR && Ans.str)
+        SAFE_FREE(Ans.str);
+
+    char *result = NULL;
+    switch (buff.type) {
+        case BC_NONE:
+            break;
+        case BC_STR:
+            result = buff.str;
+            if (eval_depth == 1) {
+                Ans.type = BC_STR;
+                Ans.str = strdup(result);
+            }
+
+            break;
+        default:
+            if (eval_depth == 1)
+                Ans = buff;
+
+            result = var2str(buff);
+    }
+
+    eval_depth--;
+    return result;
 }
 
-char *evalOut2str(evalOut buff) {
+char *var2str(var buff) {
     switch (buff.type) {
 
         case BC_CHAR:
@@ -2672,11 +2680,10 @@ char *evalOut2str(evalOut buff) {
             return buff.str;
 
         case BC_BOOL: {
-            char *tmp = malloc(6);
-            if (!tmp) return NULL;
-
-            snprintf(tmp, 6, "%d", buff.boolean);
-            return tmp;
+            if (buff.boolean == false)
+                return strdup(FALSE_VAR);
+            else
+                return strdup(TRUE_VAR);
         }
         case BC_INT:
         case BC_FLOAT: {
@@ -2686,6 +2693,9 @@ char *evalOut2str(evalOut buff) {
             snprintf(tmp, 64, "%lf", buff.num);
             return tmp;
         }
+
+        case BC_NONE:
+            return strdup(NONE_VAR);
 
         default:
             return NULL;

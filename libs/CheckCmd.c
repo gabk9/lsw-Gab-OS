@@ -1,7 +1,8 @@
 #define _GNU_SOURCE
 #include "utils.h"
 #include "types.h"
-char *Ans = NULL;
+
+var Ans = { .type = BC_NONE };
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -229,9 +230,9 @@ fail:
 }
 
 
-evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
+var calc(var left, const char *operation, var right, bool mathLib) {
 
-    evalOut out;
+    var out;
     out.type = BC_NONE;
 
     if (left.type == BC_NONE || right.type == BC_NONE) {
@@ -247,7 +248,7 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
 
             if (left.type != right.type) {
                 char type[0x20] = {0};
-                evalOut wrong = (left.type != BC_STR) ? left : right;
+                var wrong = (left.type != BC_STR) ? left : right;
 
                 getItemTypeStr(type, sizeof(type), wrong);
 
@@ -276,8 +277,8 @@ evalOut calc(evalOut left, const char *operation, evalOut right, bool mathLib) {
             return out;
         } else if (strcmp(operation, "*") == 0) {
 
-            evalOut notStr;
-            evalOut Str;
+            var notStr;
+            var Str;
 
             if (left.type != BC_STR) {
                 notStr = left;
@@ -1165,7 +1166,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
 
     if (first_andand) {
         char *start = temp;
-        
+
         while (true) {
             char *pos = find_andand_outside_quotes(start);
 
@@ -1419,7 +1420,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
     SAFE_FREE(temp);
 }
 
-evalOut parse_operation(char *operation, const FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
+var parse_operation(char *operation, const FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {
     char op[0x4] = {0};
 
     while (is_wrapped_by_parentheses(operation)) {
@@ -1435,11 +1436,8 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
 
     if (op_pos == -1) {
 
-        if (mathlib && Ans && strcmp(operation, OLD_ANSWER_STR) == 0) {
-            if (isBetweenQuotes(Ans, 1)) {
-                return (evalOut){ .type = BC_STR, .str = strdup(Ans) };
-            }
-        }
+        if (mathlib && Ans.type == BC_STR && strcmp(operation, OLD_ANSWER_STR) == 0)
+            return (var){ .type = BC_STR, .str = strdup(Ans.str)};
 
         if (*operation == '!') {
 
@@ -1454,43 +1452,46 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                 printf(": ");
                 printc("syntax error\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-                return (evalOut){ .type = BC_NONE };
+                return (var){ .type = BC_NONE };
             }
 
             if (isBetweenQuotes(expr, 1)) {
                 if (count & 1)
-                    return (evalOut){ .type = BC_BOOL, .boolean = false };
+                    return (var){ .type = BC_BOOL, .boolean = false };
                 else
-                    return (evalOut){ .type = BC_BOOL, .boolean = true };
+                    return (var){ .type = BC_BOOL, .boolean = true };
             }
 
             if (mathlib) {
-                if (strcmp(expr, OLD_ANSWER_STR) == 0 && Ans && isBetweenQuotes(Ans, 1)) {
+                if (Ans.type == BC_STR && strcmp(expr, OLD_ANSWER_STR) == 0) {
+                    if (!Ans.str)
+                        return (var){ .type = BC_BOOL, .boolean = false };
+
                     if (count & 1)
-                        return (evalOut){ .type = BC_BOOL, .boolean = false };
+                        return (var){ .type = BC_BOOL, .boolean = false };
                     else
-                        return (evalOut){ .type = BC_BOOL, .boolean = true };
+                        return (var){ .type = BC_BOOL, .boolean = true };
                 }
             }
 
             char *buff = eval(expr, mathlib);
             if (!buff)
-                return (evalOut){ .type = BC_NONE };
+                return (var){ .type = BC_NONE };
 
-            evalOut tmp = h_atof(buff, mathlib);
+            var tmp = h_atof(buff, mathlib);
             SAFE_FREE(buff);
 
             double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
             if (isnan(num))
-                return (evalOut){ .type = BC_NONE };
+                return (var){ .type = BC_NONE };
 
             bool value = (num != 0.0);
 
             if (count & 1)
                 value = !value;
 
-            return (evalOut){ .type = BC_BOOL, .boolean = value };
+            return (var){ .type = BC_BOOL, .boolean = value };
         }
 
         char *paren = strchr(operation, '(');
@@ -1498,9 +1499,9 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
         if (!paren) {
 
             if (strcmp(operation, TRUE_VAR) == 0)
-                return (evalOut){ .type = BC_BOOL, .boolean = true };
+                return (var){ .type = BC_BOOL, .boolean = true };
             else if (strcmp(operation, FALSE_VAR) == 0)
-                return (evalOut){ .type = BC_BOOL, .boolean = false };
+                return (var){ .type = BC_BOOL, .boolean = false };
 
             size_t len = strlen(operation);
 
@@ -1546,7 +1547,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                         printf(": ");
                         printc("unclosed quote\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-                        return (evalOut){ .type = BC_NONE };
+                        return (var){ .type = BC_NONE };
                     }
 
                     p++;
@@ -1559,7 +1560,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                         printc("eval", BC_PROMPT_COLOR, WHITE);
                         printf(": ");
                         printc("memory allocation error\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
-                        return (evalOut){ .type = BC_NONE };
+                        return (var){ .type = BC_NONE };
                     }
 
                     final[0] = '"';
@@ -1567,19 +1568,19 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                     final[res_len + 1] = '"';
                     final[res_len + 2] = '\0';
 
-                    return (evalOut){ .type = BC_STR, .str = final };
+                    return (var){ .type = BC_STR, .str = final };
                 }
             }
-            evalOut tmp = h_atof(operation, mathlib);
+            var tmp = h_atof(operation, mathlib);
 
             double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
             if (isnan(num))
-                return (evalOut){ .type = BC_NONE };
+                return (var){ .type = BC_NONE };
 
             if (tmp.type != BC_BOOL)
-                return (evalOut){ .type = tmp.type, .num = num };
+                return (var){ .type = tmp.type, .num = num };
             else
-                return (evalOut){ .type = tmp.type, .boolean = (bool)num };
+                return (var){ .type = tmp.type, .boolean = (bool)num };
         }
 
         char name[0x100] = {0};
@@ -1587,16 +1588,16 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
         ssize_t parenthesis_index = strchar(operation, '(');
         if (parenthesis_index == -1) {
 
-            evalOut tmp = h_atof(operation, mathlib);
+            var tmp = h_atof(operation, mathlib);
             double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
             if (isnan(num))
-                return (evalOut){ .type = BC_NONE };
+                return (var){ .type = BC_NONE };
 
             if (tmp.type != BC_BOOL)
-                return (evalOut){ .type = tmp.type, .num = num };
+                return (var){ .type = tmp.type, .num = num };
             else
-                return (evalOut){ .type = tmp.type, .boolean = (bool)num };
+                return (var){ .type = tmp.type, .boolean = (bool)num };
         }
 
         memcpy(name, operation, parenthesis_index);
@@ -1605,20 +1606,20 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
         trimEnd(name);
 
         if (!*name)
-            return (evalOut){ .type = BC_NONE };
+            return (var){ .type = BC_NONE };
 
         if (*operation == '~' || *operation == '-') {
 
-            evalOut tmp = h_atof(operation, mathlib);
+            var tmp = h_atof(operation, mathlib);
             double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
             if (isnan(num))
-                return (evalOut){ .type = BC_NONE };
+                return (var){ .type = BC_NONE };
 
             if (tmp.type != BC_BOOL)
-                return (evalOut){ .type = tmp.type, .num = num };
+                return (var){ .type = tmp.type, .num = num };
             else
-                return (evalOut){ .type = tmp.type, .boolean = (bool)num };
+                return (var){ .type = tmp.type, .boolean = (bool)num };
         }
 
         int32_t depth = 0;
@@ -1640,9 +1641,9 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             double result = s_fact(operation);
 
             if (isnan(result))
-                return (evalOut){ .type = BC_NONE };
+                return (var){ .type = BC_NONE };
 
-            return (evalOut){ .type = eval_typeof(operation, mathlib).type, .num = result };
+            return (var){ .type = eval_typeof(operation, mathlib).type, .num = result };
         }
 
         if (close_index == -1 || operation[close_index + 1] != '\0') {
@@ -1650,7 +1651,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             printf(": ");
             printc("invalid syntax\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return (evalOut){ .type = BC_NONE };
+            return (var){ .type = BC_NONE };
         }
 
         if (!isValidBcFuncName(name)) {
@@ -1658,7 +1659,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
             printf(": ");
             printc("invalid function name: '%s()'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, name);
 
-            return (evalOut){ .type = BC_NONE };
+            return (var){ .type = BC_NONE };
         }
 
         if (mathlib) {
@@ -1671,19 +1672,19 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
                     double num = functions[i].fn.f(operation);
 
                     if (isnan(num))
-                        return (evalOut){ .type = BC_NONE };
+                        return (var){ .type = BC_NONE };
 
                     if (functions[i].returnType == BC_BOOL)
-                        return (evalOut){ .type = BC_BOOL, .boolean = (bool)num };
+                        return (var){ .type = BC_BOOL, .boolean = (bool)num };
 
-                    return (evalOut){ .type = functions[i].returnType, .num = num };
+                    return (var){ .type = functions[i].returnType, .num = num };
                 } else {
                     char *result = functions[i].fn.s(operation);
 
                     if (!result)
-                        return (evalOut){ .type = BC_NONE };
+                        return (var){ .type = BC_NONE };
 
-                    return (evalOut){ .type = functions[i].returnType, .str = result};
+                    return (var){ .type = functions[i].returnType, .str = result};
                 }
             }
         }
@@ -1692,7 +1693,7 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
         printf(": ");
         printc("undefined function: '%s()'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, name);
 
-        return (evalOut){ .type = BC_NONE };
+        return (var){ .type = BC_NONE };
     }
 
     char buffer[0x100];
@@ -1712,23 +1713,23 @@ evalOut parse_operation(char *operation, const FuncEntry *functions, size_t func
         printf(": ");
         printc("invalid syntax\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return (evalOut){ .type = BC_NONE };
+        return (var){ .type = BC_NONE };
     }
 
     char *left = eval(num1, mathlib);
     if (!left)
-        return (evalOut){ .type = BC_NONE };
+        return (var){ .type = BC_NONE };
 
     char *right = eval(num2, mathlib);
     if (!right) {
         SAFE_FREE(left);
-        return (evalOut){ .type = BC_NONE };
+        return (var){ .type = BC_NONE };
     }
 
-    evalOut val1 = eval_typeof(left, mathlib);
-    evalOut val2 = eval_typeof(right, mathlib);
+    var val1 = eval_typeof(left, mathlib);
+    var val2 = eval_typeof(right, mathlib);
 
-    evalOut result = calc(val1, op, val2, mathlib);
+    var result = calc(val1, op, val2, mathlib);
 
     SAFE_FREE(left);
     SAFE_FREE(right);

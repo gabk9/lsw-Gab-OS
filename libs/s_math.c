@@ -47,7 +47,7 @@ double parse_str_func(char *operation, const FuncEntry function) {
         }
     }    
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
 
     double val = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
@@ -227,7 +227,7 @@ static double mathlibPart(char *buf, bool mathlib) {
                 if (!buff)
                     return NAN;
 
-                evalOut tmp = h_atof(buff, mathlib);
+                var tmp = h_atof(buff, mathlib);
                 double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
                 SAFE_FREE(buff);
@@ -252,7 +252,7 @@ static double mathlibPart(char *buf, bool mathlib) {
         if (!buff)
             return NAN;
 
-        evalOut tmp = h_atof(buff, mathlib);
+        var tmp = h_atof(buff, mathlib);
         double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
@@ -266,7 +266,7 @@ static double mathlibPart(char *buf, bool mathlib) {
         if (!buff)
             return NAN;
 
-        evalOut tmp = h_atof(buff, mathlib);
+        var tmp = h_atof(buff, mathlib);
         double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
@@ -276,10 +276,10 @@ static double mathlibPart(char *buf, bool mathlib) {
     return (double)U64_NAN;
 }
 
-evalOut h_atof(const char *str, bool mathlib) {
+var h_atof(const char *str, bool mathlib) {
 
     if (!str || !*str) 
-        return (evalOut){.type = BC_FLOAT, .num = NAN};
+        return (var){.type = BC_FLOAT, .num = NAN};
 
     char buf[0x80];
     strncpy(buf, str, sizeof(buf) - 1);
@@ -290,10 +290,10 @@ evalOut h_atof(const char *str, bool mathlib) {
 
     size_t len = strlen(buf);
     if (len == 0)
-        return (evalOut){.type = BC_FLOAT, .num = NAN};
+        return (var){.type = BC_FLOAT, .num = NAN};
 
     if (len > 1 && mathlib && buf[len-1] == '!')
-        return (evalOut){.type = BC_INT, .num = s_fact(buf)};
+        return (var){.type = BC_INT, .num = s_fact(buf)};
 
     bool isUnaryNeg = false;
     bool isUnaryNot = false;
@@ -324,32 +324,43 @@ evalOut h_atof(const char *str, bool mathlib) {
             printc("bad operand type for unary not(~): '"NONE_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
         }
 
-        return (evalOut){.type = BC_FLOAT, .num = NAN};
+        return (var){.type = BC_FLOAT, .num = NAN};
     }
 
     bool isInf = strcasecmp(buf, INF_VAR) == 0;
     if (mathlib && isInf) {
 
         if (isInf && strcmp(buf, INF_VAR) != 0)
-        return (evalOut){.type = BC_FLOAT, .num = 0.0};
+            return (var){.type = BC_FLOAT, .num = 0.0};
 
         if (isUnaryNot) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("bad operand type for unary not(~) '"INF_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
         }
 
-        return (evalOut){.type = BC_FLOAT, .num = isUnaryNeg ? -INFINITY : INFINITY};
+        return (var){.type = BC_FLOAT, .num = isUnaryNeg ? -INFINITY : INFINITY};
     } 
 
     bool isAns = mathlib && strcmp(buf, OLD_ANSWER_STR) == 0;
 
-    if (isAns && !Ans) {
-        printc("eval", BC_PROMPT_COLOR, WHITE);
-        printf(": ");
-        printc("'ans' is undefined\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
-        return (evalOut){.type = BC_FLOAT, .num = NAN};
+    if (isAns) {
+        if (Ans.type == BC_NONE) {
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("'ans' is undefined\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+            return (var){.type = BC_FLOAT, .num = NAN};
+        } else if (Ans.type == BC_STR) {
+            printc("eval", BC_PROMPT_COLOR, WHITE);
+            printf(": ");
+            printc("cannot operate with strings\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+            return (var){.type = BC_FLOAT, .num = NAN};
+        }
+
+        return Ans;
     }
 
     if (isUnaryNeg) {
@@ -358,72 +369,70 @@ evalOut h_atof(const char *str, bool mathlib) {
             printf(": ");
             printc("missing value for unary negative(-)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
         }
 
         double num;
-        if (isAns) {
-            evalOut tmp = h_atof(Ans, mathlib);
-            num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
-        } else {
+        if (isAns && Ans.type != BC_STR)
+            return Ans;
+        else {
             char *buff = eval(buf, mathlib);
 
             if (!buff)
-                return (evalOut){.type = BC_FLOAT, .num = NAN};
+                return (var){.type = BC_FLOAT, .num = NAN};
 
-            evalOut tmp = h_atof(buff, mathlib);
+            var tmp = h_atof(buff, mathlib);
             num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
             SAFE_FREE(buff);
         }
 
         if (isnan(num))
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
         }
 
-        return (evalOut){.type = BC_FLOAT, .num = -num};
+        return (var){.type = BC_FLOAT, .num = -num};
     } else if (isUnaryNot) {
         if (!*buf) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("missing value for unary not(~)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
         }
-        
+
         double num;
 
-        if (isAns) {
-            evalOut tmp = h_atof(Ans, mathlib);
-            num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
-        } else {
+        if (isAns && Ans.type != BC_STR)
+            return Ans;
+        else {
             char *buff = eval(buf, mathlib);
 
             if (!buff)
-                return (evalOut){.type = BC_FLOAT, .num = NAN};
+                return (var){.type = BC_FLOAT, .num = NAN};
 
-            evalOut tmp = h_atof(buff, mathlib);
+            var tmp = h_atof(buff, mathlib);
             num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
             SAFE_FREE(buff);
         }
 
         if (isnan(num))
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
 
         if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
         }
 
         if (!CLOSE_ENOUGH(num, (int64_t)num)) {
@@ -431,49 +440,24 @@ evalOut h_atof(const char *str, bool mathlib) {
             printf(": ");
             printc("unary not(~) requires an integer\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return (evalOut){.type = BC_FLOAT, .num = NAN};
+        return (var){.type = BC_FLOAT, .num = NAN};
         }
 
         int64_t value = (int64_t)num;
         value = ~value;
-        return (evalOut){.type = BC_INT, .num = (double)value};
-    }
-
-    if (isAns) {
-        if (isBetweenQuotes(Ans, 1)) {
-            printc("eval", BC_PROMPT_COLOR, WHITE);
-            printf(": ");
-            printc("cannot operate with strings\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
-
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
-        }
-
-        if (strcmp(Ans, TRUE_VAR) == 0)
-            return (evalOut){.type = BC_BOOL, .boolean = true};
-        else if (strcmp(Ans, FALSE_VAR) == 0)
-            return (evalOut){.type = BC_BOOL, .boolean = false};
-
-        evalOut tmp = h_atof(Ans, mathlib);
-        double val = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
-
-        if (isnan(val))
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
-
-        eval_types type = CLOSE_ENOUGH(val, (int64_t)val) ? BC_INT : BC_FLOAT;
-
-        return (evalOut){.type = type, .num = val};
+        return (var){.type = BC_INT, .num = (double)value};
     }
 
     if (strcmp(buf, TRUE_VAR) == 0)
-        return (evalOut){.type = BC_BOOL, .boolean = true};
+        return (var){.type = BC_BOOL, .boolean = true};
     else if (strcmp(buf, FALSE_VAR) == 0)
-        return (evalOut){.type = BC_BOOL, .boolean = false};
+        return (var){.type = BC_BOOL, .boolean = false};
 
     len = strlen(buf);
 
     if (isBetweenQuotes(buf, 0)) {
         if (!injectEscape(buf, "eval"))
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
 
         size_t oldLen = len;
         len = strlen(buf);
@@ -493,16 +477,16 @@ evalOut h_atof(const char *str, bool mathlib) {
             printf(": ");
             printc("to use single quotes it must be a single character\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
         } else if (!isNullChr && len < 1) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("missing the character inside quotes\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
         }
 
-        return (evalOut){.type = BC_INT, .num = (unsigned char)*buf};
+        return (var){.type = BC_INT, .num = (unsigned char)*buf};
     }
 
     if (mathlib) {            
@@ -510,10 +494,10 @@ evalOut h_atof(const char *str, bool mathlib) {
         double hex_pi_e = parse_bin_hex_oct_ans_e_pi(buf, &ok);
 
         if (isnan(hex_pi_e))
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
 
         if (ok)
-            return (evalOut){.type = BC_FLOAT, .num = hex_pi_e};
+            return (var){.type = BC_FLOAT, .num = hex_pi_e};
     }
 
     bool is_hex = isHex(buf);
@@ -523,30 +507,30 @@ evalOut h_atof(const char *str, bool mathlib) {
     bool is_bin = isBin(buf);
 
     if (*buf == '0' && buf[1] && buf[1] != '.'&& !is_bin && !is_octal && !is_hex)
-        return (evalOut){.type = BC_FLOAT, .num = numericDebug(buf)};
+        return (var){.type = BC_FLOAT, .num = numericDebug(buf)};
 
     if (mathlib) {
         double tmp = mathlibPart(buf, mathlib);
 
         if (tmp != (double)U64_NAN) {
             eval_types type = CLOSE_ENOUGH(tmp, (int64_t)tmp) ? BC_INT : BC_FLOAT;
-            return (evalOut){.type = type, .num = tmp};
+            return (var){.type = type, .num = tmp};
         }
     }
 
     if (is_hex)
-        return (evalOut){.type = BC_INT, .num = (double)hex_to_long(buf)};
+        return (var){.type = BC_INT, .num = (double)hex_to_long(buf)};
     else if (is_octal)
-        return (evalOut){.type = BC_INT, .num = (double)strtol(buf+strlen(OCT_PREF), NULL, 8)};
+        return (var){.type = BC_INT, .num = (double)strtol(buf+strlen(OCT_PREF), NULL, 8)};
     else if (is_bin)
-        return (evalOut){.type = BC_INT, .num = (double)parseBinToInt(buf)};
+        return (var){.type = BC_INT, .num = (double)parseBinToInt(buf)};
 
     if (*buf == '"' && buf[len-1] == '"') {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("cannot operate with string type values\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return (evalOut){.type = BC_FLOAT, .num = NAN};
+        return (var){.type = BC_FLOAT, .num = NAN};
     }
 
     if (!isalldigit(buf)) {
@@ -581,7 +565,7 @@ evalOut h_atof(const char *str, bool mathlib) {
                     }
 
                     setColor(GET_BASE_COLOR(WHITE));
-                    return (evalOut){.type = BC_NONE};
+                    return (var){.type = BC_NONE};
                 }
             }
 
@@ -589,7 +573,7 @@ evalOut h_atof(const char *str, bool mathlib) {
             printf(": ");
             printc("invalid syntax\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return (evalOut){.type = BC_FLOAT, .num = NAN};
+            return (var){.type = BC_FLOAT, .num = NAN};
         }
     }
 
@@ -597,7 +581,7 @@ evalOut h_atof(const char *str, bool mathlib) {
 
     eval_types type = CLOSE_ENOUGH(result, (int64_t)result) ? BC_INT: BC_FLOAT;
 
-    return (evalOut){.type = type, .num = isnan(result) ? 0.0 : result};
+    return (var){.type = type, .num = isnan(result) ? 0.0 : result};
 }
 
 int64_t parseBinToInt(const char *str) {
@@ -782,10 +766,10 @@ double bc_parse(char *operation) {
         memmove(buff, buff + 1, len - 2);
         buff[len-2] = '\0';
 
-        evalOut tmp = h_atof(buff, true);
+        var tmp = h_atof(buff, true);
         num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
     } else {
-        evalOut tmp = h_atof(buff, true);
+        var tmp = h_atof(buff, true);
         num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
     }
 
@@ -852,7 +836,7 @@ double s_abs(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double value = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -871,7 +855,7 @@ double s_miles(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double km = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -890,7 +874,7 @@ double s_km(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double miles = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -909,7 +893,7 @@ double s_pounds(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double kg = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -928,7 +912,7 @@ double s_kg(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double lbs = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -947,7 +931,7 @@ double s_feet(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double meters = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -966,7 +950,7 @@ double s_meter(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double feet = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -985,7 +969,7 @@ double s_fah(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double cel = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1004,7 +988,7 @@ double s_cel(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double fah = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1023,7 +1007,7 @@ char *s_oct(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1134,7 +1118,7 @@ char *s_chr(char *operation) {
     if (!buff)
         return NULL;
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1208,7 +1192,7 @@ char *s_hex(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double val = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1250,7 +1234,7 @@ char *s_bin(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double val = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1312,7 +1296,7 @@ double s_trunc(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1331,7 +1315,7 @@ double s_rad(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double deg = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1350,7 +1334,7 @@ double s_gon(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double deg = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1369,7 +1353,7 @@ double s_deg(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double rad = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1388,7 +1372,7 @@ double s_sqrt(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1415,7 +1399,7 @@ double s_scale(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double value = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1453,7 +1437,7 @@ double s_sin(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1477,7 +1461,7 @@ double s_asin(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1504,7 +1488,7 @@ double s_cot(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1533,7 +1517,7 @@ double s_acot(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1552,7 +1536,7 @@ double s_cos(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1576,7 +1560,7 @@ double s_acos(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1603,7 +1587,7 @@ double s_tan(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double angle = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1636,7 +1620,7 @@ double s_atan(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double angle = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1655,7 +1639,7 @@ double s_ln(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1674,7 +1658,7 @@ double s_log10(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1693,7 +1677,7 @@ double s_log2(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -1739,7 +1723,7 @@ double s_root(char *operation) {
 
     char *tmp1 = eval(indexStr, true);
 
-    evalOut debug1 = h_atof(tmp1, true);
+    var debug1 = h_atof(tmp1, true);
     double index = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp1);
@@ -1749,7 +1733,7 @@ double s_root(char *operation) {
 
     char *tmp3 = eval(rootingStr, true);
 
-    evalOut debug2 = h_atof(tmp3, true);
+    var debug2 = h_atof(tmp3, true);
     double rooting = (debug2.type == BC_BOOL) ? (double)debug2.boolean : debug2.num;
 
     SAFE_FREE(tmp3);
@@ -1837,7 +1821,7 @@ double s_bmi(char *operation) {
 
     char *tmp1 = eval(weightStr, true);
 
-    evalOut debug1 = h_atof(tmp1, true);
+    var debug1 = h_atof(tmp1, true);
     double weight = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp1);
@@ -1847,7 +1831,7 @@ double s_bmi(char *operation) {
 
     char *tmp2 = eval(heightStr, true);
 
-    evalOut debug2 = h_atof(tmp2, true);
+    var debug2 = h_atof(tmp2, true);
     double height = (debug2.type == BC_BOOL) ? (double)debug2.boolean : debug2.num;
 
     SAFE_FREE(tmp2);
@@ -1893,7 +1877,7 @@ double s_log(char *operation) {
 
     char *tmp1 = eval(baseStr, true);
 
-    evalOut debug1 = h_atof(tmp1, true);
+    var debug1 = h_atof(tmp1, true);
     double base = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp1);
@@ -1903,7 +1887,7 @@ double s_log(char *operation) {
 
     char *tmp2 = eval(numStr, true);
 
-    evalOut debug2 = h_atof(tmp2, true);
+    var debug2 = h_atof(tmp2, true);
     double num = (debug2.type == BC_BOOL) ? (double)debug2.boolean : debug2.num;
 
     SAFE_FREE(tmp2);
@@ -1965,7 +1949,7 @@ double s_randFloat(char *operation) {
     else {
         char *buff = eval(str_max, true);
 
-        evalOut tmp = h_atof(buff, true);
+        var tmp = h_atof(buff, true);
         maxLf = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
@@ -1980,7 +1964,7 @@ double s_randFloat(char *operation) {
     else {
         char *buff = eval(str_min, true);
 
-        evalOut tmp = h_atof(buff, true);
+        var tmp = h_atof(buff, true);
         minLf = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
@@ -2036,7 +2020,7 @@ double s_randInt(char *operation) {
     else {
         char *buff = eval(str_max, true);
 
-        evalOut tmp = h_atof(buff, true);
+        var tmp = h_atof(buff, true);
         maxInt = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
@@ -2050,7 +2034,7 @@ double s_randInt(char *operation) {
     else {
         char *buff = eval(str_min, true);
 
-        evalOut tmp = h_atof(buff, true);
+        var tmp = h_atof(buff, true);
         minInt = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
@@ -2079,7 +2063,7 @@ double s_floor(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -2098,7 +2082,7 @@ double s_ceil(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -2117,7 +2101,7 @@ double s_round(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -2161,7 +2145,7 @@ double s_isprime(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -2258,7 +2242,7 @@ double s_fact(char *operation) {
 
     char *buff = eval(test, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -2294,7 +2278,7 @@ double s_sign(char *operation) {
 
     char *buff = eval(operation, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -2371,7 +2355,7 @@ double s_sum(char *operation) {
 
     char *tmp1 = eval(initStr, true);
 
-    evalOut debug1 = h_atof(tmp1, true);
+    var debug1 = h_atof(tmp1, true);
     double init = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp1);
@@ -2381,7 +2365,7 @@ double s_sum(char *operation) {
 
     char *tmp2 = eval(endStr, true);
 
-    evalOut debug2 = h_atof(tmp2, true);
+    var debug2 = h_atof(tmp2, true);
     double end = (debug2.type == BC_BOOL) ? (double)debug2.boolean : debug2.num;
 
     SAFE_FREE(tmp2);
@@ -2392,7 +2376,7 @@ double s_sum(char *operation) {
     char defaultDiff[] = "1";
     char *tmp3 = eval(diffStr ? diffStr : defaultDiff, true);
 
-    evalOut debug3 = h_atof(tmp3, true);
+    var debug3 = h_atof(tmp3, true);
     double diff = (debug3.type == BC_BOOL) ? (double)debug3.boolean : debug3.num;
 
     SAFE_FREE(tmp3);

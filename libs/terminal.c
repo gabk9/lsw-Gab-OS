@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.4.44"
+#define VERSION "r2.4.50"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -248,7 +248,7 @@ void sleepCmd(char *instruction) {
     double time;
     char *buff = eval(instruction, true);
 
-    evalOut tmp = h_atof(buff, true);
+    var tmp = h_atof(buff, true);
     time = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
@@ -540,8 +540,11 @@ void bcCmd(uint16_t argc, char **argv) {
 
     char operation[MAX_CHAR] = {0};
 
-    if (Ans)
-        SAFE_FREE(Ans);
+    if (Ans.type == BC_STR && Ans.str)
+        SAFE_FREE(Ans.str);
+    else
+        Ans.type = BC_NONE;
+
     while (true) {
         if (!appear) {
             if (!quiet) {
@@ -595,17 +598,7 @@ void bcCmd(uint16_t argc, char **argv) {
 
         if (!result) {
             putchar('\n');
-            SAFE_FREE(Ans);
             continue;
-        }
-
-        SAFE_FREE(Ans);
-        Ans = strdup(result);
-
-        if (!Ans) {
-            printf("bc: strdup failed\n");
-            SAFE_FREE(result);
-            break;
         }
 
         bool is_numeric_string = isalldigit(result);
@@ -788,7 +781,7 @@ void historyCmd(char *operation, const char *path) {
 
     char *tmp = eval(operation, true);
 
-    evalOut debug1 = h_atof(tmp, true);
+    var debug1 = h_atof(tmp, true);
     double num = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp);
@@ -1628,7 +1621,8 @@ void updatehistory(void) {
         "r2.4.27 - small changes\n\tFixed: now bc displays the multi-byte characters properly\n",
         "r2.4.32 - small changes\n\tFixed: true constant not working\n\tEdited: ans now returns true/false when the last answer was boolean type\n",
         "r2.4.37 - small changes\n\tFixed: a bug in the unary parser\n",
-        "r2.4.44 - small changes\n\tEdited: improved the lswrc syntax checking\n"
+        "r2.4.44 - small changes\n\tEdited: improved the lswrc syntax checking\n",
+        "r2.4.50 - small changes\n\tEdited: improved ans in bc\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

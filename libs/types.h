@@ -21,14 +21,16 @@ typedef struct Functions {
     } fn;
 } FuncEntry;
 
-typedef struct eval_o {
+typedef struct eval_var {
     eval_types type;
     union {
         double num;
         char *str;
         bool boolean;
     };
-} evalOut;
+} var;
+
+extern var Ans;
 
 typedef enum color {
     BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, YELLOW,

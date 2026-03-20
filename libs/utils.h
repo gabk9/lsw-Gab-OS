@@ -38,8 +38,6 @@
     #define cls(void) system("clear")
 #endif
 
-extern char *Ans;
-
 #define RC_FILE "lswrc.txt"
 
 #define E_VAR "E"
@@ -123,6 +121,7 @@ void trim(char *str);
 void initRandom(void);
 char *charNumber(void);
 char *linesNumber(void);
+char *var2str(var buff);
 char *linesNumber(void);
 void trimEnd(char *str);
 char *getBasePath(void);
@@ -148,7 +147,6 @@ bool isalldigit(const char *s);
 int8_t isDir(const char *path);
 uint64_t get_total_ram_mb(void);
 char *get_default_address(void);
-char *evalOut2str(evalOut buff);
 int8_t isAppend(const char *str);
 void safe_lower_inplace(char *s);
 char *tolowerstr(const char *str);
@@ -186,16 +184,16 @@ char *extract_instruction(char *str, char **args);
 void createShortcut(char *instruction, char *path);
 char *bc_strcat(const char *dest, const char *src);
 char **parseData(const char *str, uint16_t *count);
+var eval_typeof(const char *operation, bool mathLib);
 bool isBcVariable(const char *str, bool *shouldError);
 void charReplace(char *str, int8_t targ, int8_t repl);
 double parse_base_fraction(const char *s, int8_t base);
 int16_t injectEscape(char *str, const char *error_str);
+void getItemTypeStr(char *buff, size_t size, var item);
 uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
-evalOut eval_typeof(const char *operation, bool mathLib);
 char *getKeyVal(const char *key_name, const char *path);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
-void getItemTypeStr(char *buff, size_t size, evalOut item);
 bool isBetweenQuotes(const char *action, int16_t quoteMode);
 char **readHistory(const char *address, uint32_t *lineCount);
 char **copyMat(char **dest, const char **src, uint16_t size);
