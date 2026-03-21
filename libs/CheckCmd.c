@@ -1044,7 +1044,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\t                 Example: lower(\"string\") = \"STRING\"\n"
             "\n"
             "\ttypeof(X)      : Returns the type of the argument as a string\n"
-            "\t                 Example: typeof(\"strint\") = \""STR_VAR"\" / typeof(2) = \""INT_VAR"\"\n"
+            "\t                 Example: typeof(\"string\") = \""STR_VAR"\" / typeof(2) = \""INT_VAR"\"\n"
 
             "\nBuiltin Variables: (mathlib must be on to grant access)\n"
             "\tAns   : stores the result of the last operation\n"
