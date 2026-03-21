@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9700
-#define PROJ_SIZE_APPROX_BYTES 292500
+#define PROJ_SIZE_APPROX_BYTES 293500
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -2569,6 +2569,7 @@ char *eval(char *operation, bool mathlib) {
         {.returnType = BC_STR,     .name = "hex",       .fn.s = s_hex},
         {.returnType = BC_STR,     .name = "lower",     .fn.s = s_lower},
         {.returnType = BC_STR,     .name = "upper",     .fn.s = s_upper},
+        {.returnType = BC_STR,     .name = "typeof",    .fn.s = bc_typeof},
     };
 
     size_t funcCount = sizeof(math_table) / sizeof(*math_table);

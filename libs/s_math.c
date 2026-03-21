@@ -784,6 +784,43 @@ double bc_parse(char *operation) {
     return num;
 }
 
+char *bc_typeof(char *operation) {
+    char *p = strchr(operation, '(');
+    if (!p)
+        return NULL;
+    operation = p;
+
+    char *buff = eval(operation, true);
+    eval_ty type = BC_NONE;
+
+    if (isBetweenQuotes(buff, 1))
+        type = BC_STR;
+    else {
+        var tmp = h_atof(buff, true);
+
+        if (tmp.type == BC_NONE || (tmp.type == BC_FLOAT && isnan(tmp.num)))
+            return NULL;
+
+        type = tmp.type;
+
+        if (strlen(operation) == 3 && isBetweenQuotes(operation, 0))
+            type = BC_CHR;
+    }
+
+    char tmp[0x20] = {0};
+    getItemTypeStr(tmp, sizeof(tmp), (var){ .type = type });
+
+    size_t extra = strlen(tmp) + 3;
+    buff = realloc(buff, extra);
+
+    if (!buff)
+        return NULL;
+
+    snprintf(buff, extra, "\"%s\"", tmp);
+
+    return buff;
+}
+
 double bc_len(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
