@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.4.50"
+#define VERSION "r2.4.58"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1622,7 +1622,8 @@ void updatehistory(void) {
         "r2.4.32 - small changes\n\tFixed: true constant not working\n\tEdited: ans now returns true/false when the last answer was boolean type\n",
         "r2.4.37 - small changes\n\tFixed: a bug in the unary parser\n",
         "r2.4.44 - small changes\n\tEdited: improved the lswrc syntax checking\n",
-        "r2.4.50 - small changes\n\tEdited: improved ans in bc\n"
+        "r2.4.50 - small changes\n\tEdited: improved ans in bc\n",
+        "r2.4.58 - big changes\n\tFixed: ans not saving str types\n\tEdited: improved char type in bc\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

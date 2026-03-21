@@ -6,14 +6,14 @@
 
 typedef enum types {
     BC_STR, BC_FLOAT, BC_INT,
-    BC_BOOL, BC_CHAR, BC_NONE
-} eval_types;
+    BC_BOOL, BC_CHR, BC_NONE
+} eval_ty;
 
 typedef char *(*S_Func)(char *operation);
 typedef double (*F_Func)(char *operation);
 
 typedef struct Functions {
-    eval_types returnType;
+    eval_ty returnType;
     const char *name;
     union func {
         F_Func f;
@@ -22,7 +22,7 @@ typedef struct Functions {
 } FuncEntry;
 
 typedef struct eval_var {
-    eval_types type;
+    eval_ty type;
     union {
         double num;
         char *str;

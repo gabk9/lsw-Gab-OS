@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9700
-#define PROJ_SIZE_APPROX_BYTES 292000
+#define PROJ_SIZE_APPROX_BYTES 292500
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -34,40 +34,14 @@ LONG handler(EXCEPTION_POINTERS *e) {
 
 void getItemTypeStr(char *buff, size_t size, var item) {
     switch (item.type) {
-        case BC_INT:    snprintf(buff, size, "int");    break;
-        case BC_FLOAT:  snprintf(buff, size, "float");  break;
-        case BC_STR:    snprintf(buff, size, "str");    break;
-        case BC_BOOL:   snprintf(buff, size, "bool");   break;
-        case BC_NONE:   snprintf(buff, size, NONE_VAR); break;
-        default:        snprintf(buff, size, "NULL");   break;
+        case BC_INT:    snprintf(buff, size, INT_VAR);    break;
+        case BC_FLOAT:  snprintf(buff, size, FLOAT_VAR);  break;
+        case BC_STR:    snprintf(buff, size, STR_VAR);    break;
+        case BC_CHR:    snprintf(buff, size, CHR_VAR);    break;
+        case BC_BOOL:   snprintf(buff, size, BOOL_VAR);   break;
+        case BC_NONE:   snprintf(buff, size, NONE_VAR);   break;
+        default:        snprintf(buff, size, "NULL");     break;
     }
-}
-
-var eval_typeof(const char *operation, bool mathLib) {
-
-    var out = {0};
-    out.type = BC_NONE;
-
-    if (!operation)
-        return out;
-
-    if (isBetweenQuotes(operation, 1)) {
-        out.type = BC_STR;
-        out.str = strdup(operation);
-        return out;
-    }
-
-    if (strcmp(operation, FALSE_VAR) == 0) {
-        out.type = BC_BOOL;
-        out.boolean = false;
-        return out;
-    } else if (strcmp(operation, TRUE_VAR) == 0) {
-        out.type = BC_BOOL;
-        out.boolean = true;
-        return out;
-    }
-
-    return h_atof(operation, mathLib);
 }
 
 int32_t bc_strcmp(char *str1, char *str2) {
@@ -2387,7 +2361,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
         mult = PI;
     else if (strcmp(cpy + pos, E_VAR) == 0)
         mult = E;
-    else if (strcmp(cpy + pos, OLD_ANSWER_STR) == 0) {
+    else if (strcmp(cpy + pos, ANS_VAR) == 0) {
         if (Ans.type == BC_NONE) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
@@ -2589,7 +2563,7 @@ char *eval(char *operation, bool mathlib) {
         {.returnType = BC_INT,     .name = "int",       .fn.f = bc_parse},
         {.returnType = BC_FLOAT,   .name = "float",     .fn.f = bc_parse},
         {.returnType = BC_STR,     .name = "str",       .fn.s = bc_parse_str},
-        {.returnType = BC_CHAR,    .name = "chr",       .fn.s = s_chr},
+        {.returnType = BC_STR,     .name = "chr",       .fn.s = s_chr},
         {.returnType = BC_STR,     .name = "bin",       .fn.s = s_bin},
         {.returnType = BC_STR,     .name = "oct",       .fn.s = s_oct},
         {.returnType = BC_STR,     .name = "hex",       .fn.s = s_hex},
@@ -2646,21 +2620,23 @@ char *eval(char *operation, bool mathlib) {
 
     var buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
 
-    if (Ans.type == BC_STR && Ans.str)
-        SAFE_FREE(Ans.str);
-
     char *result = NULL;
     switch (buff.type) {
         case BC_NONE:
             break;
+
         case BC_STR:
             result = buff.str;
             if (eval_depth == 1) {
+                if (Ans.type == BC_STR && Ans.str)
+                    SAFE_FREE(Ans.str);
+
                 Ans.type = BC_STR;
                 Ans.str = strdup(result);
             }
 
             break;
+
         default:
             if (eval_depth == 1)
                 Ans = buff;
@@ -2675,7 +2651,6 @@ char *eval(char *operation, bool mathlib) {
 char *var2str(var buff) {
     switch (buff.type) {
 
-        case BC_CHAR:
         case BC_STR:
             return buff.str;
 
@@ -2685,6 +2660,8 @@ char *var2str(var buff) {
             else
                 return strdup(TRUE_VAR);
         }
+
+        case BC_CHR:
         case BC_INT:
         case BC_FLOAT: {
             char *tmp = malloc(64);

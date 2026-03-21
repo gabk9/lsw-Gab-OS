@@ -288,7 +288,7 @@ var calc(var left, const char *operation, var right, bool mathLib) {
                 Str = left;
             }
 
-            if (notStr.type != BC_INT) {
+            if (notStr.type != BC_INT && notStr.type != BC_CHR) {
                 char type[0x20] = {0};
 
                 getItemTypeStr(type, sizeof(type), notStr);
@@ -454,10 +454,10 @@ var calc(var left, const char *operation, var right, bool mathLib) {
 
     else if (strcmp(operation, "^") == 0) {
 
-        if (left.type != BC_INT || right.type != BC_INT) {
+        if ((left.type != BC_INT && left.type != BC_CHR) || (right.type != BC_INT && right.type != BC_CHR)) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("'^' requires integers\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+            printc("'^' requires type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
             return out;
         }
 
@@ -466,10 +466,10 @@ var calc(var left, const char *operation, var right, bool mathLib) {
 
     else if (strcmp(operation, "&") == 0) {
 
-        if (left.type != BC_INT || right.type != BC_INT) {
+        if ((left.type != BC_INT && left.type != BC_CHR) || (right.type != BC_INT && right.type != BC_CHR)) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("'&' requires integers\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+            printc("'&' requires type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
             return out;
         }
 
@@ -478,10 +478,10 @@ var calc(var left, const char *operation, var right, bool mathLib) {
 
     else if (strcmp(operation, "|") == 0) {
 
-        if (left.type != BC_INT || right.type != BC_INT) {
+        if ((left.type != BC_INT && left.type != BC_CHR) || (right.type != BC_INT && right.type != BC_CHR)) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("'|' requires integers\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+            printc("'|' requires type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
             return out;
         }
 
@@ -557,7 +557,7 @@ var calc(var left, const char *operation, var right, bool mathLib) {
         if (right.type != BC_INT) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("tetration height must be an integer\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+            printc("tetration height must be of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
             return out;
         } else if (num2 < 0) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
@@ -989,7 +989,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\tchr(X)         : Convert X to ascii\n"
             "\t                 Example: ascii(65) = 'A'\n"
             "\t                 Note: escape characters does not work\n"
-            "\t                 Tip: the number must be an integer between 0 and 127 (inclusive)\n"
+            "\t                 Tip: requires an argument of type '"INT_VAR"' between 0 and 127 (inclusive)\n"
             "\n"
             "\tint(X)         : Converts X to integer\n"
             "\t                 Example: int(\"2\") = 2\n"
@@ -1035,7 +1035,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
             "\n"
             "\tisprime(X)     : Returns 1 if X is prime, otherwise it returns 0\n"
             "\t                 Example: isprime(5) = 1\n"
-            "\t                 Note: it requires an integer which is greater 1\n"
+            "\t                 Note: it requires an argument of type '"INT_VAR"' which is greater 1\n"
             "\n"
             "\tlower(X)       : Returns the string in lower case form\n"
             "\t                 Example: lower(\"STRING\") = \"string\"\n"
@@ -1045,7 +1045,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
 
             "\nBuiltin Variables: (mathlib must be on to grant access)\n"
             "\tAns   : stores the result of the last operation\n"
-            "\t        Tip: initially set to NaN; it is also set to NaN after invalid operations\n"
+            "\t        Tip: initially it is undefined\n"
             "\t        Note: its value cannot be changed manually\n"
 
             "\nConstants: (mathlib must be on to grant access)\n"
@@ -1436,7 +1436,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
 
     if (op_pos == -1) {
 
-        if (mathlib && Ans.type == BC_STR && strcmp(operation, OLD_ANSWER_STR) == 0)
+        if (mathlib && Ans.type == BC_STR && strcmp(operation, ANS_VAR) == 0)
             return (var){ .type = BC_STR, .str = strdup(Ans.str)};
 
         if (*operation == '!') {
@@ -1463,7 +1463,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             }
 
             if (mathlib) {
-                if (Ans.type == BC_STR && strcmp(expr, OLD_ANSWER_STR) == 0) {
+                if (Ans.type == BC_STR && strcmp(expr, ANS_VAR) == 0) {
                     if (!Ans.str)
                         return (var){ .type = BC_BOOL, .boolean = false };
 
@@ -1573,7 +1573,22 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             }
             var tmp = h_atof(operation, mathlib);
 
-            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+            double num;
+            switch (tmp.type) {
+                case BC_BOOL:
+                    num = (double)tmp.boolean;
+                    break;
+
+                case BC_CHR:
+                case BC_INT:
+                case BC_FLOAT:
+                    num = tmp.num;
+                    break;
+
+                default:
+                    return (var){ .type = BC_NONE };
+            }
+
             if (isnan(num))
                 return (var){ .type = BC_NONE };
 
@@ -1643,7 +1658,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             if (isnan(result))
                 return (var){ .type = BC_NONE };
 
-            return (var){ .type = eval_typeof(operation, mathlib).type, .num = result };
+            return (var){ .type = BC_INT, .num = result };
         }
 
         if (close_index == -1 || operation[close_index + 1] != '\0') {
@@ -1667,7 +1682,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                 if (strcmp(name, functions[i].name) != 0)
                     continue;
 
-                if (functions[i].returnType != BC_STR && functions[i].returnType != BC_CHAR) {
+                if (functions[i].returnType != BC_STR) {
 
                     double num = functions[i].fn.f(operation);
 
@@ -1726,8 +1741,8 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
         return (var){ .type = BC_NONE };
     }
 
-    var val1 = eval_typeof(left, mathlib);
-    var val2 = eval_typeof(right, mathlib);
+    var val1 = parse_operation(num1, functions, funcCount, uniOps, multiOps, mathlib);
+    var val2 = parse_operation(num2, functions, funcCount, uniOps, multiOps, mathlib);
 
     var result = calc(val1, op, val2, mathlib);
 

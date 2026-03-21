@@ -6,7 +6,7 @@
 
 double parse_str_func(char *operation, const FuncEntry function) {    
 
-    if (function.returnType != BC_STR && function.returnType != BC_CHAR) {
+    if (function.returnType != BC_STR) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("invalid function return type\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -22,9 +22,9 @@ double parse_str_func(char *operation, const FuncEntry function) {
         return NAN;
     }
 
-    bool isChr = function.returnType == BC_CHAR;
-
     char *buff = function.fn.s(operation);
+
+    bool isChr = isBetweenQuotes(buff, 0);
 
     if (!buff)
         return NAN;
@@ -343,7 +343,7 @@ var h_atof(const char *str, bool mathlib) {
         return (var){.type = BC_FLOAT, .num = isUnaryNeg ? -INFINITY : INFINITY};
     } 
 
-    bool isAns = mathlib && strcmp(buf, OLD_ANSWER_STR) == 0;
+    bool isAns = mathlib && strcmp(buf, ANS_VAR) == 0;
 
     if (isAns) {
         if (Ans.type == BC_NONE) {
@@ -438,7 +438,7 @@ var h_atof(const char *str, bool mathlib) {
         if (!CLOSE_ENOUGH(num, (int64_t)num)) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
-            printc("unary not(~) requires an integer\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+            printc("unary not(~) requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return (var){.type = BC_FLOAT, .num = NAN};
         }
@@ -486,7 +486,7 @@ var h_atof(const char *str, bool mathlib) {
             return (var){.type = BC_FLOAT, .num = NAN};
         }
 
-        return (var){.type = BC_INT, .num = (unsigned char)*buf};
+        return (var){.type = BC_CHR, .num = (unsigned char)*buf};
     }
 
     if (mathlib) {            
@@ -513,7 +513,7 @@ var h_atof(const char *str, bool mathlib) {
         double tmp = mathlibPart(buf, mathlib);
 
         if (tmp != (double)U64_NAN) {
-            eval_types type = CLOSE_ENOUGH(tmp, (int64_t)tmp) ? BC_INT : BC_FLOAT;
+            eval_ty type = CLOSE_ENOUGH(tmp, (int64_t)tmp) ? BC_INT : BC_FLOAT;
             return (var){.type = type, .num = tmp};
         }
     }
@@ -579,7 +579,7 @@ var h_atof(const char *str, bool mathlib) {
 
     double result = (!mathlib && isHex(buf)) ? 0.0 : atof(buf);
 
-    eval_types type = CLOSE_ENOUGH(result, (int64_t)result) ? BC_INT: BC_FLOAT;
+    eval_ty type = CLOSE_ENOUGH(result, (int64_t)result) ? BC_INT: BC_FLOAT;
 
     return (var){.type = type, .num = isnan(result) ? 0.0 : result};
 }
@@ -1018,7 +1018,7 @@ char *s_oct(char *operation) {
     if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("oct() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("oct() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1129,7 +1129,7 @@ char *s_chr(char *operation) {
     if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("chr() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("chr() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1139,7 +1139,7 @@ char *s_chr(char *operation) {
     if (value < 0 || value > 127) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("chr() requires an integer between 0 <= x <= 127\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("chr() requires an argument of type '"INT_VAR"' between 0 <= x <= 127\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1203,7 +1203,7 @@ char *s_hex(char *operation) {
     if (!CLOSE_ENOUGH(val, (int64_t)val)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("hex() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("hex() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1245,7 +1245,7 @@ char *s_bin(char *operation) {
     if (!CLOSE_ENOUGH(val, (int64_t)val)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("bin() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("bin() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NULL;
     }
@@ -1383,7 +1383,7 @@ double s_sqrt(char *operation) {
     if (num < 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("sqrt() requires a non negative integer\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("sqrt() requires an argument of type '"INT_VAR"' and non negative\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -1754,7 +1754,7 @@ double s_root(char *operation) {
     if (!CLOSE_ENOUGH(index, (int64_t)index)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("root(0) requires an index of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("root() requires an index of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -2047,7 +2047,7 @@ double s_randInt(char *operation) {
     if (!CLOSE_ENOUGH(minInt, (int64_t)minInt) || !CLOSE_ENOUGH(maxInt, (int64_t)maxInt)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("rand() requires arguments of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("rand() requires arguments of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -2164,7 +2164,7 @@ double s_isprime(char *operation) {
     if (!CLOSE_ENOUGH(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("isprime() requires an argument of type 'int'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("isprime() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }

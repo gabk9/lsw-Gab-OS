@@ -42,11 +42,16 @@
 
 #define E_VAR "E"
 #define PI_VAR "PI"
+#define ANS_VAR "ans"
+#define INT_VAR "int"
 #define INF_VAR "inf"
+#define STR_VAR "str"
+#define CHR_VAR "chr"
 #define NONE_VAR "none"
 #define TRUE_VAR "true"
+#define BOOL_VAR "bool"
+#define FLOAT_VAR "float"
 #define FALSE_VAR "false"
-#define OLD_ANSWER_STR "ans"
 
 #define HEX_PREF "0x"
 #define OCT_PREF "0o"
@@ -184,7 +189,6 @@ char *extract_instruction(char *str, char **args);
 void createShortcut(char *instruction, char *path);
 char *bc_strcat(const char *dest, const char *src);
 char **parseData(const char *str, uint16_t *count);
-var eval_typeof(const char *operation, bool mathLib);
 bool isBcVariable(const char *str, bool *shouldError);
 void charReplace(char *str, int8_t targ, int8_t repl);
 double parse_base_fraction(const char *s, int8_t base);
