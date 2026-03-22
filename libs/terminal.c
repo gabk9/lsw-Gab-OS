@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.4.65"
+#define VERSION "r2.4.75"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -609,7 +609,7 @@ void bcCmd(uint16_t argc, char **argv) {
             if (isnan(num))
                 continue;
 
-            printf("%g\n\n", num);
+            printf("%.15g\n\n", num);
             SAFE_FREE(result);
             fflush(stdout);
             continue;
@@ -1624,7 +1624,8 @@ void updatehistory(void) {
         "r2.4.44 - small changes\n\tEdited: improved the lswrc syntax checking\n",
         "r2.4.50 - small changes\n\tEdited: improved ans in bc\n",
         "r2.4.58 - big changes\n\tFixed: ans not saving str types\n\tEdited: improved char type in bc\n",
-        "r2.4.65 - small changes\n\tAdded: typeof() to bc\n"
+        "r2.4.65 - small changes\n\tAdded: typeof() to bc\n",
+        "r2.4.75 - big changes\n\tFixed: int() and float() not working as expected, and also fixed the parser not parsing str type properly\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

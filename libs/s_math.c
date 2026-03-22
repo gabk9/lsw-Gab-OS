@@ -4,58 +4,6 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
-double parse_str_func(char *operation, const FuncEntry function) {    
-
-    if (function.returnType != BC_STR) {
-        printc("eval", BC_PROMPT_COLOR, WHITE);
-        printf(": ");
-        printc("invalid function return type\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
-
-        return NAN;
-    }
-
-    if (!isValidBcFuncName(function.name)) {
-        printc("eval", BC_PROMPT_COLOR, WHITE);
-        printf(": ");
-        printc("invalid function name: '%s()'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, function.name);
-
-        return NAN;
-    }
-
-    char *buff = function.fn.s(operation);
-
-    bool isChr = isBetweenQuotes(buff, 0);
-
-    if (!buff)
-        return NAN;
-
-    if (!isChr) {
-        size_t len = strlen(buff);
-
-        if (len < 2) {
-            SAFE_FREE(buff);
-            return NAN;
-        }
-
-        if (buff[len-1] == '"') {
-            buff[len-1] = '\0';
-            len--;
-        }
-        if (*buff == '"') {
-            memmove(buff, buff + 1, len+1);
-            len--;
-        }
-    }    
-
-    var tmp = h_atof(buff, true);
-
-    double val = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
-
-    SAFE_FREE(buff);
-
-    return val;
-}
-
 static uint8_t isnull(int32_t count, ...) {
 
     if (count < 1) {
@@ -78,7 +26,7 @@ static uint8_t isnull(int32_t count, ...) {
     return nullCount;
 }
 
-//! unused
+__attribute__((unused))
 char *find_top_level_comma(char *s) {
     int16_t level = 0;
 
@@ -584,16 +532,51 @@ var h_atof(const char *str, bool mathlib) {
     return (var){.type = type, .num = isnan(result) ? 0.0 : result};
 }
 
+int64_t hex_to_long(char *str) {
+    char *end;
+
+    if (strncasecmp(str, HEX_PREF, strlen(HEX_PREF)) == 0)
+        str += strlen(HEX_PREF);
+
+    int64_t v = strtoll(str, &end, 16);
+
+    if (*end != '\0')
+        return U64_NAN;
+
+    size_t digits = 0;
+    for (char *p = str; *p; ++p)
+        if (isxdigit(*p)) digits++;
+
+    if (digits == 0)
+        return 0;
+
+    size_t bits = digits * 4;
+
+    if (bits >= 64)
+        return v;
+
+    int64_t sign_bit = 1LL << (bits - 1);
+    int64_t mask     = (1LL << bits) - 1;
+
+    v &= mask;
+
+    if (v & sign_bit)
+        v -= (1LL << bits);
+
+    return v;
+}
+
 int64_t parseBinToInt(const char *str) {
     int64_t n = 0;
     int32_t bits = 0;
 
-    for (uint16_t i = 2; str[i]; i++) {
+    const size_t pref_len = strlen(BIN_PREF);
+    for (uint16_t i = pref_len; str[i]; i++) {
         n = (n << 1) | (str[i] - '0');
         bits++;
     }
 
-    if (str[2] == '1') {
+    if (str[pref_len] == '1') {
         n -= 1 << bits;
     }
 
@@ -728,7 +711,12 @@ char *bc_parse_str(char *operation) {
         char *buff2 = malloc(len+3);
         buff2[len+3] = '\0';
 
-        snprintf(buff2, len+3, "\"%s\"", buff);
+        if (isalldigit(buff)) {
+            double num = atof(buff);
+            snprintf(buff2, len+3, "\"%.15g\"", num);
+        } else
+            snprintf(buff2, len+3, "\"%s\"", buff);
+
         SAFE_FREE(buff);
         return buff2;
     }
@@ -761,24 +749,23 @@ double bc_parse(char *operation) {
 
     double num;
 
-    if (isBetweenQuotes(buff, 2)) {
-        size_t len = strlen(buff);
-        memmove(buff, buff + 1, len - 2);
-        buff[len-2] = '\0';
+    size_t len = strlen(buff);
+    bool isChr = isBetweenQuotes(buff, 0) && len == 3;
 
-        var tmp = h_atof(buff, true);
-        num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
-    } else {
-        var tmp = h_atof(buff, true);
-        num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
-    }
+    if (!isChr && isBetweenQuotes(buff, 1)) {
+        memmove(buff, buff + 1, len - 2);
+        buff[len - 2] = '\0';
+    } 
+
+    var tmp = h_atof(buff, true);
+    num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
 
-    if (!enablePrecision && !CLOSE_ENOUGH(num, (int64_t)num))
+    if (!enablePrecision && tmp.type == BC_FLOAT)
         num = trunc(num);
 
     return num;
@@ -1312,15 +1299,15 @@ char *s_bin(char *operation) {
 
     char *c = result;
 
+    const size_t pref_len = strlen(BIN_PREF);
+
     c[0] = '"';
-    c[1] = '0';
-    c[2] = 'b';
+    memcpy(c + 1, BIN_PREF, pref_len);
 
-    memcpy(c + 3, buf + start, len);
+    memcpy(c + 1 + pref_len, buf + start, len);
 
-    c[3+len] = '"';
-
-    c[4+len] = '\0';
+    c[1+pref_len+len] = '"';
+    c[2+pref_len+len] = '\0';
 
     return result;
 }

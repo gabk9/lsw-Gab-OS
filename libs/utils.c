@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9700
-#define PROJ_SIZE_APPROX_BYTES 293500
+#define PROJ_SIZE_APPROX_BYTES 292500
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -1071,33 +1071,6 @@ void int64_to_hex_min(int64_t v, char *out, size_t size) {
     u &= mask;
 
     snprintf(out, size, "\""HEX_PREF"%0*"PRIX64"\"", hex_digits, u);
-}
-
-int64_t hex_to_long(char *str) {
-    char *end;
-    int64_t v = strtoll(str, &end, 16);
-
-    if (*end == '\0') {
-
-        const char *p = str + strlen(HEX_PREF);
-
-        size_t digits = 0;
-        for (; *p; ++p)
-            if (isxdigit(*p)) digits++;
-
-        size_t bits = digits * 4;
-
-        int64_t sign_bit = 1LL << (bits - 1);
-        int64_t mask     = (1LL << bits) - 1;
-
-        v &= mask;
-        if (v & sign_bit)
-            v -= (1LL << bits);
-
-        return v;
-    }
-
-    return U64_NAN;
 }
 
 bool isBin(const char *str) {

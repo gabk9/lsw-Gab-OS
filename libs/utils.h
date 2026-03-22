@@ -146,7 +146,6 @@ char *echoHandler(char *str);
 void enableAnsiIfNeeded(void);
 char *revStr(const char *str);
 char *extractPath(char **str);
-int64_t hex_to_long(char *str);
 void removeComments(char *str);
 bool isalldigit(const char *s);
 int8_t isDir(const char *path);

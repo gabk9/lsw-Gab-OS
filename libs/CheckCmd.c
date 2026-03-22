@@ -1744,8 +1744,8 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
         return (var){ .type = BC_NONE };
     }
 
-    var val1 = parse_operation(num1, functions, funcCount, uniOps, multiOps, mathlib);
-    var val2 = parse_operation(num2, functions, funcCount, uniOps, multiOps, mathlib);
+    var val1 = parse_operation(left, functions, funcCount, uniOps, multiOps, mathlib);
+    var val2 = parse_operation(right, functions, funcCount, uniOps, multiOps, mathlib);
 
     var result = calc(val1, op, val2, mathlib);
 
