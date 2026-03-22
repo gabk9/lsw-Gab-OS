@@ -513,7 +513,7 @@ var h_atof(const char *str, bool mathlib) {
                     }
 
                     setColor(GET_BASE_COLOR(WHITE));
-                    return (var){.type = BC_NONE};
+                    return (var){ .type = BC_FLOAT, .num = NAN };
                 }
             }
 
