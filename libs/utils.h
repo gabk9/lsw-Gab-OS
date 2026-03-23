@@ -64,7 +64,7 @@
 #define BC_PROMPT_COLOR 0x0D
 #define GET_BASE_COLOR(color) (((color) < (LIGHT_BLUE)) ? (color) : (color) - 0x08)
 
-#define CLOSE_ENOUGH(num1, num2) (fabs((num1) - (num2)) < (EPS))
+#define T_CMP(num1, num2) (fabs((num1) - (num2)) < (EPS))
 
 #define MAX_ARGS 0x20
 #define MAX_CHAR 0x400

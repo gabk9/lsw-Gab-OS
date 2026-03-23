@@ -383,7 +383,7 @@ var h_atof(const char *str, bool mathlib) {
             return (var){.type = BC_FLOAT, .num = NAN};
         }
 
-        if (!CLOSE_ENOUGH(num, (int64_t)num)) {
+        if (!T_CMP(num, (int64_t)num)) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
             printf(": ");
             printc("unary not(~) requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -461,7 +461,7 @@ var h_atof(const char *str, bool mathlib) {
         double tmp = mathlibPart(buf, mathlib);
 
         if (tmp != (double)U64_NAN) {
-            eval_ty type = CLOSE_ENOUGH(tmp, (int64_t)tmp) ? BC_INT : BC_FLOAT;
+            eval_ty type = T_CMP(tmp, (int64_t)tmp) ? BC_INT : BC_FLOAT;
             return (var){.type = type, .num = tmp};
         }
     }
@@ -527,7 +527,7 @@ var h_atof(const char *str, bool mathlib) {
 
     double result = (!mathlib && isHex(buf)) ? 0.0 : atof(buf);
 
-    eval_ty type = CLOSE_ENOUGH(result, (int64_t)result) ? BC_INT: BC_FLOAT;
+    eval_ty type = T_CMP(result, (int64_t)result) ? BC_INT: BC_FLOAT;
 
     return (var){.type = type, .num = isnan(result) ? 0.0 : result};
 }
@@ -1046,7 +1046,7 @@ char *s_oct(char *operation) {
     if (isnan(num))
         return NULL;
 
-    if (!CLOSE_ENOUGH(num, (int64_t)num)) {
+    if (!T_CMP(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("oct() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -1157,7 +1157,7 @@ char *s_chr(char *operation) {
     if (isnan(num))
         return NULL;
 
-    if (!CLOSE_ENOUGH(num, (int64_t)num)) {
+    if (!T_CMP(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("chr() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -1231,7 +1231,7 @@ char *s_hex(char *operation) {
     if (isnan(val))
         return NULL;
 
-    if (!CLOSE_ENOUGH(val, (int64_t)val)) {
+    if (!T_CMP(val, (int64_t)val)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("hex() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -1273,7 +1273,7 @@ char *s_bin(char *operation) {
     if (isnan(val))
         return NULL;
 
-    if (!CLOSE_ENOUGH(val, (int64_t)val)) {
+    if (!T_CMP(val, (int64_t)val)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("bin() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -1782,7 +1782,7 @@ double s_root(char *operation) {
         return NAN;
     }
 
-    if (!CLOSE_ENOUGH(index, (int64_t)index)) {
+    if (!T_CMP(index, (int64_t)index)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("root() requires an index of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -2075,7 +2075,7 @@ double s_randInt(char *operation) {
         return NAN;
     }
 
-    if (!CLOSE_ENOUGH(minInt, (int64_t)minInt) || !CLOSE_ENOUGH(maxInt, (int64_t)maxInt)) {
+    if (!T_CMP(minInt, (int64_t)minInt) || !T_CMP(maxInt, (int64_t)maxInt)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("rand() requires arguments of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -2192,7 +2192,7 @@ double s_isprime(char *operation) {
         return NAN;
     }
 
-    if (!CLOSE_ENOUGH(num, (int64_t)num)) {
+    if (!T_CMP(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("isprime() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -2290,7 +2290,7 @@ double s_fact(char *operation) {
         return NAN;
     }
 
-    if (!CLOSE_ENOUGH(num, (int64_t)num)) {
+    if (!T_CMP(num, (int64_t)num)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("cannot factor a floating point number\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);

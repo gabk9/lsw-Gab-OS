@@ -565,8 +565,6 @@ void bcCmd(uint16_t argc, char **argv) {
         fgets(operation, sizeof(operation), stdin);
         operation[strcspn(operation, "\n")] = '\0';
 
-        removeComments(operation);
-
         trim(operation);
         trimEnd(operation);
 
@@ -1938,13 +1936,12 @@ void neofetchCmd(char *lswrc_path) {
 
     printc("HISTSIZE: ", label_color, WHITE);
     char *value = getKeyVal("HISTSIZE", lswrc_path);
-    printf("%s\n", value);
-
-    if (!value)
-        return;
-
-    SAFE_FREE(value);
-
+    
+    if (value) {
+        printf("%g\n", atof(value));
+        SAFE_FREE(value);
+    } else
+        printf("%d\n", DEFAULT_HISTSIZE);
 
     printc("LANGUAGES USED: ", label_color, WHITE);
     puts("C");

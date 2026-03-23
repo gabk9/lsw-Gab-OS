@@ -2494,6 +2494,10 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
 }
 
 char *eval(char *operation, bool mathlib) {
+
+    if (!operation)
+        return NULL;
+
     const FuncEntry math_table[] = {
         {.returnType = BC_INT,     .name = "scale",     .fn.f = s_scale},
         {.returnType = BC_FLOAT,   .name = "sqrt",      .fn.f = s_sqrt},
@@ -2591,8 +2595,12 @@ char *eval(char *operation, bool mathlib) {
     size_t len = strlen(operation);
     memcpy(tmp, operation, len + 1);
 
+    removeComments(tmp);
     trim(tmp);
     trimEnd(tmp);
+
+    if (!*tmp)
+        return NULL;
 
     if (!getInvalidEscape(tmp, "eval"))
         return NULL;

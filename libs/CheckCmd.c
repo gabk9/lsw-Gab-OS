@@ -186,7 +186,7 @@ void checkLswrcSyntax(const char *data_folder) {
         } else if (strcmp(cmd, "HISTSIZE") == 0) {
             char *val = getKeyVal("HISTSIZE", path);
 
-            if (!val) {
+            if (!val || !*val) {
                 fprintf(stderr, ""RC_FILE":%zu: missing arguments!\n", lineC);
                 goto fail;
             }
@@ -196,7 +196,7 @@ void checkLswrcSyntax(const char *data_folder) {
             if (isnan(num))
                 goto fail;
 
-            if (!isalldigit(val) || !CLOSE_ENOUGH(num, (int64_t)num)) {
+            if (!isalldigit(val) || !T_CMP(num, (int64_t)num)) {
                 fprintf(stderr, ""RC_FILE":%zu: arguments with invalid data type!\n", lineC);
                 goto fail;
             }
@@ -491,35 +491,35 @@ var calc(var left, const char *operation, var right, bool mathLib) {
     else if (strcmp(operation, "<") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 < num2) && !CLOSE_ENOUGH(num1, num2);
+        out.boolean = (num1 < num2) && !T_CMP(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, ">") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 > num2) && !CLOSE_ENOUGH(num1, num2);
+        out.boolean = (num1 > num2) && !T_CMP(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, "<=") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 < num2) || CLOSE_ENOUGH(num1, num2);
+        out.boolean = (num1 < num2) || T_CMP(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, ">=") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 > num2) || CLOSE_ENOUGH(num1, num2);
+        out.boolean = (num1 > num2) || T_CMP(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, "!=") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = CLOSE_ENOUGH(num1, num2);
+        out.boolean = T_CMP(num1, num2);
         return out;
     }
 
@@ -534,7 +534,7 @@ var calc(var left, const char *operation, var right, bool mathLib) {
             out.boolean = (num1 == num2);
 
         else
-            out.boolean = CLOSE_ENOUGH(num1, num2);
+            out.boolean = T_CMP(num1, num2);
 
         return out;
     }
@@ -626,7 +626,7 @@ var calc(var left, const char *operation, var right, bool mathLib) {
         return out;
     }
 
-    if (CLOSE_ENOUGH(result, (int64_t)result)) {
+    if (T_CMP(result, (int64_t)result)) {
 
         out.type = BC_INT;
         out.num = result;
