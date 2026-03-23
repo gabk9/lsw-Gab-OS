@@ -59,6 +59,8 @@
 
 #define EPS 1e-9
 
+#define DECIMAL_PRECISION 25
+
 #define BC_PROMPT_COLOR 0x0D
 #define GET_BASE_COLOR(color) (((color) < (LIGHT_BLUE)) ? (color) : (color) - 0x08)
 

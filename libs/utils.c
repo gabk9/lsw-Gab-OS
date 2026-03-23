@@ -2587,12 +2587,19 @@ char *eval(char *operation, bool mathlib) {
         return NULL;
     }
 
-    if (!getInvalidEscape(operation, "eval"))
+    char tmp[MAX_CHAR] = {0};
+    size_t len = strlen(operation);
+    memcpy(tmp, operation, len + 1);
+
+    trim(tmp);
+    trimEnd(tmp);
+
+    if (!getInvalidEscape(tmp, "eval"))
         return NULL;
 
     eval_depth++;
 
-    var buff = parse_operation(operation, math_table, funcCount, uniOps, multiOps, mathlib);
+    var buff = parse_operation(tmp, math_table, funcCount, uniOps, multiOps, mathlib);
 
     char *result = NULL;
     switch (buff.type) {
@@ -2638,10 +2645,11 @@ char *var2str(var buff) {
         case BC_CHR:
         case BC_INT:
         case BC_FLOAT: {
-            char *tmp = malloc(64);
+            const size_t max = 0x40;
+            char *tmp = malloc(max);
             if (!tmp) return NULL;
 
-            snprintf(tmp, 64, "%lf", buff.num);
+            snprintf(tmp, max, "%.*g", DECIMAL_PRECISION, buff.num);
             return tmp;
         }
 

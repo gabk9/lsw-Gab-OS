@@ -589,7 +589,7 @@ static uint8_t validPtrFuncArgs(char *arg, const char *error_str) {
     if (!len)
         return 1;
 
-    if (!isBetweenQuotes(arg, 1)) {
+    if (!isBetweenQuotes(arg, 1)) { 
         char *buff = eval(arg, true);
 
         if (!buff)
@@ -713,7 +713,14 @@ char *bc_parse_str(char *operation) {
 
         if (isalldigit(buff)) {
             double num = atof(buff);
-            snprintf(buff2, len+3, "\"%.15g\"", num);
+
+            if (isnan(num) || isinf(num)) {
+                SAFE_FREE(buff);
+                SAFE_FREE(buff2);
+                return NULL;
+            }
+
+            snprintf(buff2, len+3, "\"%.*g\"", DECIMAL_PRECISION, num);
         } else
             snprintf(buff2, len+3, "\"%s\"", buff);
 
@@ -831,10 +838,10 @@ double bc_len(char *operation) {
     if (!buff)
         return NAN;
 
-    if (!injectEscape(buff, "eval"))
+    if (!validPtrFuncArgs(buff, "len"))
         return NAN;
 
-    if (!validPtrFuncArgs(buff, "len"))
+    if (!injectEscape(buff, "eval"))
         return NAN;
 
     len = strlen(buff);

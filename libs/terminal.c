@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.4.75"
+#define VERSION "r2.4.81"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -601,22 +601,7 @@ void bcCmd(uint16_t argc, char **argv) {
             continue;
         }
 
-        bool is_numeric_string = isalldigit(result);
-
-        if (is_numeric_string) {
-            double num = atof(result);
-
-            if (isnan(num))
-                continue;
-
-            printf("%.15g\n\n", num);
-            SAFE_FREE(result);
-            fflush(stdout);
-            continue;
-        }
-
-        if (result)
-            printf("%s\n\n", result);
+        printf("%s\n\n", result);
 
         SAFE_FREE(result);
         fflush(stdout);
@@ -1625,7 +1610,8 @@ void updatehistory(void) {
         "r2.4.50 - small changes\n\tEdited: improved ans in bc\n",
         "r2.4.58 - big changes\n\tFixed: ans not saving str types\n\tEdited: improved char type in bc\n",
         "r2.4.65 - small changes\n\tAdded: typeof() to bc\n",
-        "r2.4.75 - big changes\n\tFixed: int() and float() not working as expected, and also fixed the parser not parsing str type properly\n"
+        "r2.4.75 - big changes\n\tFixed: int() and float() not working as expected, and also fixed the parser not parsing str type properly\n",
+        "r2.4.81 - small changes\n\tFixed: len() now works with scape '\\0' properly and now the parser trims the spaces that were causing bugs\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

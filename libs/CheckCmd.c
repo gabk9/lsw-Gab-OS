@@ -1433,6 +1433,9 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
 
         operation[len - 1] = '\0';
         memmove(operation, operation + 1, len);
+
+        trim(operation);
+        trimEnd(operation);
     }
 
     int16_t op_pos = find_main_operator_full(operation, multiOps, uniOps, op);
@@ -1574,6 +1577,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                     return (var){ .type = BC_STR, .str = final };
                 }
             }
+
             var tmp = h_atof(operation, mathlib);
 
             double num;
