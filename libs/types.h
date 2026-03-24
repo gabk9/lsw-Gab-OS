@@ -25,6 +25,7 @@ typedef struct eval_var {
     eval_ty type;
     union {
         double num;
+        // int64_t integer;
         char *str;
         bool boolean;
     };

@@ -596,10 +596,23 @@ void bcCmd(uint16_t argc, char **argv) {
 
         if (!result) {
             putchar('\n');
+            SAFE_FREE(result);
+            fflush(stdout);
             continue;
         }
 
-        printf("%s\n\n", result);
+        if (isalldigit(result)) {
+            double num = atof(result);
+
+            if (isnan(num) || isinf(num)) {
+                SAFE_FREE(result);
+                fflush(stdout);
+                continue;
+            }
+
+            printf("%.*g\n\n", DECIMAL_PRECISION, num);
+        } else
+            printf("%s\n\n", result);
 
         SAFE_FREE(result);
         fflush(stdout);

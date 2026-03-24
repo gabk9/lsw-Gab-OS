@@ -238,7 +238,7 @@ var calc(var left, const char *operation, var right, bool mathLib) {
     if (left.type == BC_NONE || right.type == BC_NONE) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("invalid data type: 'none'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("invalid data type: '"NONE_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
         return out;
     }
 
@@ -1605,6 +1605,15 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                 return (var){ .type = tmp.type, .boolean = (bool)num };
         }
 
+        if (operation[strlen(operation)-1] == '!') {
+            double result = s_fact(operation);
+
+            if (isnan(result))
+                return (var){ .type = BC_NONE };
+
+            return (var){ .type = BC_INT, .num = result };
+        }
+
         char name[0x100] = {0};
 
         ssize_t parenthesis_index = strchar(operation, '(');
@@ -1657,15 +1666,6 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                     break;
                 }
             }
-        }
-
-        if (operation[strlen(operation)-1] == '!') {
-            double result = s_fact(operation);
-
-            if (isnan(result))
-                return (var){ .type = BC_NONE };
-
-            return (var){ .type = BC_INT, .num = result };
         }
 
         if (close_index == -1 || operation[close_index + 1] != '\0') {
@@ -1750,6 +1750,9 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
 
     var val1 = parse_operation(left, functions, funcCount, uniOps, multiOps, mathlib);
     var val2 = parse_operation(right, functions, funcCount, uniOps, multiOps, mathlib);
+
+    if (val1.type == BC_NONE || val2.type == BC_NONE)
+        return (var){ .type = BC_NONE };
 
     var result = calc(val1, op, val2, mathlib);
 

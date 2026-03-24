@@ -711,18 +711,7 @@ char *bc_parse_str(char *operation) {
         char *buff2 = malloc(len+3);
         buff2[len+3] = '\0';
 
-        if (isalldigit(buff)) {
-            double num = atof(buff);
-
-            if (isnan(num) || isinf(num)) {
-                SAFE_FREE(buff);
-                SAFE_FREE(buff2);
-                return NULL;
-            }
-
-            snprintf(buff2, len+3, "\"%.*g\"", DECIMAL_PRECISION, num);
-        } else
-            snprintf(buff2, len+3, "\"%s\"", buff);
+        snprintf(buff2, len+3, "\"%s\"", buff);
 
         SAFE_FREE(buff);
         return buff2;
@@ -2273,6 +2262,17 @@ double s_fact(char *operation) {
 
     char *buff = eval(test, true);
 
+    if (!buff)
+        return NAN;
+
+    if (isBetweenQuotes(buff, '1')) {
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("cannot factor '"STR_VAR" types'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+        return NAN;
+    }
+
     var tmp = h_atof(buff, true);
     double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
 
@@ -2290,10 +2290,10 @@ double s_fact(char *operation) {
         return NAN;
     }
 
-    if (!T_CMP(num, (int64_t)num)) {
+    if (tmp.type == BC_FLOAT) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("cannot factor a floating point number\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("cannot factor '"FLOAT_VAR"' types\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }

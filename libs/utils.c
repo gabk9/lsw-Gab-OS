@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 9700
-#define PROJ_SIZE_APPROX_BYTES 292500
+#define PROJ_SIZE_APPROX_BYTES 293000
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -2657,7 +2657,7 @@ char *var2str(var buff) {
             char *tmp = malloc(max);
             if (!tmp) return NULL;
 
-            snprintf(tmp, max, "%.*g", DECIMAL_PRECISION, buff.num);
+            snprintf(tmp, max, "%lf", buff.num);
             return tmp;
         }
 
