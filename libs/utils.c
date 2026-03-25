@@ -2,8 +2,8 @@
 #include "utils.h"
 #include "types.h"
 
-#define PROJ_LINES_APPROX 9700
-#define PROJ_SIZE_APPROX_BYTES 293000
+#define PROJ_LINES_APPROX 9800
+#define PROJ_SIZE_APPROX_BYTES 294500
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -31,6 +31,24 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+void num_snprintf(char *buff, size_t size, double num) {
+    if (T_CMP(num, (int64_t)num)) {
+        snprintf(buff, size, "%" PRId64, (int64_t)num);
+    } else {
+        snprintf(buff, size, "%lf", num);
+
+        size_t end = strlen(buff) - 1;
+
+        while (end > 0 && buff[end] == '0') {
+            buff[end--] = '\0';
+        }
+
+        if (buff[end] == '.') {
+            buff[end] = '\0';
+        }
+    }
+}
 
 void getItemTypeStr(char *buff, size_t size, var item) {
     switch (item.type) {
@@ -2657,7 +2675,7 @@ char *var2str(var buff) {
             char *tmp = malloc(max);
             if (!tmp) return NULL;
 
-            snprintf(tmp, max, "%lf", buff.num);
+            num_snprintf(tmp, max, buff.num);
             return tmp;
         }
 

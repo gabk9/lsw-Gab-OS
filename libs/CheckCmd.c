@@ -1605,6 +1605,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                 return (var){ .type = tmp.type, .boolean = (bool)num };
         }
 
+        
         if (operation[strlen(operation)-1] == '!') {
             double result = s_fact(operation);
 

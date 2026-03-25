@@ -221,7 +221,7 @@ static double mathlibPart(char *buf, bool mathlib) {
         return (isnan(num)) ? NAN : num * E;
     }
 
-    return (double)U64_NAN;
+    return MAX_SAFE_INT64_D;
 }
 
 var h_atof(const char *str, bool mathlib) {
@@ -240,7 +240,7 @@ var h_atof(const char *str, bool mathlib) {
     if (len == 0)
         return (var){.type = BC_FLOAT, .num = NAN};
 
-    if (len > 1 && mathlib && buf[len-1] == '!')
+    if (len > 1 && buf[len-1] == '!')
         return (var){.type = BC_INT, .num = s_fact(buf)};
 
     bool isUnaryNeg = false;
@@ -393,7 +393,7 @@ var h_atof(const char *str, bool mathlib) {
 
         int64_t value = (int64_t)num;
         value = ~value;
-        return (var){.type = BC_INT, .num = (double)value};
+        return (var){.type = BC_INT, .num = (int64_t)trunc(value)};
     }
 
     if (strcmp(buf, TRUE_VAR) == 0)
@@ -460,7 +460,7 @@ var h_atof(const char *str, bool mathlib) {
     if (mathlib) {
         double tmp = mathlibPart(buf, mathlib);
 
-        if (tmp != (double)U64_NAN) {
+        if (tmp != MAX_SAFE_INT64_D) {
             eval_ty type = T_CMP(tmp, (int64_t)tmp) ? BC_INT : BC_FLOAT;
             return (var){.type = type, .num = tmp};
         }
@@ -525,11 +525,24 @@ var h_atof(const char *str, bool mathlib) {
         }
     }
 
-    double result = (!mathlib && isHex(buf)) ? 0.0 : atof(buf);
+    bool isFloat = strchr(buf, '.') || strchr(buf, 'e') || strchr(buf, 'E');
 
-    eval_ty type = T_CMP(result, (int64_t)result) ? BC_INT: BC_FLOAT;
+    if (!isFloat) {
+        char *end;
+        int64_t val = strtoll(buf, &end, 10);
 
-    return (var){.type = type, .num = isnan(result) ? 0.0 : result};
+        if (*end == '\0') {
+            return (var){.type = BC_INT, .num = (double)val};
+        }
+    }
+
+    char *end;
+    double result = strtod(buf, &end);
+
+    if (*end != '\0')
+        return (var){.type = BC_FLOAT, .num = NAN};
+
+    return (var){.type = BC_FLOAT, .num = result};
 }
 
 int64_t hex_to_long(char *str) {
@@ -786,7 +799,30 @@ char *bc_typeof(char *operation) {
 
         type = tmp.type;
 
-        if (strlen(operation) == 3 && isBetweenQuotes(operation, 0))
+        size_t len = strlen(operation);
+
+        if (len == 0)
+            return NULL;
+
+        size_t start = 0;
+        size_t end = len - 1;
+
+        while (start < end && operation[start] == '(' && operation[end] == ')') {
+            start++;
+            end--;
+
+            while (start <= end && operation[start] == ' ')
+                start++;
+
+            while (end >= start && operation[end] == ' ')
+                end--;
+        }
+
+        size_t new_len = end - start + 1;
+        memmove(operation, operation + start, new_len);
+        operation[new_len] = '\0';
+
+        if (isBetweenQuotes(operation, 0))
             type = BC_CHR;
     }
 
@@ -1432,7 +1468,7 @@ double s_scale(char *operation) {
     }
 
     char buf[0x20];
-    snprintf(buf, sizeof(buf), "%g", value);
+    num_snprintf(buf, sizeof(buf), value);
 
     char *exp = strchr(buf, 'e');
     if (exp) *exp = '\0';

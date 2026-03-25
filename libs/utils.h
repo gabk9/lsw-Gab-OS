@@ -192,6 +192,7 @@ char *bc_strcat(const char *dest, const char *src);
 char **parseData(const char *str, uint16_t *count);
 bool isBcVariable(const char *str, bool *shouldError);
 void charReplace(char *str, int8_t targ, int8_t repl);
+void num_snprintf(char *buff, size_t size, double num);
 double parse_base_fraction(const char *s, int8_t base);
 int16_t injectEscape(char *str, const char *error_str);
 void getItemTypeStr(char *buff, size_t size, var item);

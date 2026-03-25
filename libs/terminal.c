@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.4.81"
+#define VERSION "r2.4.94"
 
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -601,18 +601,7 @@ void bcCmd(uint16_t argc, char **argv) {
             continue;
         }
 
-        if (isalldigit(result)) {
-            double num = atof(result);
-
-            if (isnan(num) || isinf(num)) {
-                SAFE_FREE(result);
-                fflush(stdout);
-                continue;
-            }
-
-            printf("%.*g\n\n", DECIMAL_PRECISION, num);
-        } else
-            printf("%s\n\n", result);
+        printf("%s\n\n", result);
 
         SAFE_FREE(result);
         fflush(stdout);
@@ -1622,7 +1611,8 @@ void updatehistory(void) {
         "r2.4.58 - big changes\n\tFixed: ans not saving str types\n\tEdited: improved char type in bc\n",
         "r2.4.65 - small changes\n\tAdded: typeof() to bc\n",
         "r2.4.75 - big changes\n\tFixed: int() and float() not working as expected, and also fixed the parser not parsing str type properly\n",
-        "r2.4.81 - small changes\n\tFixed: len() now works with scape '\\0' properly and now the parser trims the spaces that were causing bugs\n"
+        "r2.4.81 - small changes\n\tFixed: len() now works with scape '\\0' properly and now the parser trims the spaces that were causing bugs\n",
+        "r2.4.94 - big changes\n\tFixed: bc type loss\n\tEdited: improved the number format and precision\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
