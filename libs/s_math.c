@@ -540,7 +540,7 @@ var h_atof(const char *str, bool mathlib) {
     double result = strtod(buf, &end);
 
     if (*end != '\0')
-        return (var){.type = BC_FLOAT, .num = NAN};
+        return (var){.type = BC_INT, .num = 0.0};
 
     return (var){.type = BC_FLOAT, .num = result};
 }
