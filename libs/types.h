@@ -33,11 +33,11 @@ typedef struct Functions {
 
 typedef struct eval_var {
     eval_ty type;
-    union {
-        float64 num;
-        char *str;
-        bool boolean;
-    };
+    union value {
+        float64 f;
+        char *s;
+        bool b;
+    } data;
 } var;
 
 extern var Ans;

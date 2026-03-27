@@ -32,7 +32,7 @@ LONG handler(EXCEPTION_POINTERS *e) {
 }
 #endif
 
-void num_snprintf(char *buff, size_t size, float64 num) {
+void num_snprintf(char *buff, size_t size, double num) {
     if (T_CMP(num, (int64_t)num)) {
         snprintf(buff, size, "%" PRId64, (int64_t)num);
     } else {
@@ -389,7 +389,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
     if (!buff)
         return;
 
-    float64 MaxLines = atof(buff);
+    double MaxLines = atof(buff);
 
     if (isnan(MaxLines) || isinf(MaxLines))
         return;
@@ -401,7 +401,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
 
     MaxLines++;
 
-    if ((float64)lines < MaxLines) {
+    if ((double)lines < MaxLines) {
         FILE *file = fopen(history_path, "a");
         if (!file) {
             printf("Error: could not open 'history.txt'\n");
@@ -805,13 +805,13 @@ void initRandom(void) {
 #endif
 }
 
-void sleepF(float64 seconds) {
+void sleepF(double seconds) {
 #ifdef _WIN64
     LARGE_INTEGER freq, start, now;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&start);
 
-    float64 target = seconds;
+    double target = seconds;
 
     if (seconds > 0.002) {
         DWORD coarse = (DWORD)((seconds - 0.001) * 1000.0);
@@ -820,12 +820,12 @@ void sleepF(float64 seconds) {
 
     do {
         QueryPerformanceCounter(&now);
-    } while ((float64)(now.QuadPart - start.QuadPart) / freq.QuadPart < target);
+    } while ((double)(now.QuadPart - start.QuadPart) / freq.QuadPart < target);
 #else 
     struct timespec start, now;
     clock_gettime(CLOCK_MONOTONIC, &start);
 
-    float64 target = seconds;
+    double target = seconds;
 
     if (seconds > 0.002) {
         struct timespec ts;
@@ -836,7 +836,7 @@ void sleepF(float64 seconds) {
 
     do {
         clock_gettime(CLOCK_MONOTONIC, &now);
-        float64 elapsed =
+        double elapsed =
             (now.tv_sec - start.tv_sec) +
             (now.tv_nsec - start.tv_nsec) / 1e9;
         if (elapsed >= target) break;
@@ -902,7 +902,7 @@ char *revStr(const char *str) {
     return new;
 }
 
-float64 parse_len(char *s) {
+double parse_len(char *s) {
     while (*s && isspace((unsigned char)*s))
         s++;
 
@@ -915,7 +915,7 @@ float64 parse_len(char *s) {
     char *buff = eval(s, true);
 
     var tmp = h_atof(buff, true);
-    float64 len = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
+    double len = (tmp.type == BC_BOOL) ? (double)tmp.data.b : tmp.data.f;
 
     SAFE_FREE(buff);
 
@@ -1259,8 +1259,8 @@ char *charNumber(void) {
         FILE *f = fopen(buildPath(files[i]), "rb");
         if (!f) {
             snprintf(result, sizeof(result), "%d B / %.2lf KiB / %.2lf Mib",
-                    PROJ_SIZE_APPROX_BYTES, (float64)PROJ_SIZE_APPROX_BYTES / 0x400, 
-                    (float64)PROJ_SIZE_APPROX_BYTES / 0x100000);
+                    PROJ_SIZE_APPROX_BYTES, (double)PROJ_SIZE_APPROX_BYTES / 0x400, 
+                    (double)PROJ_SIZE_APPROX_BYTES / 0x100000);
 
             return result;
         }
@@ -1270,7 +1270,7 @@ char *charNumber(void) {
     }
 
     snprintf(result, sizeof(result), "%"PRIu32" B / %.2lf KiB / %.2lf Mib",
-            totalSize, (float64)totalSize / 0x400, (float64)totalSize / 0x100000);
+            totalSize, (double)totalSize / 0x400, (double)totalSize / 0x100000);
 
     return result;
 }
@@ -2248,10 +2248,10 @@ void charRm(char *str, int8_t targ) {
     str[j] = '\0';
 }
 
-float64 parse_base_fraction(const char *s, int8_t base) {
-    float64 result = 0.0;
-    float64 frac = 0.0;
-    float64 div = base;
+double parse_base_fraction(const char *s, int8_t base) {
+    double result = 0.0;
+    double frac = 0.0;
+    double div = base;
     int8_t seen_dot = 0;
 
     for (; *s; s++) {
@@ -2280,7 +2280,7 @@ float64 parse_base_fraction(const char *s, int8_t base) {
     return result + frac;
 }
 
-float64 parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
+double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     *ok = 0;
 
     if (!str || !*str)
@@ -2346,7 +2346,7 @@ float64 parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
         return 0.0;
     }
 
-    float64 mult = 0.0;
+    double mult = 0.0;
 
     if (strcmp(cpy + pos, PI_VAR) == 0)
         mult = PI;
@@ -2369,7 +2369,7 @@ float64 parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
             return NAN;
         }
 
-        mult = (Ans.type == BC_BOOL) ? (float64)Ans.boolean : Ans.num;
+        mult = (Ans.type == BC_BOOL) ? (double)Ans.data.b : Ans.data.f;
     } else {
         SAFE_FREE(cpy);
         return 0.0;
@@ -2386,7 +2386,7 @@ float64 parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     strncpy(buf, cpy + num_start, len);
     buf[len] = '\0';
 
-    float64 value;
+    double value;
 
     if (!isBinary)
         value = parse_base_fraction(buf, base);
@@ -2633,13 +2633,13 @@ char *eval(char *operation, bool mathlib) {
             break;
 
         case BC_STR:
-            result = buff.str;
+            result = buff.data.s;
             if (eval_depth == 1) {
-                if (Ans.type == BC_STR && Ans.str)
-                    SAFE_FREE(Ans.str);
+                if (Ans.type == BC_STR && Ans.data.s)
+                    SAFE_FREE(Ans.data.s);
 
                 Ans.type = BC_STR;
-                Ans.str = strdup(result);
+                Ans.data.s = strdup(result);
             }
 
             break;
@@ -2659,10 +2659,10 @@ char *var2str(var buff) {
     switch (buff.type) {
 
         case BC_STR:
-            return buff.str;
+            return buff.data.s;
 
         case BC_BOOL: {
-            if (buff.boolean == false)
+            if (buff.data.b == false)
                 return strdup(FALSE_VAR);
             else
                 return strdup(TRUE_VAR);
@@ -2675,7 +2675,7 @@ char *var2str(var buff) {
             char *tmp = malloc(max);
             if (!tmp) return NULL;
 
-            num_snprintf(tmp, max, buff.num);
+            num_snprintf(tmp, max, buff.data.f);
             return tmp;
         }
 

@@ -249,7 +249,7 @@ void sleepCmd(char *instruction) {
     char *buff = eval(instruction, true);
 
     var tmp = h_atof(buff, true);
-    time = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
+    time = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
 
     SAFE_FREE(buff);
 
@@ -540,8 +540,8 @@ void bcCmd(uint16_t argc, char **argv) {
 
     char operation[MAX_CHAR] = {0};
 
-    if (Ans.type == BC_STR && Ans.str)
-        SAFE_FREE(Ans.str);
+    if (Ans.type == BC_STR && Ans.data.s)
+        SAFE_FREE(Ans.data.s);
     else
         Ans.type = BC_NONE;
 
@@ -767,7 +767,7 @@ void historyCmd(char *operation, const char *path) {
     char *tmp = eval(operation, true);
 
     var debug1 = h_atof(tmp, true);
-    float64 num = (debug1.type == BC_BOOL) ? (float64)debug1.boolean : debug1.num;
+    float64 num = (debug1.type == BC_BOOL) ? (float64)debug1.data.b : debug1.data.f;
 
     SAFE_FREE(tmp);
 

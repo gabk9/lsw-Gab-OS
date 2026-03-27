@@ -259,7 +259,7 @@ var calc(var left, const char *operation, var right, bool mathLib) {
                 return out;
             }
 
-            if (strlen(left.str) < 2 || strlen(right.str) < 2) {
+            if (strlen(left.data.s) < 2 || strlen(right.data.s) < 2) {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
                 printc("invalid string format\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -267,9 +267,9 @@ var calc(var left, const char *operation, var right, bool mathLib) {
             }
 
             out.type = BC_STR;
-            out.str = bc_strcat(left.str, right.str);
+            out.data.s = bc_strcat(left.data.s, right.data.s);
 
-            if (!out.str) {
+            if (!out.data.s) {
                 out.type = BC_NONE;
                 return out;
             }
@@ -300,8 +300,8 @@ var calc(var left, const char *operation, var right, bool mathLib) {
                 return out;
             }
 
-            float64 multiplier = (float64)notStr.num; 
-            char *multiplied_str = Str.str;
+            float64 multiplier = (float64)notStr.data.f; 
+            char *multiplied_str = Str.data.s;
 
             if (multiplier <= 0.0) {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
@@ -335,7 +335,7 @@ var calc(var left, const char *operation, var right, bool mathLib) {
                 }
             }
 
-            out.str = result;
+            out.data.s = result;
             return out;
         } else {
 
@@ -343,61 +343,61 @@ var calc(var left, const char *operation, var right, bool mathLib) {
                 out.type = BC_BOOL;
 
                 if (left.type != right.type) {
-                    out.boolean = false;
+                    out.data.b = false;
                     return out;
                 }
 
-                out.boolean = bc_strcmp(left.str, right.str) == 0;
+                out.data.b = bc_strcmp(left.data.s, right.data.s) == 0;
                 return out;
             } else if (strcmp(operation, "!=") == 0) {
                 out.type = BC_BOOL;
 
                 if (left.type != right.type) {
-                    out.boolean = false;
+                    out.data.b = false;
                     return out;
                 }
 
-                out.boolean = bc_strcmp(left.str, right.str) != 0;
+                out.data.b = bc_strcmp(left.data.s, right.data.s) != 0;
                 return out;
             } else if (strcmp(operation, ">") == 0) {
                 out.type = BC_BOOL;
 
                 if (left.type != right.type) {
-                    out.boolean = false;
+                    out.data.b = false;
                     return out;
                 }
 
-                out.boolean = bc_strcmp(left.str, right.str) > 0;
+                out.data.b = bc_strcmp(left.data.s, right.data.s) > 0;
                 return out;
             } else if (strcmp(operation, ">=") == 0) {
                 out.type = BC_BOOL;
 
                 if (left.type != right.type) {
-                    out.boolean = false;
+                    out.data.b = false;
                     return out;
                 }
 
-                out.boolean = bc_strcmp(left.str, right.str) >= 0;
+                out.data.b = bc_strcmp(left.data.s, right.data.s) >= 0;
                 return out;
             } else if (strcmp(operation, "<") == 0) {
                 out.type = BC_BOOL;
 
                 if (left.type != right.type) {
-                    out.boolean = false;
+                    out.data.b = false;
                     return out;
                 }
 
-                out.boolean = bc_strcmp(left.str, right.str) < 0;
+                out.data.b = bc_strcmp(left.data.s, right.data.s) < 0;
                 return out;
             } else if (strcmp(operation, "<=") == 0) {
                 out.type = BC_BOOL;
 
                 if (left.type != right.type) {
-                    out.boolean = false;
+                    out.data.b = false;
                     return out;
                 }
 
-                out.boolean = bc_strcmp(left.str, right.str) <= 0;
+                out.data.b = bc_strcmp(left.data.s, right.data.s) <= 0;
                 return out;
             } else {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
@@ -408,8 +408,8 @@ var calc(var left, const char *operation, var right, bool mathLib) {
         }
     }
 
-    float64 num1 = (left.type == BC_BOOL) ? (float64)left.boolean : left.num;
-    float64 num2 = (right.type == BC_BOOL) ? (float64)right.boolean : right.num;
+    float64 num1 = (left.type == BC_BOOL) ? (float64)left.data.b : left.data.f;
+    float64 num2 = (right.type == BC_BOOL) ? (float64)right.data.b : right.data.f;
 
     float64 result = 0;
 
@@ -491,35 +491,35 @@ var calc(var left, const char *operation, var right, bool mathLib) {
     else if (strcmp(operation, "<") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 < num2) && !T_CMP(num1, num2);
+        out.data.b = (num1 < num2) && !T_CMP(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, ">") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 > num2) && !T_CMP(num1, num2);
+        out.data.b = (num1 > num2) && !T_CMP(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, "<=") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 < num2) || T_CMP(num1, num2);
+        out.data.b = (num1 < num2) || T_CMP(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, ">=") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 > num2) || T_CMP(num1, num2);
+        out.data.b = (num1 > num2) || T_CMP(num1, num2);
         return out;
     }
 
     else if (strcmp(operation, "!=") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = T_CMP(num1, num2);
+        out.data.b = T_CMP(num1, num2);
         return out;
     }
 
@@ -528,13 +528,13 @@ var calc(var left, const char *operation, var right, bool mathLib) {
         out.type = BC_BOOL;
 
         if (isnan(num1) || isnan(num2))
-            out.boolean = false;
+            out.data.b = false;
 
         else if (isinf(num1) || isinf(num2))
-            out.boolean = (num1 == num2);
+            out.data.b = (num1 == num2);
 
         else
-            out.boolean = T_CMP(num1, num2);
+            out.data.b = T_CMP(num1, num2);
 
         return out;
     }
@@ -608,14 +608,14 @@ var calc(var left, const char *operation, var right, bool mathLib) {
     else if (strcmp(operation, "&&") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 != 0 && num2 != 0);
+        out.data.b = (num1 != 0 && num2 != 0);
         return out;
     }
 
     else if (strcmp(operation, "||") == 0) {
 
         out.type = BC_BOOL;
-        out.boolean = (num1 != 0 || num2 != 0);
+        out.data.b = (num1 != 0 || num2 != 0);
         return out;
     }
 
@@ -629,12 +629,12 @@ var calc(var left, const char *operation, var right, bool mathLib) {
     if (T_CMP(result, (int64_t)result)) {
 
         out.type = BC_INT;
-        out.num = result;
+        out.data.f = result;
 
     } else {
 
         out.type = BC_FLOAT;
-        out.num = result;
+        out.data.f = result;
     }
 
     return out;
@@ -1443,7 +1443,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
     if (op_pos == -1) {
 
         if (mathlib && Ans.type == BC_STR && strcmp(operation, ANS_VAR) == 0)
-            return (var){ .type = BC_STR, .str = strdup(Ans.str)};
+            return (var){ .type = BC_STR, .data.s = strdup(Ans.data.s)};
 
         if (*operation == '!') {
 
@@ -1463,20 +1463,20 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
 
             if (isBetweenQuotes(expr, 1)) {
                 if (count & 1)
-                    return (var){ .type = BC_BOOL, .boolean = false };
+                    return (var){ .type = BC_BOOL, .data.b = false };
                 else
-                    return (var){ .type = BC_BOOL, .boolean = true };
+                    return (var){ .type = BC_BOOL, .data.b = true };
             }
 
             if (mathlib) {
                 if (Ans.type == BC_STR && strcmp(expr, ANS_VAR) == 0) {
-                    if (!Ans.str)
-                        return (var){ .type = BC_BOOL, .boolean = false };
+                    if (!Ans.data.s)
+                        return (var){ .type = BC_BOOL, .data.b = false };
 
                     if (count & 1)
-                        return (var){ .type = BC_BOOL, .boolean = false };
+                        return (var){ .type = BC_BOOL, .data.b = false };
                     else
-                        return (var){ .type = BC_BOOL, .boolean = true };
+                        return (var){ .type = BC_BOOL, .data.b = true };
                 }
             }
 
@@ -1487,7 +1487,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             var tmp = h_atof(buff, mathlib);
             SAFE_FREE(buff);
 
-            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
+            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
 
             if (isnan(num))
                 return (var){ .type = BC_NONE };
@@ -1497,7 +1497,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             if (count & 1)
                 value = !value;
 
-            return (var){ .type = BC_BOOL, .boolean = value };
+            return (var){ .type = BC_BOOL, .data.b = value };
         }
 
         char *paren = strchr(operation, '(');
@@ -1505,9 +1505,9 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
         if (!paren) {
 
             if (strcmp(operation, TRUE_VAR) == 0)
-                return (var){ .type = BC_BOOL, .boolean = true };
+                return (var){ .type = BC_BOOL, .data.b = true };
             else if (strcmp(operation, FALSE_VAR) == 0)
-                return (var){ .type = BC_BOOL, .boolean = false };
+                return (var){ .type = BC_BOOL, .data.b = false };
 
             size_t len = strlen(operation);
 
@@ -1574,7 +1574,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                     final[res_len + 1] = '"';
                     final[res_len + 2] = '\0';
 
-                    return (var){ .type = BC_STR, .str = final };
+                    return (var){ .type = BC_STR, .data.s = final };
                 }
             }
 
@@ -1583,13 +1583,13 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             float64 num;
             switch (tmp.type) {
                 case BC_BOOL:
-                    num = (float64)tmp.boolean;
+                    num = (float64)tmp.data.b;
                     break;
 
                 case BC_CHR:
                 case BC_INT:
                 case BC_FLOAT:
-                    num = tmp.num;
+                    num = tmp.data.f;
                     break;
 
                 default:
@@ -1600,9 +1600,9 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                 return (var){ .type = BC_NONE };
 
             if (tmp.type != BC_BOOL)
-                return (var){ .type = tmp.type, .num = num };
+                return (var){ .type = tmp.type, .data.f = num };
             else
-                return (var){ .type = tmp.type, .boolean = (bool)num };
+                return (var){ .type = tmp.type, .data.b = (bool)num };
         }
 
         
@@ -1612,7 +1612,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             if (isnan(result))
                 return (var){ .type = BC_NONE };
 
-            return (var){ .type = BC_INT, .num = result };
+            return (var){ .type = BC_INT, .data.f = result };
         }
 
         char name[0x100] = {0};
@@ -1621,15 +1621,15 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
         if (parenthesis_index == -1) {
 
             var tmp = h_atof(operation, mathlib);
-            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
+            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
 
             if (isnan(num))
                 return (var){ .type = BC_NONE };
 
             if (tmp.type != BC_BOOL)
-                return (var){ .type = tmp.type, .num = num };
+                return (var){ .type = tmp.type, .data.f = num };
             else
-                return (var){ .type = tmp.type, .boolean = (bool)num };
+                return (var){ .type = tmp.type, .data.b = (bool)num };
         }
 
         memcpy(name, operation, parenthesis_index);
@@ -1643,15 +1643,15 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
         if (*operation == '~' || *operation == '-') {
 
             var tmp = h_atof(operation, mathlib);
-            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
+            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
 
             if (isnan(num))
                 return (var){ .type = BC_NONE };
 
             if (tmp.type != BC_BOOL)
-                return (var){ .type = tmp.type, .num = num };
+                return (var){ .type = tmp.type, .data.f = num };
             else
-                return (var){ .type = tmp.type, .boolean = (bool)num };
+                return (var){ .type = tmp.type, .data.b = (bool)num };
         }
 
         int32_t depth = 0;
@@ -1698,16 +1698,16 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                         return (var){ .type = BC_NONE };
 
                     if (functions[i].returnType == BC_BOOL)
-                        return (var){ .type = BC_BOOL, .boolean = (bool)num };
+                        return (var){ .type = BC_BOOL, .data.b = (bool)num };
 
-                    return (var){ .type = functions[i].returnType, .num = num };
+                    return (var){ .type = functions[i].returnType, .data.f = num };
                 } else {
                     char *result = functions[i].fn.s(operation);
 
                     if (!result)
                         return (var){ .type = BC_NONE };
 
-                    return (var){ .type = functions[i].returnType, .str = result};
+                    return (var){ .type = functions[i].returnType, .data.s = result};
                 }
             }
         }
