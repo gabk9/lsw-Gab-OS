@@ -506,7 +506,7 @@ var h_atof(const char *str, bool mathlib) {
 
                         printf("illegal character: '");
 
-                        for (int j = 0; j < len && buf[i+j]; j++)
+                        for (size_t j = 0; j < len && buf[i+j]; j++)
                             putchar((unsigned char)buf[i+j]);
 
                         printf("'\n");

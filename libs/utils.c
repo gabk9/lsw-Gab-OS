@@ -2489,8 +2489,8 @@ int16_t find_main_operator_full(const char *s, const char **multiOps, const char
             if (strchr(uniOps, s[k]) || s[k] == '(') {
                 is_prev_operator = true;
             } else {
-                for (int m = 0; multiOps[m]; m++) {
-                    int len = strlen(multiOps[m]);
+                for (int16_t m = 0; multiOps[m]; m++) {
+                    int16_t len = strlen(multiOps[m]);
                     if (k - len + 1 >= 0 &&
                         strncmp(&s[k - len + 1], multiOps[m], len) == 0) {
                         is_prev_operator = true;

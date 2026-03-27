@@ -1532,7 +1532,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
 
                         if (*p == '"') {
 
-                            int backslashes = 0;
+                            uint16_t backslashes = 0;
                             const char *q = p - 1;
 
                             while (q >= operation && *q == '\\') {
