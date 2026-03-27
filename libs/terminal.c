@@ -3,7 +3,7 @@
 
 #define VERSION "r2.4.94"
 
-#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
+#if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
@@ -156,7 +156,7 @@ void revCmd(char *instruction) {
 }
 
 char *randstrCmd(char *instruction) {
-    double len = 1;
+    float64 len = 1;
 
     if (*instruction != '\0') {
 
@@ -245,11 +245,11 @@ void sleepCmd(char *instruction) {
         }
     }
 
-    double time;
+    float64 time;
     char *buff = eval(instruction, true);
 
     var tmp = h_atof(buff, true);
-    time = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    time = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -767,7 +767,7 @@ void historyCmd(char *operation, const char *path) {
     char *tmp = eval(operation, true);
 
     var debug1 = h_atof(tmp, true);
-    double num = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
+    float64 num = (debug1.type == BC_BOOL) ? (float64)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp);
 
@@ -1151,7 +1151,7 @@ void mkdirCmd(char *command) {
         return;
     }
 
-#ifdef _WIN32
+#ifdef _WIN64
     for (uint16_t i = 0; i < fileCount; i++) {
         if (!isValidFolderOrFileName(files[i])) {
             printf("mkdir: invalid folder name: '%s'\n", files[i]);
@@ -1193,7 +1193,7 @@ char *cdCmd(const char *instruction, char *address) {
     char *path = raw;
     while (*path == ' ') path++;
 
-#ifdef _WIN32
+#ifdef _WIN64
     charReplace(path, '\\', '/');
 #endif
 
@@ -1230,7 +1230,7 @@ char *cdCmd(const char *instruction, char *address) {
 }
 
 void listDrives(void) {
-#ifdef _WIN32
+#ifdef _WIN64
     DWORD drives = GetLogicalDrives();
     if (drives == 0) {
         puts("drives: could not get logical drives");
@@ -1688,7 +1688,7 @@ char *unameCmd(uint16_t argc, char **argv) {
         }
     }
 
-#ifdef _WIN32
+#ifdef _WIN64
     return unameCmdWin(flags);
 #else
     return unameCmdLinux(flags);
@@ -1840,7 +1840,7 @@ void lsCmd(char **argv, uint16_t argc, const char *address) {
 
     enableAnsiIfNeeded();
 
-#ifdef _WIN32
+#ifdef _WIN64
     lsCmdWin(dirPath, flags);
 #else
     lsCmdLinux(dirPath, flags);
@@ -1892,7 +1892,7 @@ void neofetchCmd(char *lswrc_path) {
     printc("SYSTEM\n", title_color, WHITE);
 
     printc("OS: ", label_color, 7);
-#ifdef _WIN32
+#ifdef _WIN64
     puts(unameCmdWin(U_KERN_NAME | U_MACHINE));
 #else
     puts(unameCmdLinux(U_KERN_NAME | U_MACHINE));
@@ -1900,7 +1900,7 @@ void neofetchCmd(char *lswrc_path) {
 
 
     printc("KERNEL-RELEASE: ", label_color, WHITE);
-#ifdef _WIN32
+#ifdef _WIN64
     puts(unameCmdWin(U_KERN_RELEASE));
 #else
     puts(unameCmdLinux(U_KERN_RELEASE));

@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
+#if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
@@ -51,7 +51,7 @@ uint16_t count_top_level_commas(const char *s) {
     return count;
 }
 
-static double numericDebug(const char *buf) {
+static float64 numericDebug(const char *buf) {
     if (strncasecmp(buf, BIN_PREF, strlen(BIN_PREF)) == 0) {
         size_t len = strlen(buf);
 
@@ -148,10 +148,10 @@ static double numericDebug(const char *buf) {
     return NAN;
 }
 
-static double mathlibPart(char *buf, bool mathlib) {
+static float64 mathlibPart(char *buf, bool mathlib) {
     const struct {
         char suffix;
-        double mult;
+        float64 mult;
     } suffix[] = {
         {.suffix = 'k', .mult = 1e3},
         {.suffix = 'm', .mult = 1e6},
@@ -176,7 +176,7 @@ static double mathlibPart(char *buf, bool mathlib) {
                     return NAN;
 
                 var tmp = h_atof(buff, mathlib);
-                double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+                float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
                 SAFE_FREE(buff);
                 return (isnan(num)) ? NAN : num * suffix[mi].mult;
@@ -201,7 +201,7 @@ static double mathlibPart(char *buf, bool mathlib) {
             return NAN;
 
         var tmp = h_atof(buff, mathlib);
-        double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+        float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
         return (isnan(num)) ? NAN : num * PI;
@@ -215,7 +215,7 @@ static double mathlibPart(char *buf, bool mathlib) {
             return NAN;
 
         var tmp = h_atof(buff, mathlib);
-        double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+        float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
         return (isnan(num)) ? NAN : num * E;
@@ -320,7 +320,7 @@ var h_atof(const char *str, bool mathlib) {
             return (var){.type = BC_FLOAT, .num = NAN};
         }
 
-        double num;
+        float64 num;
         if (isAns && Ans.type != BC_STR)
             return Ans;
         else {
@@ -330,7 +330,7 @@ var h_atof(const char *str, bool mathlib) {
                 return (var){.type = BC_FLOAT, .num = NAN};
 
             var tmp = h_atof(buff, mathlib);
-            num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+            num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
             SAFE_FREE(buff);
         }
@@ -356,7 +356,7 @@ var h_atof(const char *str, bool mathlib) {
             return (var){.type = BC_FLOAT, .num = NAN};
         }
 
-        double num;
+        float64 num;
 
         if (isAns && Ans.type != BC_STR)
             return Ans;
@@ -367,7 +367,7 @@ var h_atof(const char *str, bool mathlib) {
                 return (var){.type = BC_FLOAT, .num = NAN};
 
             var tmp = h_atof(buff, mathlib);
-            num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+            num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
             SAFE_FREE(buff);
         }
@@ -439,7 +439,7 @@ var h_atof(const char *str, bool mathlib) {
 
     if (mathlib) {            
         int16_t ok = 0;
-        double hex_pi_e = parse_bin_hex_oct_ans_e_pi(buf, &ok);
+        float64 hex_pi_e = parse_bin_hex_oct_ans_e_pi(buf, &ok);
 
         if (isnan(hex_pi_e))
             return (var){.type = BC_FLOAT, .num = NAN};
@@ -458,7 +458,7 @@ var h_atof(const char *str, bool mathlib) {
         return (var){.type = BC_FLOAT, .num = numericDebug(buf)};
 
     if (mathlib) {
-        double tmp = mathlibPart(buf, mathlib);
+        float64 tmp = mathlibPart(buf, mathlib);
 
         if (tmp != MAX_SAFE_INT64_D) {
             eval_ty type = T_CMP(tmp, (int64_t)tmp) ? BC_INT : BC_FLOAT;
@@ -467,11 +467,11 @@ var h_atof(const char *str, bool mathlib) {
     }
 
     if (is_hex)
-        return (var){.type = BC_INT, .num = (double)hex_to_long(buf)};
+        return (var){.type = BC_INT, .num = (float64)hex_to_long(buf)};
     else if (is_octal)
-        return (var){.type = BC_INT, .num = (double)strtol(buf+strlen(OCT_PREF), NULL, 8)};
+        return (var){.type = BC_INT, .num = (float64)strtol(buf+strlen(OCT_PREF), NULL, 8)};
     else if (is_bin)
-        return (var){.type = BC_INT, .num = (double)parseBinToInt(buf)};
+        return (var){.type = BC_INT, .num = (float64)parseBinToInt(buf)};
 
     if (*buf == '"' && buf[len-1] == '"') {
         printc("eval", BC_PROMPT_COLOR, WHITE);
@@ -532,12 +532,12 @@ var h_atof(const char *str, bool mathlib) {
         int64_t val = strtoll(buf, &end, 10);
 
         if (*end == '\0') {
-            return (var){.type = BC_INT, .num = (double)val};
+            return (var){.type = BC_INT, .num = (float64)val};
         }
     }
 
     char *end;
-    double result = strtod(buf, &end);
+    float64 result = strtod(buf, &end);
 
     if (*end != '\0')
         return (var){.type = BC_INT, .num = 0.0};
@@ -733,7 +733,7 @@ char *bc_parse_str(char *operation) {
     return buff;
 }
 
-double bc_parse(char *operation) {
+float64 bc_parse(char *operation) {
 
     bool enablePrecision = strncmp(operation, "float", 5) == 0;
 
@@ -756,7 +756,7 @@ double bc_parse(char *operation) {
     if (!buff)
         return NAN;
 
-    double num;
+    float64 num;
 
     size_t len = strlen(buff);
     bool isChr = isBetweenQuotes(buff, 0) && len == 3;
@@ -767,7 +767,7 @@ double bc_parse(char *operation) {
     } 
 
     var tmp = h_atof(buff, true);
-    num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -840,7 +840,7 @@ char *bc_typeof(char *operation) {
     return buff;
 }
 
-double bc_len(char *operation) {
+float64 bc_len(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -881,10 +881,10 @@ double bc_len(char *operation) {
 
     SAFE_FREE(buff);
 
-    return (double)len;
+    return (float64)len;
 }
 
-double s_abs(char *operation) {
+float64 s_abs(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -893,7 +893,7 @@ double s_abs(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double value = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 value = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -903,7 +903,7 @@ double s_abs(char *operation) {
     return fabs(value);
 }
 
-double s_miles(char *operation) {
+float64 s_miles(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -912,7 +912,7 @@ double s_miles(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double km = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 km = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -922,7 +922,7 @@ double s_miles(char *operation) {
     return KM_TO_MI(km);
 }
 
-double s_km(char *operation) {
+float64 s_km(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -931,7 +931,7 @@ double s_km(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double miles = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 miles = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -941,7 +941,7 @@ double s_km(char *operation) {
     return MI_TO_KM(miles);
 }
 
-double s_pounds(char *operation) {
+float64 s_pounds(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -950,7 +950,7 @@ double s_pounds(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double kg = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 kg = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -960,7 +960,7 @@ double s_pounds(char *operation) {
     return KG_TO_LB(kg);
 }
 
-double s_kg(char *operation) {
+float64 s_kg(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -969,7 +969,7 @@ double s_kg(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double lbs = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 lbs = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -979,7 +979,7 @@ double s_kg(char *operation) {
     return LB_TO_KG(lbs);
 }
 
-double s_feet(char *operation) {
+float64 s_feet(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -988,7 +988,7 @@ double s_feet(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double meters = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 meters = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -998,7 +998,7 @@ double s_feet(char *operation) {
     return M_TO_FT(meters);
 }
 
-double s_meter(char *operation) {
+float64 s_meter(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1007,7 +1007,7 @@ double s_meter(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double feet = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 feet = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1017,7 +1017,7 @@ double s_meter(char *operation) {
     return FT_TO_M(feet);
 }
 
-double s_fah(char *operation) {
+float64 s_fah(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1026,7 +1026,7 @@ double s_fah(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double cel = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 cel = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1036,7 +1036,7 @@ double s_fah(char *operation) {
     return C_TO_F(cel);
 }
 
-double s_cel(char *operation) {
+float64 s_cel(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1045,7 +1045,7 @@ double s_cel(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double fah = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 fah = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1064,7 +1064,7 @@ char *s_oct(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1175,7 +1175,7 @@ char *s_chr(char *operation) {
         return NULL;
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1249,7 +1249,7 @@ char *s_hex(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double val = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 val = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1291,7 +1291,7 @@ char *s_bin(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double val = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 val = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1344,7 +1344,7 @@ char *s_bin(char *operation) {
     return result;
 }
 
-double s_trunc(char *operation) {
+float64 s_trunc(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1353,7 +1353,7 @@ double s_trunc(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1363,7 +1363,7 @@ double s_trunc(char *operation) {
     return trunc(num);
 }
 
-double s_rad(char *operation) {
+float64 s_rad(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1372,7 +1372,7 @@ double s_rad(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double deg = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 deg = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1382,7 +1382,7 @@ double s_rad(char *operation) {
     return DEG_TO_RAD(deg);
 }
 
-double s_gon(char *operation) {
+float64 s_gon(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1391,7 +1391,7 @@ double s_gon(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double deg = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 deg = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1401,7 +1401,7 @@ double s_gon(char *operation) {
     return RAD_TO_GON(deg);
 }
 
-double s_deg(char *operation) {
+float64 s_deg(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1410,7 +1410,7 @@ double s_deg(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double rad = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 rad = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1420,7 +1420,7 @@ double s_deg(char *operation) {
     return RAD_TO_DEG(rad);
 }
 
-double s_sqrt(char *operation) {
+float64 s_sqrt(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1429,7 +1429,7 @@ double s_sqrt(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1447,7 +1447,7 @@ double s_sqrt(char *operation) {
     return sqrt(num);
 }
 
-double s_scale(char *operation) {
+float64 s_scale(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1456,7 +1456,7 @@ double s_scale(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double value = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 value = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1482,10 +1482,10 @@ double s_scale(char *operation) {
     while (end > dot && *end == '0')
         *end-- = '\0';
 
-    return (double)strlen(dot + 1);
+    return (float64)strlen(dot + 1);
 }
 
-double s_sin(char *operation) {
+float64 s_sin(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1494,14 +1494,14 @@ double s_sin(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
 
-    double result = sin(num);
+    float64 result = sin(num);
 
     if (fabs(result) < 1e-6)
         result = 0.0;
@@ -1509,7 +1509,7 @@ double s_sin(char *operation) {
     return result;
 }
 
-double s_asin(char *operation) {
+float64 s_asin(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1518,7 +1518,7 @@ double s_asin(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1536,7 +1536,7 @@ double s_asin(char *operation) {
     return asin(num);
 }
 
-double s_cot(char *operation) {
+float64 s_cot(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1545,14 +1545,14 @@ double s_cot(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
 
-    double t = tan(num);
+    float64 t = tan(num);
 
     if (fabs(t) < 1e-12) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
@@ -1565,7 +1565,7 @@ double s_cot(char *operation) {
     return 1.0 / t;
 }
 
-double s_acot(char *operation) {
+float64 s_acot(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1574,7 +1574,7 @@ double s_acot(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1584,7 +1584,7 @@ double s_acot(char *operation) {
     return PI / 2.0 - atan(num);
 }
 
-double s_cos(char *operation) {
+float64 s_cos(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1593,14 +1593,14 @@ double s_cos(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
     if (isnan(num))
         return NAN;
 
-    double result = cos(num);
+    float64 result = cos(num);
 
     if (fabs(result) < 1e-6)
         result = 0.0;
@@ -1608,7 +1608,7 @@ double s_cos(char *operation) {
     return result;
 }
 
-double s_acos(char *operation) {
+float64 s_acos(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1617,7 +1617,7 @@ double s_acos(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1635,7 +1635,7 @@ double s_acos(char *operation) {
     return acos(num);
 }
 
-double s_tan(char *operation) {
+float64 s_tan(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1644,14 +1644,14 @@ double s_tan(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double angle = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 angle = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
     if (isnan(angle))
         return NAN;
 
-    double modPi = fmod(fabs(angle), PI);
+    float64 modPi = fmod(fabs(angle), PI);
     if (fabs(modPi - PI / 2.0) < 1e-8) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
@@ -1660,7 +1660,7 @@ double s_tan(char *operation) {
         return NAN;
     }
 
-    double result = tan(angle);
+    float64 result = tan(angle);
 
     if (fabs(result) < 1e-6)
         result = 0.0;
@@ -1668,7 +1668,7 @@ double s_tan(char *operation) {
     return result;
 }
 
-double s_atan(char *operation) {
+float64 s_atan(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1677,7 +1677,7 @@ double s_atan(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double angle = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 angle = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1687,7 +1687,7 @@ double s_atan(char *operation) {
     return atan(angle);
 }
 
-double s_ln(char *operation) {
+float64 s_ln(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1696,7 +1696,7 @@ double s_ln(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1706,7 +1706,7 @@ double s_ln(char *operation) {
     return log(num);
 }
 
-double s_log10(char *operation) {
+float64 s_log10(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1715,7 +1715,7 @@ double s_log10(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1725,7 +1725,7 @@ double s_log10(char *operation) {
     return log10(num);
 }
 
-double s_log2(char *operation) {
+float64 s_log2(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1734,7 +1734,7 @@ double s_log2(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -1744,7 +1744,7 @@ double s_log2(char *operation) {
     return log2(num);
 }
 
-double s_root(char *operation) {
+float64 s_root(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1780,7 +1780,7 @@ double s_root(char *operation) {
     char *tmp1 = eval(indexStr, true);
 
     var debug1 = h_atof(tmp1, true);
-    double index = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
+    float64 index = (debug1.type == BC_BOOL) ? (float64)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp1);
 
@@ -1790,7 +1790,7 @@ double s_root(char *operation) {
     char *tmp3 = eval(rootingStr, true);
 
     var debug2 = h_atof(tmp3, true);
-    double rooting = (debug2.type == BC_BOOL) ? (double)debug2.boolean : debug2.num;
+    float64 rooting = (debug2.type == BC_BOOL) ? (float64)debug2.boolean : debug2.num;
 
     SAFE_FREE(tmp3);
 
@@ -1828,7 +1828,7 @@ double s_root(char *operation) {
         return NAN;
     }
 
-    double result;
+    float64 result;
 
     if (rooting < 0) {
         result = -pow(-rooting, 1.0 / index);
@@ -1842,7 +1842,7 @@ double s_root(char *operation) {
     return result;
 }
 
-double s_bmi(char *operation) {
+float64 s_bmi(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1878,7 +1878,7 @@ double s_bmi(char *operation) {
     char *tmp1 = eval(weightStr, true);
 
     var debug1 = h_atof(tmp1, true);
-    double weight = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
+    float64 weight = (debug1.type == BC_BOOL) ? (float64)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp1);
 
@@ -1888,7 +1888,7 @@ double s_bmi(char *operation) {
     char *tmp2 = eval(heightStr, true);
 
     var debug2 = h_atof(tmp2, true);
-    double height = (debug2.type == BC_BOOL) ? (double)debug2.boolean : debug2.num;
+    float64 height = (debug2.type == BC_BOOL) ? (float64)debug2.boolean : debug2.num;
 
     SAFE_FREE(tmp2);
 
@@ -1898,7 +1898,7 @@ double s_bmi(char *operation) {
     return BMI(weight, height);
 }
 
-double s_log(char *operation) {
+float64 s_log(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1934,7 +1934,7 @@ double s_log(char *operation) {
     char *tmp1 = eval(baseStr, true);
 
     var debug1 = h_atof(tmp1, true);
-    double base = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
+    float64 base = (debug1.type == BC_BOOL) ? (float64)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp1);
 
@@ -1944,7 +1944,7 @@ double s_log(char *operation) {
     char *tmp2 = eval(numStr, true);
 
     var debug2 = h_atof(tmp2, true);
-    double num = (debug2.type == BC_BOOL) ? (double)debug2.boolean : debug2.num;
+    float64 num = (debug2.type == BC_BOOL) ? (float64)debug2.boolean : debug2.num;
 
     SAFE_FREE(tmp2);
 
@@ -1962,7 +1962,7 @@ double s_log(char *operation) {
     return log(num) / log(base);
 }
 
-double s_randFloat(char *operation) {
+float64 s_randFloat(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -1997,16 +1997,16 @@ double s_randFloat(char *operation) {
     trim(str_min);
     trimEnd(str_min);
 
-    double maxLf = 0.0;
-    double minLf = 0.0;
+    float64 maxLf = 0.0;
+    float64 minLf = 0.0;
 
     if (strcasecmp(str_max, "rand_max") == 0)
-        maxLf = (double)RAND_MAX;
+        maxLf = (float64)RAND_MAX;
     else {
         char *buff = eval(str_max, true);
 
         var tmp = h_atof(buff, true);
-        maxLf = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+        maxLf = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
     }
@@ -2016,12 +2016,12 @@ double s_randFloat(char *operation) {
     }
 
     if (strcasecmp(str_min, "rand_max") == 0)
-        minLf = (double)RAND_MAX;
+        minLf = (float64)RAND_MAX;
     else {
         char *buff = eval(str_min, true);
 
         var tmp = h_atof(buff, true);
-        minLf = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+        minLf = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
     }
@@ -2033,7 +2033,7 @@ double s_randFloat(char *operation) {
     return random_range_float(minLf, maxLf);
 }
 
-double s_randInt(char *operation) {
+float64 s_randInt(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -2068,16 +2068,16 @@ double s_randInt(char *operation) {
     trim(str_min);
     trimEnd(str_min);
 
-    double maxInt = 0.0;
-    double minInt = 0.0;
+    float64 maxInt = 0.0;
+    float64 minInt = 0.0;
 
     if (strcasecmp(str_max, "rand_max") == 0)
-        maxInt = (double)RAND_MAX;
+        maxInt = (float64)RAND_MAX;
     else {
         char *buff = eval(str_max, true);
 
         var tmp = h_atof(buff, true);
-        maxInt = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+        maxInt = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
     }
@@ -2086,12 +2086,12 @@ double s_randInt(char *operation) {
         return NAN;
 
     if (strcasecmp(str_min, "rand_max") == 0)
-        minInt = (double)RAND_MAX;
+        minInt = (float64)RAND_MAX;
     else {
         char *buff = eval(str_min, true);
 
         var tmp = h_atof(buff, true);
-        minInt = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+        minInt = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
         SAFE_FREE(buff);
     }
@@ -2111,7 +2111,7 @@ double s_randInt(char *operation) {
     return random_range_int((int32_t)minInt, (int32_t)maxInt);
 }
 
-double s_floor(char *operation) {
+float64 s_floor(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -2120,7 +2120,7 @@ double s_floor(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -2130,7 +2130,7 @@ double s_floor(char *operation) {
     return floor(num);
 }
 
-double s_ceil(char *operation) {
+float64 s_ceil(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -2139,7 +2139,7 @@ double s_ceil(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -2149,7 +2149,7 @@ double s_ceil(char *operation) {
     return ceil(num);
 }
 
-double s_round(char *operation) {
+float64 s_round(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -2158,7 +2158,7 @@ double s_round(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -2168,11 +2168,11 @@ double s_round(char *operation) {
     return round(num);
 }
 
-double tetration(double base, int32_t height) {
+float64 tetration(float64 base, int32_t height) {
     if (height < 0) return NAN;
     if (height == 0) return 1.0;
 
-    double result = base;
+    float64 result = base;
 
     for (int32_t i = 2; i <= height; i++) {
         if (result > log(DBL_MAX) / log(fabs(base)))
@@ -2193,7 +2193,7 @@ bool isprime(int64_t n) {
     return true;
 }
 
-double s_isprime(char *operation) {
+float64 s_isprime(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -2202,7 +2202,7 @@ double s_isprime(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -2247,7 +2247,7 @@ uint64_t fact(int64_t num, int32_t steps) {
     return result;
 }
 
-double s_fact(char *operation) {
+float64 s_fact(char *operation) {
     char *test = strdup(operation);
 
     if (!test) {
@@ -2310,7 +2310,7 @@ double s_fact(char *operation) {
     }
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
     SAFE_FREE(test);
@@ -2334,10 +2334,10 @@ double s_fact(char *operation) {
         return NAN;
     }
 
-    return (double)fact((int64_t)num, stepsCount);
+    return (float64)fact((int64_t)num, stepsCount);
 }
 
-double s_sign(char *operation) {
+float64 s_sign(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -2346,7 +2346,7 @@ double s_sign(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -2362,7 +2362,7 @@ double s_sign(char *operation) {
     return signbit(num) ? -0.0 : 0.0;
 }
 
-double s_sum(char *operation) {
+float64 s_sum(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
         return NAN;
@@ -2423,7 +2423,7 @@ double s_sum(char *operation) {
     char *tmp1 = eval(initStr, true);
 
     var debug1 = h_atof(tmp1, true);
-    double init = (debug1.type == BC_BOOL) ? (double)debug1.boolean : debug1.num;
+    float64 init = (debug1.type == BC_BOOL) ? (float64)debug1.boolean : debug1.num;
 
     SAFE_FREE(tmp1);
 
@@ -2433,7 +2433,7 @@ double s_sum(char *operation) {
     char *tmp2 = eval(endStr, true);
 
     var debug2 = h_atof(tmp2, true);
-    double end = (debug2.type == BC_BOOL) ? (double)debug2.boolean : debug2.num;
+    float64 end = (debug2.type == BC_BOOL) ? (float64)debug2.boolean : debug2.num;
 
     SAFE_FREE(tmp2);
 
@@ -2444,7 +2444,7 @@ double s_sum(char *operation) {
     char *tmp3 = eval(diffStr ? diffStr : defaultDiff, true);
 
     var debug3 = h_atof(tmp3, true);
-    double diff = (debug3.type == BC_BOOL) ? (double)debug3.boolean : debug3.num;
+    float64 diff = (debug3.type == BC_BOOL) ? (float64)debug3.boolean : debug3.num;
 
     SAFE_FREE(tmp3);
 
@@ -2467,7 +2467,7 @@ double s_sum(char *operation) {
         return NAN;
     }
 
-    double result = gauss_range_double(init, end, diff);
+    float64 result = gauss_range_double(init, end, diff);
 
     if (isnan(result) || isinf(result)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);

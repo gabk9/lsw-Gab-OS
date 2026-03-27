@@ -15,16 +15,16 @@
 #define PATH_TERMINAL_C "./libs/terminal.c"
 #define PATH_TERMINAL_H "./libs/terminal.h"
 
-#ifdef _WIN32
+#ifdef _WIN64
     extern HANDLE hConsole;
-#elif !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
+#elif !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
 static int32_t eval_depth = 0;
 static char *last_directory = NULL;
 
-#ifdef _WIN32
+#ifdef _WIN64
 LONG handler(EXCEPTION_POINTERS *e) {
     (void)e;
     printf("Segmentation fault (core dumped)\n");
@@ -32,7 +32,7 @@ LONG handler(EXCEPTION_POINTERS *e) {
 }
 #endif
 
-void num_snprintf(char *buff, size_t size, double num) {
+void num_snprintf(char *buff, size_t size, float64 num) {
     if (T_CMP(num, (int64_t)num)) {
         snprintf(buff, size, "%" PRId64, (int64_t)num);
     } else {
@@ -389,7 +389,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
     if (!buff)
         return;
 
-    double MaxLines = atof(buff);
+    float64 MaxLines = atof(buff);
 
     if (isnan(MaxLines) || isinf(MaxLines))
         return;
@@ -401,7 +401,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
 
     MaxLines++;
 
-    if ((double)lines < MaxLines) {
+    if ((float64)lines < MaxLines) {
         FILE *file = fopen(history_path, "a");
         if (!file) {
             printf("Error: could not open 'history.txt'\n");
@@ -703,7 +703,7 @@ int16_t rm_delete(char *path, uint8_t flags) {
         return move_to_trash(path) ? 0 : -1;
     }
 
-#ifdef _WIN32
+#ifdef _WIN64
     if (RemoveDirectoryA(path))
         return 0;
 
@@ -715,7 +715,7 @@ int16_t rm_delete(char *path, uint8_t flags) {
 }
 
 int16_t move_to_trash(char *path) {
-#ifdef _WIN32
+#ifdef _WIN64
     SHFILEOPSTRUCTA fileOp = {0};
 
     char from[MAX_PATH];
@@ -794,7 +794,7 @@ char **readHistory(const char *address, uint32_t *lineCount) {
 }
 
 void initRandom(void) {
-#ifdef _WIN32
+#ifdef _WIN64
     LARGE_INTEGER counter;
     QueryPerformanceCounter(&counter);
     srand((unsigned)counter.QuadPart);
@@ -805,13 +805,13 @@ void initRandom(void) {
 #endif
 }
 
-void sleepF(double seconds) {
-#ifdef _WIN32
+void sleepF(float64 seconds) {
+#ifdef _WIN64
     LARGE_INTEGER freq, start, now;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&start);
 
-    double target = seconds;
+    float64 target = seconds;
 
     if (seconds > 0.002) {
         DWORD coarse = (DWORD)((seconds - 0.001) * 1000.0);
@@ -820,12 +820,12 @@ void sleepF(double seconds) {
 
     do {
         QueryPerformanceCounter(&now);
-    } while ((double)(now.QuadPart - start.QuadPart) / freq.QuadPart < target);
+    } while ((float64)(now.QuadPart - start.QuadPart) / freq.QuadPart < target);
 #else 
     struct timespec start, now;
     clock_gettime(CLOCK_MONOTONIC, &start);
 
-    double target = seconds;
+    float64 target = seconds;
 
     if (seconds > 0.002) {
         struct timespec ts;
@@ -836,7 +836,7 @@ void sleepF(double seconds) {
 
     do {
         clock_gettime(CLOCK_MONOTONIC, &now);
-        double elapsed =
+        float64 elapsed =
             (now.tv_sec - start.tv_sec) +
             (now.tv_nsec - start.tv_nsec) / 1e9;
         if (elapsed >= target) break;
@@ -847,7 +847,7 @@ void sleepF(double seconds) {
 bool isValidFolderOrFileName(const char *name) {
     if (!name || !*name) return false;
 
-#ifdef _WIN32
+#ifdef _WIN64
     const char *invalid = "<>:\"/\\|?*";
     size_t len = strlen(name);
 
@@ -902,7 +902,7 @@ char *revStr(const char *str) {
     return new;
 }
 
-double parse_len(char *s) {
+float64 parse_len(char *s) {
     while (*s && isspace((unsigned char)*s))
         s++;
 
@@ -915,7 +915,7 @@ double parse_len(char *s) {
     char *buff = eval(s, true);
 
     var tmp = h_atof(buff, true);
-    double len = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+    float64 len = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
     SAFE_FREE(buff);
 
@@ -939,7 +939,7 @@ char *defaultAddressReplace(const char *address) {
     char *Default = get_default_address();
     size_t len = strlen(Default);
 
-#ifndef _WIN32
+#ifndef _WIN64
     char slash = '/';
 #else
     char slash = '\\';
@@ -1046,7 +1046,7 @@ char **parseData(const char *str, uint16_t *count) {
 }
 
 void enableAnsiIfNeeded(void) {
-#ifdef _WIN32
+#ifdef _WIN64
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hOut == INVALID_HANDLE_VALUE) return;
     DWORD mode = 0;
@@ -1058,7 +1058,7 @@ void enableAnsiIfNeeded(void) {
 }
 
 int8_t isDir(const char *path) {
-#ifdef _WIN32
+#ifdef _WIN64
     DWORD attr = GetFileAttributesA(path);
     if (attr == INVALID_FILE_ATTRIBUTES)
         return -1;
@@ -1159,7 +1159,7 @@ bool isValidBcCommand(char *str, char *command) {
 }
 
 char *myDirname(char *path) {
-#ifdef _WIN32
+#ifdef _WIN64
     static char buffer[MAX_PATH];
     strcpy(buffer, path);
     for (ssize_t i = (ssize_t)strlen(buffer) - 1; i >= 0; i--) {
@@ -1177,7 +1177,7 @@ char *myDirname(char *path) {
 char *getBasePath(void) {
     static char path[MAX_PATH];
 
-#ifdef _WIN32
+#ifdef _WIN64
     GetModuleFileNameA(NULL, path, sizeof(path));
     strcpy(path, myDirname(path));
 #else
@@ -1259,8 +1259,8 @@ char *charNumber(void) {
         FILE *f = fopen(buildPath(files[i]), "rb");
         if (!f) {
             snprintf(result, sizeof(result), "%d B / %.2lf KiB / %.2lf Mib",
-                    PROJ_SIZE_APPROX_BYTES, (double)PROJ_SIZE_APPROX_BYTES / 0x400, 
-                    (double)PROJ_SIZE_APPROX_BYTES / 0x100000);
+                    PROJ_SIZE_APPROX_BYTES, (float64)PROJ_SIZE_APPROX_BYTES / 0x400, 
+                    (float64)PROJ_SIZE_APPROX_BYTES / 0x100000);
 
             return result;
         }
@@ -1270,13 +1270,13 @@ char *charNumber(void) {
     }
 
     snprintf(result, sizeof(result), "%"PRIu32" B / %.2lf KiB / %.2lf Mib",
-            totalSize, (double)totalSize / 0x400, (double)totalSize / 0x100000);
+            totalSize, (float64)totalSize / 0x400, (float64)totalSize / 0x100000);
 
     return result;
 }
 
 char *get_user(void) {
-#ifdef _WIN32
+#ifdef _WIN64
     char *user = getenv("USERNAME");
 #else
     #ifndef __ANDROID__
@@ -1313,7 +1313,7 @@ int16_t strrchar(const char *str, int8_t chr) {
     return -1;
 }
 
-#ifndef _WIN32
+#ifndef _WIN64
 void lsCmdLinux(const char *dirPath, uint8_t showAll) {
     DIR *dir = opendir(dirPath);
     if (!dir) {
@@ -1346,7 +1346,7 @@ void lsCmdLinux(const char *dirPath, uint8_t showAll) {
 }
 #endif
 
-#ifdef _WIN32
+#ifdef _WIN64
 void lsCmdWin(const char *dirPath, uint8_t showAll) {
     char searchPath[0x1000];
 
@@ -1395,7 +1395,7 @@ void lsCmdWin(const char *dirPath, uint8_t showAll) {
 }
 #endif
 
-#ifdef _WIN32
+#ifdef _WIN64
 char *unameCmdWin(uint8_t flags) {
     static char result[0x400];
     char buffer[0x100];
@@ -1505,7 +1505,7 @@ char *unameCmdWin(uint8_t flags) {
 }
 #endif
 
-#ifndef _WIN32
+#ifndef _WIN64
 char *unameCmdLinux(uint8_t flags) {
     static char result[0x400];
     char buffer[0x100];
@@ -1590,7 +1590,7 @@ char *unameCmdLinux(uint8_t flags) {
 char *get_hostname(void) {
     static char hostname[0x100];
 
-#ifdef _WIN32
+#ifdef _WIN64
     DWORD size = sizeof(hostname);
     if (!GetComputerNameA(hostname, &size))
         strcpy(hostname, "Unknown");
@@ -1615,7 +1615,7 @@ char *get_time(char *fmt) {
 }
 
 void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint16_t data_size, char *history_path, uint16_t hist_size) {
-#ifdef _WIN32
+#ifdef _WIN64
     if (GetModuleFileNameA(NULL, program_root, (DWORD)root_size) == 0)
         strcpy(program_root, ".");
     else {
@@ -1652,7 +1652,7 @@ void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint1
 }
 
 void setColor(color4 color) {
-#ifdef _WIN32
+#ifdef _WIN64
     SetConsoleTextAttribute(hConsole, color);
 #else
     switch(color) {
@@ -1859,7 +1859,7 @@ char *buildLswRcPath(const char *path) {
     char *buffer = calloc(extra, sizeof(char));
     strcpy(buffer, path);
 
-#ifdef _WIN32
+#ifdef _WIN64
     strcat(buffer, "\\");
 #else
     strcat(buffer, "/");    
@@ -2248,10 +2248,10 @@ void charRm(char *str, int8_t targ) {
     str[j] = '\0';
 }
 
-double parse_base_fraction(const char *s, int8_t base) {
-    double result = 0.0;
-    double frac = 0.0;
-    double div = base;
+float64 parse_base_fraction(const char *s, int8_t base) {
+    float64 result = 0.0;
+    float64 frac = 0.0;
+    float64 div = base;
     int8_t seen_dot = 0;
 
     for (; *s; s++) {
@@ -2280,7 +2280,7 @@ double parse_base_fraction(const char *s, int8_t base) {
     return result + frac;
 }
 
-double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
+float64 parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     *ok = 0;
 
     if (!str || !*str)
@@ -2346,7 +2346,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
         return 0.0;
     }
 
-    double mult = 0.0;
+    float64 mult = 0.0;
 
     if (strcmp(cpy + pos, PI_VAR) == 0)
         mult = PI;
@@ -2369,7 +2369,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
             return NAN;
         }
 
-        mult = (Ans.type == BC_BOOL) ? (double)Ans.boolean : Ans.num;
+        mult = (Ans.type == BC_BOOL) ? (float64)Ans.boolean : Ans.num;
     } else {
         SAFE_FREE(cpy);
         return 0.0;
@@ -2386,7 +2386,7 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
     strncpy(buf, cpy + num_start, len);
     buf[len] = '\0';
 
-    double value;
+    float64 value;
 
     if (!isBinary)
         value = parse_base_fraction(buf, base);
@@ -2725,7 +2725,7 @@ char *handle_normal_cd(const char *path, char *address) {
     }
 
     if (strlen(path) == 0) {
-    #ifdef _WIN32
+    #ifdef _WIN64
         const char *home_path = getenv("USERPROFILE");
     #else
         const char *home_path = getenv("HOME");
@@ -2739,7 +2739,7 @@ char *handle_normal_cd(const char *path, char *address) {
         }
     }
 
-#ifdef _WIN32
+#ifdef _WIN64
     if (isalpha((unsigned char)path[0]) && path[1] == ':') {
         if (chdir(path) == 0) {
             char new_cwd[0x400];
@@ -2756,7 +2756,7 @@ char *handle_normal_cd(const char *path, char *address) {
         new_path[sizeof(new_path) - 1] = '\0';
 
         char *last_slash = strrchr(new_path, '/');
-    #ifdef _WIN32
+    #ifdef _WIN64
         char *last_backslash = strrchr(new_path, '\\');
         if (!last_slash || (last_backslash && last_backslash > last_slash))
             last_slash = last_backslash;
@@ -2891,7 +2891,7 @@ uint8_t bsort(char **array, uint16_t count) {
 }
 
 char *get_default_address(void) {
-#ifdef _WIN32
+#ifdef _WIN64
     const char *home = getenv("USERPROFILE");
     return home ? strdup(home) : strdup("C:\\");
 #else
@@ -2915,7 +2915,7 @@ void printc(const char *str, color4 initColor, color4 resetColor, ...) {
 }
 
 char* get_cpu_model(void) {
-#ifdef _WIN32
+#ifdef _WIN64
     static char cpu[0x80];
     HKEY hKey;
     DWORD size = sizeof(cpu);
@@ -2982,7 +2982,7 @@ char* get_cpu_model(void) {
 }
 
 uint64_t get_total_ram_mb(void) {
-#ifdef _WIN32
+#ifdef _WIN64
     MEMORYSTATUSEX status;
     status.dwLength = sizeof(status);
     GlobalMemoryStatusEx(&status);
@@ -3004,7 +3004,7 @@ uint64_t get_total_ram_mb(void) {
 }
 
 void setup_console(void) {
-#ifdef _WIN32
+#ifdef _WIN64
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 #endif

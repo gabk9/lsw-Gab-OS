@@ -1,17 +1,17 @@
 #include "libs/utils.h"
 #include "libs/types.h"
 
-#ifdef _WIN32
+#ifdef _WIN64
     #define rmdir _rmdir
     #define chdir _chdir
     #define getcwd _getcwd
     HANDLE hConsole;
-#elif !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
+#elif !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
 int32_t main(int32_t argc, char **argv) {
-#ifdef _WIN32
+#ifdef _WIN64
     SetUnhandledExceptionFilter(handler);
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     setup_console();

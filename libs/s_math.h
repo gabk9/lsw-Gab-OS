@@ -19,7 +19,7 @@
 #define METERS_TO_FEET_FACTOR 3.28084
 #define FEET_TO_METERS_FACTOR 0.3048
 
-#ifdef _WIN32
+#ifdef _WIN64
     #undef RAND_MAX
     #define RAND_MAX 0x7FFFFFFF
 #endif
@@ -27,57 +27,57 @@
 bool isprime(int64_t n);
 uint64_t fact(int64_t num, int32_t steps);
 var h_atof(const char *str, bool mathlib);
-double tetration(double base, int32_t height);
-double s_ln(char *operation)__attribute__((nonnull));
+float64 tetration(float64 base, int32_t height);
 char *s_chr(char *operation)__attribute__((nonnull));
 char *s_oct(char *operation)__attribute__((nonnull));
 char *s_hex(char *operation)__attribute__((nonnull));
 char *s_bin(char *operation)__attribute__((nonnull));
-double s_km(char *operation)__attribute__((nonnull));
-double s_kg(char *operation)__attribute__((nonnull));
-double s_fah(char *operation)__attribute__((nonnull));
-double s_cel(char *operation)__attribute__((nonnull));
-double s_log(char *operation)__attribute__((nonnull));
-double s_bmi(char *operation)__attribute__((nonnull));
-double s_tan(char *operation)__attribute__((nonnull));
-double s_cos(char *operation)__attribute__((nonnull));
-double s_sin(char *operation)__attribute__((nonnull));
-double s_cot(char *operation)__attribute__((nonnull));
-double s_sum(char *operation)__attribute__((nonnull));
-double s_rad(char *operation)__attribute__((nonnull));
-double s_abs(char *operation)__attribute__((nonnull));
-double s_gon(char *operation)__attribute__((nonnull));
-double s_deg(char *operation)__attribute__((nonnull));
+float64 s_ln(char *operation)__attribute__((nonnull));
+float64 s_km(char *operation)__attribute__((nonnull));
+float64 s_kg(char *operation)__attribute__((nonnull));
+float64 s_fah(char *operation)__attribute__((nonnull));
+float64 s_cel(char *operation)__attribute__((nonnull));
+float64 s_log(char *operation)__attribute__((nonnull));
+float64 s_bmi(char *operation)__attribute__((nonnull));
+float64 s_tan(char *operation)__attribute__((nonnull));
+float64 s_cos(char *operation)__attribute__((nonnull));
+float64 s_sin(char *operation)__attribute__((nonnull));
+float64 s_cot(char *operation)__attribute__((nonnull));
+float64 s_sum(char *operation)__attribute__((nonnull));
+float64 s_rad(char *operation)__attribute__((nonnull));
+float64 s_abs(char *operation)__attribute__((nonnull));
+float64 s_gon(char *operation)__attribute__((nonnull));
+float64 s_deg(char *operation)__attribute__((nonnull));
 char *s_upper(char *operation)__attribute__((nonnull));
 char *s_lower(char *operation)__attribute__((nonnull));
-double s_acos(char *operation)__attribute__((nonnull));
-double s_asin(char *operation)__attribute__((nonnull));
-double s_atan(char *operation)__attribute__((nonnull));
-double s_acot(char *operation)__attribute__((nonnull));
-double s_root(char *operation)__attribute__((nonnull));
-double s_ceil(char *operation)__attribute__((nonnull));
-double s_sign(char *operation)__attribute__((nonnull));
-double s_log2(char *operation)__attribute__((nonnull));
-double s_sqrt(char *operation)__attribute__((nonnull));
-double s_fact(char *operation)__attribute__((nonnull));
-double bc_len(char *operation)__attribute__((nonnull));
-double s_feet(char *operation)__attribute__((nonnull));
+float64 s_acos(char *operation)__attribute__((nonnull));
+float64 s_asin(char *operation)__attribute__((nonnull));
+float64 s_atan(char *operation)__attribute__((nonnull));
+float64 s_acot(char *operation)__attribute__((nonnull));
+float64 s_root(char *operation)__attribute__((nonnull));
+float64 s_ceil(char *operation)__attribute__((nonnull));
+float64 s_sign(char *operation)__attribute__((nonnull));
+float64 s_log2(char *operation)__attribute__((nonnull));
+float64 s_sqrt(char *operation)__attribute__((nonnull));
+float64 s_fact(char *operation)__attribute__((nonnull));
+float64 bc_len(char *operation)__attribute__((nonnull));
+float64 s_feet(char *operation)__attribute__((nonnull));
 int64_t hex_to_long(char *str)__attribute__((nonnull));
-double s_meter(char *operation)__attribute__((nonnull));
-double s_miles(char *operation)__attribute__((nonnull));
-double s_trunc(char *operation)__attribute__((nonnull));
-double s_floor(char *operation)__attribute__((nonnull));
-double s_round(char *operation)__attribute__((nonnull));
-double s_log10(char *operation)__attribute__((nonnull));
-double s_scale(char *operation)__attribute__((nonnull));
-double bc_parse(char *operation)__attribute__((nonnull));
+float64 s_meter(char *operation)__attribute__((nonnull));
+float64 s_miles(char *operation)__attribute__((nonnull));
+float64 s_trunc(char *operation)__attribute__((nonnull));
+float64 s_floor(char *operation)__attribute__((nonnull));
+float64 s_round(char *operation)__attribute__((nonnull));
+float64 s_log10(char *operation)__attribute__((nonnull));
+float64 s_scale(char *operation)__attribute__((nonnull));
 char *bc_typeof(char *operation)__attribute__((nonnull));
-double s_pounds(char *operation)__attribute__((nonnull));
-double s_randInt(char *operation)__attribute__((nonnull));
-double s_isprime(char *operation)__attribute__((nonnull));
+float64 bc_parse(char *operation)__attribute__((nonnull));
+float64 s_pounds(char *operation)__attribute__((nonnull));
+float64 s_randInt(char *operation)__attribute__((nonnull));
+float64 s_isprime(char *operation)__attribute__((nonnull));
 char *find_top_level_comma(char *s)__attribute__((nonnull));
 char *bc_parse_str(char *operation)__attribute__((nonnull));
-double s_randFloat(char *operation)__attribute__((nonnull));
+float64 s_randFloat(char *operation)__attribute__((nonnull));
 int64_t parseBinToInt(const char *str)__attribute__((nonnull));
 uint16_t count_top_level_commas(const char *s)__attribute__((nonnull));
 
@@ -104,28 +104,28 @@ static inline uint32_t better_rand32(void) {
     return ((uint32_t)rand() << 16) ^ (uint32_t)rand();
 }
 
-static inline double gauss_range_double(double a, double b, double d) {
+static inline float64 gauss_range_double(float64 a, float64 b, float64 d) {
     if (d <= 0.0)
         return NAN;
 
     if ((d > 0.0 && a > b) || (d < 0.0 && a < b))
         return NAN;
 
-    double raw_n = (b - a) / d;
+    float64 raw_n = (b - a) / d;
 
-    double steps = floor(raw_n);
+    float64 steps = floor(raw_n);
 
-    double n = steps + 1.0;
+    float64 n = steps + 1.0;
 
-    double last = a + steps * d;
+    float64 last = a + steps * d;
 
     return n * (a + last) / 2.0;
 }
 
 __attribute__((always_inline))
-static inline double random_range_float(double min, double max) {
+static inline float64 random_range_float(float64 min, float64 max) {
     uint32_t r = better_rand32();
-    double normalized = (double)r / (double)UINT32_MAX;
+    float64 normalized = (float64)r / (float64)UINT32_MAX;
     return min + normalized * (max - min);
 }
 

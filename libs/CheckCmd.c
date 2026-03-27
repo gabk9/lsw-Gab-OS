@@ -4,7 +4,7 @@
 
 var Ans = { .type = BC_NONE };
 
-#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
+#if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
@@ -32,7 +32,7 @@ char *stringToVariable(const char *str, int32_t *changed) {
         return strdup(tmp);
     }
 
-#ifndef _WIN32
+#ifndef _WIN64
     else if (strcasecmp(str, "$shell") == 0) {
         *changed = 1;
         return get_env_var("SHELL");
@@ -191,7 +191,7 @@ void checkLswrcSyntax(const char *data_folder) {
                 goto fail;
             }
 
-            double num = atof(val);
+            float64 num = atof(val);
 
             if (isnan(num))
                 goto fail;
@@ -300,7 +300,7 @@ var calc(var left, const char *operation, var right, bool mathLib) {
                 return out;
             }
 
-            double multiplier = (double)notStr.num; 
+            float64 multiplier = (float64)notStr.num; 
             char *multiplied_str = Str.str;
 
             if (multiplier <= 0.0) {
@@ -408,10 +408,10 @@ var calc(var left, const char *operation, var right, bool mathLib) {
         }
     }
 
-    double num1 = (left.type == BC_BOOL) ? (double)left.boolean : left.num;
-    double num2 = (right.type == BC_BOOL) ? (double)right.boolean : right.num;
+    float64 num1 = (left.type == BC_BOOL) ? (float64)left.boolean : left.num;
+    float64 num2 = (right.type == BC_BOOL) ? (float64)right.boolean : right.num;
 
-    double result = 0;
+    float64 result = 0;
 
     if (strcmp(operation, "+") == 0)
         result = num1 + num2;
@@ -668,7 +668,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("\t$USERNAME / $USER         <-- username (Windows/Linux)\n");
         printf("\t$TEMP                     <-- temporary folder\n");
 
-    #ifndef _WIN32
+    #ifndef _WIN64
         printf("\t$SHELL                    <-- default shell (Linux)\n");
         printf("\t$LANG                     <-- system language/locale\n");
         printf("\t$PWD                      <-- current directory\n");
@@ -741,7 +741,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("\t$USERNAME / $USER         <-- username (Windows/Linux)\n");
         printf("\t$TEMP                     <-- temporary folder\n");
 
-    #ifndef _WIN32
+    #ifndef _WIN64
         printf("\t$SHELL                    <-- default shell (Linux)\n");
         printf("\t$LANG                     <-- system language/locale\n");
         printf("\t$PWD                      <-- current directory\n");
@@ -1133,7 +1133,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("'lc' displays the lines number of a file\n\nUsage:\n\tlc [FILE NAME...]\n");
 
     else if (strcmp(instruction, cmds[30]) == 0) { //! sleep
-        printf("'sleep' delay for a specified amount of time\n\nUsage:\n\tsleep [double: TIME]\n\nSuffixes: (not case sensitive)\n");
+        printf("'sleep' delay for a specified amount of time\n\nUsage:\n\tsleep [float: TIME]\n\nSuffixes: (not case sensitive)\n");
         printf("\t's'   seconds (default)\n");
         printf("\t'm'   minutes\n");
         printf("\t'h'   hours\n");
@@ -1200,7 +1200,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
     }
 
 
-    #ifdef _WIN32
+    #ifdef _WIN64
         if (isalpha(temp[0]) && temp[1] == ':' && temp[2] == '\0') {
             if (!SetCurrentDirectory(temp)) {
                 char path[4] = { temp[0], ':', '\\', '\0' };
@@ -1253,7 +1253,7 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
         cmdsCommand(cmds, isInsideBash);
 
     else if (strcmp(instruction, cmds[6]) == 0) { //! cd
-    #ifdef _WIN32           
+    #ifdef _WIN64           
         if (args) charReplace(args, '/', '\\');
     #else 
         if (args) charReplace(args, '\\', '/');
@@ -1487,7 +1487,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             var tmp = h_atof(buff, mathlib);
             SAFE_FREE(buff);
 
-            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
             if (isnan(num))
                 return (var){ .type = BC_NONE };
@@ -1580,10 +1580,10 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
 
             var tmp = h_atof(operation, mathlib);
 
-            double num;
+            float64 num;
             switch (tmp.type) {
                 case BC_BOOL:
-                    num = (double)tmp.boolean;
+                    num = (float64)tmp.boolean;
                     break;
 
                 case BC_CHR:
@@ -1607,7 +1607,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
 
         
         if (operation[strlen(operation)-1] == '!') {
-            double result = s_fact(operation);
+            float64 result = s_fact(operation);
 
             if (isnan(result))
                 return (var){ .type = BC_NONE };
@@ -1621,7 +1621,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
         if (parenthesis_index == -1) {
 
             var tmp = h_atof(operation, mathlib);
-            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
             if (isnan(num))
                 return (var){ .type = BC_NONE };
@@ -1643,7 +1643,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
         if (*operation == '~' || *operation == '-') {
 
             var tmp = h_atof(operation, mathlib);
-            double num = (tmp.type == BC_BOOL) ? (double)tmp.boolean : tmp.num;
+            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.boolean : tmp.num;
 
             if (isnan(num))
                 return (var){ .type = BC_NONE };
@@ -1692,7 +1692,7 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
 
                 if (functions[i].returnType != BC_STR) {
 
-                    double num = functions[i].fn.f(operation);
+                    float64 num = functions[i].fn.f(operation);
 
                     if (isnan(num))
                         return (var){ .type = BC_NONE };

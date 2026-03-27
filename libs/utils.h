@@ -18,7 +18,7 @@
 #include "CheckCmd.h"
 #include "terminal.h"
 
-#ifdef _WIN32
+#ifdef _WIN64
     #include <direct.h>
     #include <shlobj.h>
     #include <windows.h>
@@ -133,9 +133,8 @@ char *getBasePath(void);
 void setup_console(void);
 char *get_hostname(void);
 char *get_time(char *fmt);
-double parse_len(char *s);
 char *get_cpu_model(void);
-void sleepF(double seconds);
+float64 parse_len(char *s);
 bool isBin(const char *str);
 bool isHex(const char *str);
 bool isOct(const char *str);
@@ -143,6 +142,7 @@ void trimBetween(char *str);
 void setColor(color4 color);
 char *myDirname(char *path);
 char *echoHandler(char *str);
+void sleepF(float64 seconds);
 void enableAnsiIfNeeded(void);
 char *revStr(const char *str);
 char *extractPath(char **str);
@@ -190,21 +190,21 @@ char *bc_strcat(const char *dest, const char *src);
 char **parseData(const char *str, uint16_t *count);
 bool isBcVariable(const char *str, bool *shouldError);
 void charReplace(char *str, int8_t targ, int8_t repl);
-void num_snprintf(char *buff, size_t size, double num);
-double parse_base_fraction(const char *s, int8_t base);
 int16_t injectEscape(char *str, const char *error_str);
 void getItemTypeStr(char *buff, size_t size, var item);
 uint8_t myStrcasestr(const char *str, const char *sub);
 char *handle_normal_cd(const char *path, char *address);
 char *getKeyVal(const char *key_name, const char *path);
+void num_snprintf(char *buff, size_t size, float64 num);
+float64 parse_base_fraction(const char *s, int8_t base);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
 bool isBetweenQuotes(const char *action, int16_t quoteMode);
 char **readHistory(const char *address, uint32_t *lineCount);
 char **copyMat(char **dest, const char **src, uint16_t size);
 void printInFileNTimes(FILE *stream, char *str, int64_t count);
-double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok);
 char **extract_args(char *args, uint16_t *argc, char *firstArg);
 int8_t getInvalidEscape(const char *str, const char *error_str);
+float64 parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok);
 bool isKeyRepeated(const char *data_folder, const char *key_name);
 const char *strcasestr_ptr(const char *haystack, const char *needle);
 void saveHist(char *operation, char *history_path, char *data_folder);
@@ -213,7 +213,6 @@ __attribute__((format(printf, 1, 4)))
 void printc(const char *str, color4 initColor, color4 resetColor, ...);
 
 void split_instruction_args(char *line, char **out_cmd, char **out_args);
-uint16_t strLexCmp(const char *str1, const char *str2, const int16_t mode);
 void printTarg(const char *str, const char *targ, color4 markColor, int8_t ignoreCase);
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp);
 void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint16_t data_size, char *history_path, uint16_t hist_size);

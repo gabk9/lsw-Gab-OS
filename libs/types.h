@@ -4,13 +4,23 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#if !defined(__x86_64__) && !defined(__amd64__) && !defined(__aarch64__)
+    #error "System architecture not recognized, terminating program!!"
+#endif
+
+#if defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(_WIN64)
+    typedef double float64;
+#else
+    #error "Operational system not recognized, terminating program!!"
+#endif
+
 typedef enum types {
     BC_STR, BC_FLOAT, BC_INT,
     BC_BOOL, BC_CHR, BC_NONE
 } eval_ty;
 
 typedef char *(*S_Func)(char *operation);
-typedef double (*F_Func)(char *operation);
+typedef float64 (*F_Func)(char *operation);
 
 typedef struct Functions {
     eval_ty returnType;
@@ -24,7 +34,7 @@ typedef struct Functions {
 typedef struct eval_var {
     eval_ty type;
     union {
-        double num;
+        float64 num;
         char *str;
         bool boolean;
     };
