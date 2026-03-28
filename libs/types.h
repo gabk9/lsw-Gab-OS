@@ -21,11 +21,13 @@ typedef enum types {
 
 typedef char *(*S_Func)(char *operation);
 typedef float64 (*F_Func)(char *operation);
+typedef int64_t (*I_Func)(char *operation);
 
 typedef struct Functions {
     eval_ty returnType;
     const char *name;
     union func {
+        I_Func i;
         F_Func f;
         S_Func s;
     } fn;
@@ -34,8 +36,8 @@ typedef struct Functions {
 typedef struct eval_var {
     eval_ty type;
     union value {
-        float64 f;
         int64_t i;
+        float64 f;
         char *s;
         bool b;
     } data;

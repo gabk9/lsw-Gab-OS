@@ -1689,27 +1689,49 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                 if (strcmp(name, functions[i].name) != 0)
                     continue;
 
-                if (functions[i].returnType != BC_STR) {
+                switch (functions[i].returnType) {
+                    case BC_BOOL:
+                    case BC_INT: {
+                        int64_t num = functions[i].fn.i(operation);
 
-                    float64 num = functions[i].fn.f(operation);
+                        if (num == I64_NAN)
+                            return (var){ .type = BC_NONE };
 
-                    if (isnan(num))
-                        return (var){ .type = BC_NONE };
+                        if (functions[i].returnType == BC_BOOL)
+                            return (var){ .type = BC_BOOL, .data.b = (bool)num };
 
-                    if (functions[i].returnType == BC_BOOL)
-                        return (var){ .type = BC_BOOL, .data.b = (bool)num };
+                        return (var){ .type = functions[i].returnType, .data.i = num };
+                    }
 
-                    if (functions[i].returnType == BC_FLOAT)
+                    case BC_FLOAT: {
+                        float64 num = functions[i].fn.f(operation);
+
+                        if (isnan(num))
+                            return (var){ .type = BC_NONE };
+
                         return (var){ .type = functions[i].returnType, .data.f = num };
-                    else
-                        return (var){ .type = functions[i].returnType, .data.i = (int64_t)num };
-                } else {
-                    char *result = functions[i].fn.s(operation);
+                    }
 
-                    if (!result)
-                        return (var){ .type = BC_NONE };
+                    case BC_STR: {
+                        char *result = functions[i].fn.s(operation);
 
-                    return (var){ .type = functions[i].returnType, .data.s = result};
+                        if (!result)
+                            return (var){ .type = BC_NONE };
+
+                        return (var){ .type = functions[i].returnType, .data.s = result};
+                    }
+
+                    default: {
+                        char type[0x14] = {0};
+
+                        getItemTypeStr(type, sizeof(type), (var){.type = functions[i].returnType});
+
+                        printc("eval", BC_PROMPT_COLOR, WHITE);
+                        printf(": ");
+                        printc("invalid function with '%s' unknown type: '%s'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, type, name);
+
+                        return (var){ .type = BC_NONE} ;
+                    }
                 }
             }
         }

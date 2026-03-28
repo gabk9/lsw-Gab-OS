@@ -768,9 +768,7 @@ char *bc_parse_str(char *operation) {
     return buff;
 }
 
-float64 bc_parse(char *operation) {
-
-    bool enablePrecision = strncmp(operation, FLOAT_VAR, strlen(FLOAT_VAR)) == 0;
+float64 bc_float(char *operation) {
 
     char *p = strchr(operation, '(');
     if (!p)
@@ -781,8 +779,7 @@ float64 bc_parse(char *operation) {
     if (countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("%s() requires exactly 1 argument\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE,
-                enablePrecision ? FLOAT_VAR : INT_VAR);
+        printc(""FLOAT_VAR"() requires exactly 1 argument\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return NAN;
     }
@@ -828,6 +825,57 @@ float64 bc_parse(char *operation) {
     }
 
     return (float64)num1;
+}
+
+int64_t bc_int(char *operation) {
+
+    char *p = strchr(operation, '(');
+    if (!p)
+        return I64_NAN;
+
+    operation = p;
+
+    if (countCommaOutsideQuotesAndParenthesis(operation, '"') != 0) {
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc(""INT_VAR"() requires exactly 1 argument\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+        return I64_NAN;
+    }
+
+    char *buff = eval(operation, true);
+    if (!buff)
+        return I64_NAN;
+
+    size_t len = strlen(buff);
+    bool isChr = isBetweenQuotes(buff, 0) && len == 3;
+
+    if (!isChr && isBetweenQuotes(buff, 1)) {
+        memmove(buff, buff + 1, len - 2);
+        buff[len - 2] = '\0';
+    } 
+
+    var tmp = h_atof(buff, true);
+    SAFE_FREE(buff);
+
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = (float64)tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return I64_NAN;
+    }
+
+    return (int64_t)num;
 }
 
 char *bc_typeof(char *operation) {
@@ -890,10 +938,10 @@ char *bc_typeof(char *operation) {
     return buff;
 }
 
-float64 bc_len(char *operation) {
+int64_t bc_len(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
-        return NAN;
+        return I64_NAN;
     operation = p+1;
 
     size_t len = strlen(operation);
@@ -905,19 +953,19 @@ float64 bc_len(char *operation) {
         printf(": ");
         printc("len() requires exactly 1 argument\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return NAN;
+        return I64_NAN;
     }
 
     char *buff = eval(operation, true);
 
     if (!buff)
-        return NAN;
+        return I64_NAN;
 
     if (!validPtrFuncArgs(buff, "len"))
-        return NAN;
+        return I64_NAN;
 
     if (!injectEscape(buff, "eval"))
-        return NAN;
+        return I64_NAN;
 
     len = strlen(buff);
 
@@ -931,7 +979,7 @@ float64 bc_len(char *operation) {
 
     SAFE_FREE(buff);
 
-    return (float64)len;
+    return (int64_t)len;
 }
 
 float64 s_abs(char *operation) {
@@ -1589,10 +1637,10 @@ char *s_bin(char *operation) {
     return result;
 }
 
-float64 s_trunc(char *operation) {
+int64_t s_trunc(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
-        return NAN;
+        return I64_NAN;
     operation = p;
 
     char *buff = eval(operation, true);
@@ -1614,13 +1662,13 @@ float64 s_trunc(char *operation) {
             num = tmp.data.f;
             break;
         default:
-            return NAN;
+            return I64_NAN;
     }
 
     if (tmp.type == BC_FLOAT && isnan(num))
-        return NAN;
+        return I64_NAN;
 
-    return trunc(num);
+    return (int64_t)trunc(num);
 }
 
 float64 s_rad(char *operation) {
@@ -1767,53 +1815,31 @@ float64 s_sqrt(char *operation) {
     return sqrt(num);
 }
 
-float64 s_scale(char *operation) {
+int64_t s_scale(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
-        return NAN;
+        return I64_NAN;
     operation = p;
 
     char *buff = eval(operation, true);
 
-    var tmp = h_atof(buff, true);
-    SAFE_FREE(buff);
-
-    float64 value = 0;
-
-    switch (tmp.type) {
-        case BC_BOOL:
-            value = (float64)tmp.data.b;
-            break;
-        case BC_CHR:
-        case BC_INT:
-            value = tmp.data.i;
-            break;
-        case BC_FLOAT:
-            value = tmp.data.f;
-            break;
-        default:
-            return NAN;
-    }
-
-    if (tmp.type == BC_FLOAT && (isnan(value) || isinf(value)))
-        return NAN;
-
-    char buf[0x20];
-    num_snprintf(buf, sizeof(buf), value);
-
-    char *exp = strchr(buf, 'e');
+    char *exp = strchr(buff, 'e');
     if (exp) *exp = '\0';
 
-    char *dot = strchr(buf, '.');
+    char *dot = strchr(buff, '.');
     if (!dot) {
         return 0;
     }
 
-    char *end = buf + strlen(buf) - 1;
+    char *end = buff + strlen(buff) - 1;
     while (end > dot && *end == '0')
         *end-- = '\0';
 
-    return (float64)strlen(dot + 1);
+    int64_t num = (int64_t)strlen(dot + 1);
+
+    SAFE_FREE(buff);
+
+    return num;
 }
 
 float64 s_sin(char *operation) {
@@ -2648,10 +2674,10 @@ float64 s_randFloat(char *operation) {
     return random_range_float(minLf, maxLf);
 }
 
-float64 s_randInt(char *operation) {
+int64_t s_randInt(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
-        return NAN;
+        return I64_NAN;
     operation = p+1;
     operation[strlen(operation)-1] = '\0';
 
@@ -2662,7 +2688,7 @@ float64 s_randInt(char *operation) {
         printf(": ");
         printc("rand() requires exactly 2 arguments\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return NAN;
+        return I64_NAN;
     }
     
     *comma = '\0';
@@ -2675,7 +2701,7 @@ float64 s_randInt(char *operation) {
         printf(": ");
         printc("rand() requires exactly 2 arguments (missing %"PRIu8")\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, nullCount);
 
-        return NAN;
+        return I64_NAN;
     }
 
     trim(str_max);
@@ -2707,14 +2733,14 @@ float64 s_randInt(char *operation) {
                 maxInt = tmp.data.f;
                 break;
             default:
-                return NAN;
+                return I64_NAN;
         }
 
         SAFE_FREE(buff);
     }
 
     if (!T_CMP(maxInt, (int64_t)maxInt) && isnan(maxInt))
-        return NAN;
+        return I64_NAN;
 
     if (strcasecmp(str_min, "rand_max") == 0)
         minInt = (float64)RAND_MAX;
@@ -2737,30 +2763,30 @@ float64 s_randInt(char *operation) {
                 minInt = tmp.data.f;
                 break;
             default:
-                return NAN;
+                return I64_NAN;
         }
 
         SAFE_FREE(buff);
     }
 
     if (!T_CMP(minInt, (int64_t)minInt) && isnan(minInt))
-        return NAN;
+        return I64_NAN;
 
     if (!T_CMP(minInt, (int64_t)minInt) || !T_CMP(maxInt, (int64_t)maxInt)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("rand() requires arguments of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return NAN;
+        return I64_NAN;
     }
 
-    return random_range_int((int32_t)minInt, (int32_t)maxInt);
+    return (int64_t)random_range_int((int32_t)minInt, (int32_t)maxInt);
 }
 
-float64 s_floor(char *operation) {
+int64_t s_floor(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
-        return NAN;
+        return I64_NAN;
     operation = p;
 
     char *buff = eval(operation, true);
@@ -2782,19 +2808,19 @@ float64 s_floor(char *operation) {
             num = tmp.data.f;
             break;
         default:
-            return NAN;
+            return I64_NAN;
     }
 
     if (tmp.type == BC_FLOAT && isnan(num))
-        return NAN;
+        return I64_NAN;
 
-    return floor(num);
+    return (int64_t)floor(num);
 }
 
-float64 s_ceil(char *operation) {
+int64_t s_ceil(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
-        return NAN;
+        return I64_NAN;
     operation = p;
 
     char *buff = eval(operation, true);
@@ -2816,19 +2842,19 @@ float64 s_ceil(char *operation) {
             num = tmp.data.f;
             break;
         default:
-            return NAN;
+            return I64_NAN;
     }
 
     if (tmp.type == BC_FLOAT && isnan(num))
-        return NAN;
+        return I64_NAN;
 
-    return ceil(num);
+    return (int64_t)ceil(num);
 }
 
-float64 s_round(char *operation) {
+int64_t s_round(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
-        return NAN;
+        return I64_NAN;
     operation = p;
 
     char *buff = eval(operation, true);
@@ -2850,13 +2876,13 @@ float64 s_round(char *operation) {
             num = tmp.data.f;
             break;
         default:
-            return NAN;
+            return I64_NAN;
     }
 
     if (tmp.type == BC_FLOAT && isnan(num))
-        return NAN;
+        return I64_NAN;
 
-    return round(num);
+    return (int64_t)round(num);
 }
 
 float64 tetration(float64 base, int32_t height) {
@@ -2884,10 +2910,10 @@ bool isprime(int64_t n) {
     return true;
 }
 
-float64 s_isprime(char *operation) {
+int64_t s_isprime(char *operation) {
     char *p = strchr(operation, '(');
     if (!p)
-        return NAN;
+        return I64_NAN;
     operation = p;
 
     char *buff = eval(operation, true);
@@ -2909,18 +2935,18 @@ float64 s_isprime(char *operation) {
             num = tmp.data.f;
             break;
         default:
-            return NAN;
+            return I64_NAN;
     }
 
     if (tmp.type == BC_FLOAT && isnan(num))
-        return NAN;
+        return I64_NAN;
 
     if (num <= 1) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("isprime() requires a number grater than 1\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return NAN;
+        return I64_NAN;
     }
 
     if (!T_CMP(num, (int64_t)num)) {
@@ -2928,7 +2954,7 @@ float64 s_isprime(char *operation) {
         printf(": ");
         printc("isprime() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return NAN;
+        return I64_NAN;
     }
 
     return isprime((int64_t)num);
@@ -3089,13 +3115,7 @@ float64 s_sign(char *operation) {
     if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    if (num > 0.0)
-        return 1.0;
-
-    if (num < 0.0)
-        return -1.0;
-
-    return signbit(num) ? -0.0 : 0.0;
+    return signbit(num);
 }
 
 float64 s_sum(char *operation) {

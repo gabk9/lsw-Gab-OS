@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define PROJ_LINES_APPROX 10600
-#define PROJ_SIZE_APPROX_BYTES 312000
+#define PROJ_SIZE_APPROX_BYTES 313500
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -2530,7 +2530,15 @@ char *eval(char *operation, bool mathlib) {
         return NULL;
 
     const FuncEntry math_table[] = {
-        {.returnType = BC_INT,     .name = "scale",     .fn.f = s_scale},
+        {.returnType = BC_BOOL,    .name = "isprime",   .fn.i = s_isprime},
+        {.returnType = BC_INT,     .name = "scale",     .fn.i = s_scale},
+        {.returnType = BC_INT,     .name = "floor",     .fn.i = s_floor},
+        {.returnType = BC_INT,     .name = "ceil",      .fn.i = s_ceil},
+        {.returnType = BC_INT,     .name = "round",     .fn.i = s_round},
+        {.returnType = BC_INT,     .name = "trunc",     .fn.i = s_trunc},
+        {.returnType = BC_INT,     .name = "rand",      .fn.i = s_randInt},
+        {.returnType = BC_INT,     .name = "len",       .fn.i = bc_len},
+        {.returnType = BC_INT,     .name = INT_VAR,     .fn.i = bc_int},
         {.returnType = BC_FLOAT,   .name = "sqrt",      .fn.f = s_sqrt},
         {.returnType = BC_FLOAT,   .name = "root",      .fn.f = s_root},
         {.returnType = BC_FLOAT,   .name = "sin",       .fn.f = s_sin},
@@ -2545,31 +2553,23 @@ char *eval(char *operation, bool mathlib) {
         {.returnType = BC_FLOAT,   .name = "log10",     .fn.f = s_log10},
         {.returnType = BC_FLOAT,   .name = "log2",      .fn.f = s_log2},
         {.returnType = BC_FLOAT,   .name = "log",       .fn.f = s_log},
-        {.returnType = BC_INT,     .name = "floor",     .fn.f = s_floor},
-        {.returnType = BC_INT,     .name = "ceil",      .fn.f = s_ceil},
-        {.returnType = BC_INT,     .name = "round",     .fn.f = s_round},
-        {.returnType = BC_INT,     .name = "sign",      .fn.f = s_sign},
+        {.returnType = BC_FLOAT,   .name = "signbit",   .fn.f = s_sign},
         {.returnType = BC_FLOAT,   .name = "sum",       .fn.f = s_sum},
         {.returnType = BC_FLOAT,   .name = "deg2rad",   .fn.f = s_rad},
         {.returnType = BC_FLOAT,   .name = "rad2gon",   .fn.f = s_gon},
         {.returnType = BC_FLOAT,   .name = "rad2deg",   .fn.f = s_deg},
-        {.returnType = BC_INT,     .name = "trunc",     .fn.f = s_trunc},
         {.returnType = BC_FLOAT,   .name = "randf",     .fn.f = s_randFloat},
         {.returnType = BC_FLOAT,   .name = "fah",       .fn.f = s_fah},
         {.returnType = BC_FLOAT,   .name = "cel",       .fn.f = s_cel},
-        {.returnType = BC_INT,     .name = "rand",      .fn.f = s_randInt},
         {.returnType = BC_FLOAT,   .name = "mi",        .fn.f = s_miles},
         {.returnType = BC_FLOAT,   .name = "km",        .fn.f = s_km},
         {.returnType = BC_FLOAT,   .name = "lb",        .fn.f = s_pounds},
         {.returnType = BC_FLOAT,   .name = "kg",        .fn.f = s_kg},
-        {.returnType = BC_BOOL,    .name = "isprime",   .fn.f = s_isprime},
         {.returnType = BC_FLOAT,   .name = "bmi",       .fn.f = s_bmi},
-        {.returnType = BC_INT,     .name = "len",       .fn.f = bc_len},
         {.returnType = BC_FLOAT,   .name = "feet",      .fn.f = s_feet},
         {.returnType = BC_FLOAT,   .name = "meter",     .fn.f = s_meter},
         {.returnType = BC_FLOAT,   .name = "abs",       .fn.f = s_abs},
-        {.returnType = BC_INT,     .name = INT_VAR,     .fn.f = bc_parse},
-        {.returnType = BC_FLOAT,   .name = FLOAT_VAR,   .fn.f = bc_parse},
+        {.returnType = BC_FLOAT,   .name = FLOAT_VAR,   .fn.f = bc_float},
         {.returnType = BC_STR,     .name = STR_VAR,     .fn.s = bc_parse_str},
         {.returnType = BC_STR,     .name = "chr",       .fn.s = s_chr},
         {.returnType = BC_STR,     .name = "bin",       .fn.s = s_bin},
