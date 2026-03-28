@@ -51,7 +51,7 @@ uint16_t count_top_level_commas(const char *s) {
     return count;
 }
 
-static float64 numericDebug(const char *buf) {
+static var numericDebug(const char *buf) {
     if (strncasecmp(buf, BIN_PREF, strlen(BIN_PREF)) == 0) {
         size_t len = strlen(buf);
 
@@ -62,7 +62,7 @@ static float64 numericDebug(const char *buf) {
             printf(": ");
             printc("invalid binary literal\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return NAN;
+            return (var){.type = BC_FLOAT, .data.f = NAN};
         }
 
         size_t end = len - 1;
@@ -78,7 +78,7 @@ static float64 numericDebug(const char *buf) {
             }
         }
 
-        return NAN;
+            return (var){.type = BC_FLOAT, .data.f = NAN};
     } else if (strncasecmp(buf, HEX_PREF, strlen(HEX_PREF)) == 0) {
         size_t len = strlen(buf);
 
@@ -89,7 +89,7 @@ static float64 numericDebug(const char *buf) {
             printf(": ");
             printc("invalid hexadecimal literal\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return NAN;
+            return (var){.type = BC_FLOAT, .data.f = NAN};
         }
 
         for (size_t i = pref_len; buf[i]; i++) {
@@ -99,7 +99,7 @@ static float64 numericDebug(const char *buf) {
                 printf(": ");
                 printc("hexadecimal literal does not support suffixes\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-                return NAN;
+                break;
             }
 
             if (!isxdigit(buf[i])) {
@@ -111,7 +111,7 @@ static float64 numericDebug(const char *buf) {
             }
         }
 
-        return NAN;
+        return (var){.type = BC_FLOAT, .data.f = NAN};
     } else if (strncasecmp(buf, OCT_PREF, strlen(OCT_PREF)) == 0) {
         size_t len = strlen(buf);
 
@@ -122,7 +122,7 @@ static float64 numericDebug(const char *buf) {
             printf(": ");
             printc("invalid octal literal\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            return NAN;
+            return (var){.type = BC_FLOAT, .data.f = NAN};
         }
 
         size_t end = len - 1;
@@ -138,17 +138,17 @@ static float64 numericDebug(const char *buf) {
             }
         }
 
-        return NAN;
+        return (var){.type = BC_FLOAT, .data.f = NAN};
     }
 
     printc("eval", BC_PROMPT_COLOR, WHITE);
     printf(": ");
     printc("invalid literal prefix: '%c'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE, *buf);
 
-    return NAN;
+    return (var){.type = BC_FLOAT, .data.f = NAN};
 }
 
-static float64 mathlibPart(char *buf, bool mathlib) {
+static var mathlibPart(char *buf, bool mathlib) {
     const struct {
         char suffix;
         float64 mult;
@@ -168,24 +168,26 @@ static float64 mathlibPart(char *buf, bool mathlib) {
             if (len > 1 && (buf[len-1] == suffix[mi].suffix || buf[len-1] == toupper(suffix[mi].suffix))) {
                 buf[len-1] = '\0';
                 if (buf[len-2] == '!')
-                    return 0.0;
+                    return (var){.type = BC_INT, .data.i = 0};
 
                 char *buff = eval(buf, mathlib);
 
                 if (!buff)
-                    return NAN;
+                    return (var){.type = BC_FLOAT, .data.f = NAN};
 
                 var tmp = h_atof(buff, mathlib);
-                float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
                 SAFE_FREE(buff);
-                return (isnan(num)) ? NAN : num * suffix[mi].mult;
+
+                if (tmp.type == BC_FLOAT)
+                    return (var){.type = BC_FLOAT, .data.f = tmp.data.f * suffix[mi].mult};
+
+                return (var){.type = BC_INT, .data.i = tmp.data.i * suffix[mi].mult};
             }
         }
     }
 
-    if (strcmp(buf, PI_VAR) == 0) return PI;
-    else if (strcmp(buf, E_VAR) == 0)  return E;
+    if (strcmp(buf, PI_VAR) == 0) return (var){.type = BC_FLOAT, .data.f = PI};
+    else if (strcmp(buf, E_VAR) == 0) return (var){.type = BC_FLOAT, .data.f = E};
 
     uint16_t i = 0;
     while (buf[i] && (isdigit(buf[i]) || buf[i] == '.' || buf[i] == ',' || buf[i] == '-'))
@@ -198,30 +200,34 @@ static float64 mathlibPart(char *buf, bool mathlib) {
         char *buff = eval(temp, mathlib);
 
         if (!buff)
-            return NAN;
+            return (var){.type = BC_FLOAT, .data.f = NAN};
 
         var tmp = h_atof(buff, mathlib);
-        float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
         SAFE_FREE(buff);
-        return (isnan(num)) ? NAN : num * PI;
-    }else if (i > 0 && strcmp(buf + i, E_VAR) == 0) {
+
+        if (tmp.type == BC_FLOAT)
+            return (var){.type = BC_FLOAT, .data.f = tmp.data.f * PI};
+
+        return (var){.type = BC_FLOAT, .data.f = (float64)tmp.data.i * PI};
+    } else if (i > 0 && strcmp(buf + i, E_VAR) == 0) {
         char temp[0x40];
         strncpy(temp, buf, i);
         temp[i] = '\0';
         char *buff = eval(temp, mathlib);
 
         if (!buff)
-            return NAN;
+            return (var){.type = BC_FLOAT, .data.f = NAN};
 
         var tmp = h_atof(buff, mathlib);
-        float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
         SAFE_FREE(buff);
-        return (isnan(num)) ? NAN : num * E;
+
+        if (tmp.type == BC_FLOAT)
+            return (var){.type = BC_FLOAT, .data.f = tmp.data.f * E};
+
+        return (var){.type = BC_FLOAT, .data.f = (float64)tmp.data.i * E};
     }
 
-    return MAX_SAFE_INT64_D;
+    return (var){.type = BC_NONE};
 }
 
 var h_atof(const char *str, bool mathlib) {
@@ -240,8 +246,14 @@ var h_atof(const char *str, bool mathlib) {
     if (len == 0)
         return (var){.type = BC_FLOAT, .data.f = NAN};
 
-    if (len > 1 && buf[len-1] == '!')
-        return (var){.type = BC_INT, .data.f = s_fact(buf)};
+    if (len > 1 && buf[len-1] == '!') {
+        int64_t result = s_fact(buf);
+
+        if (result == I64_NAN)
+            return (var){.type = BC_FLOAT, .data.f = NAN};
+
+        return (var){.type = BC_INT, .data.i = result};
+    }
 
     bool isUnaryNeg = false;
     bool isUnaryNot = false;
@@ -321,32 +333,65 @@ var h_atof(const char *str, bool mathlib) {
         }
 
         float64 num;
+        int64_t num1;
+        bool isInt = false;
+
         if (isAns && Ans.type != BC_STR)
             return Ans;
-        else {
-            char *buff = eval(buf, mathlib);
 
-            if (!buff)
+        char *buff = eval(buf, mathlib);
+
+        if (!buff)
+            return (var){.type = BC_FLOAT, .data.f = NAN};
+
+        var tmp = h_atof(buff, mathlib);
+        SAFE_FREE(buff);
+
+        switch (tmp.type) {
+            case BC_BOOL:
+                num1 = (int64_t)tmp.data.b;
+                isInt = true;
+                break;
+            case BC_CHR:
+            case BC_INT:
+                num1 = tmp.data.i;
+                isInt = true;
+                break;
+            case BC_FLOAT:
+                num = tmp.data.f;
+                break;
+            default:
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("unary not(~) requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+                return (var){.type = BC_FLOAT, .data.f = NAN};
+        }
+
+        if (!isInt) {
+            if (isnan(num))
                 return (var){.type = BC_FLOAT, .data.f = NAN};
 
-            var tmp = h_atof(buff, mathlib);
-            num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
+            if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-            SAFE_FREE(buff);
+                return (var){.type = BC_FLOAT, .data.f = NAN};
+            }
+
+            return (var){.type = BC_FLOAT, .data.f = -num};
+        } else {
+            if (num1 < INT64_MIN || num1 > INT64_MAX) {
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+                return (var){.type = BC_FLOAT, .data.f = NAN};
+            }
+
+            return (var){.type = BC_INT, .data.i = -num1};
         }
-
-        if (isnan(num))
-            return (var){.type = BC_FLOAT, .data.f = NAN};
-
-        if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
-            printc("eval", BC_PROMPT_COLOR, WHITE);
-            printf(": ");
-            printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
-
-            return (var){.type = BC_FLOAT, .data.f = NAN};
-        }
-
-        return (var){.type = BC_FLOAT, .data.f = -num};
     } else if (isUnaryNot) {
         if (!*buf) {
             printc("eval", BC_PROMPT_COLOR, WHITE);
@@ -356,44 +401,36 @@ var h_atof(const char *str, bool mathlib) {
             return (var){.type = BC_FLOAT, .data.f = NAN};
         }
 
-        float64 num;
+        int64_t num1;
 
         if (isAns && Ans.type != BC_STR)
             return Ans;
-        else {
-            char *buff = eval(buf, mathlib);
 
-            if (!buff)
+        char *buff = eval(buf, mathlib);
+
+        if (!buff)
+            return (var){.type = BC_FLOAT, .data.f = NAN};
+
+        var tmp = h_atof(buff, mathlib);
+        SAFE_FREE(buff);
+
+        switch (tmp.type) {
+            case BC_BOOL:
+                num1 = (int64_t)tmp.data.b;
+                break;
+            case BC_CHR:
+            case BC_INT:
+                num1 = tmp.data.i;
+                break;
+            default:
+                printc("eval", BC_PROMPT_COLOR, WHITE);
+                printf(": ");
+                printc("unary not(~) requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
                 return (var){.type = BC_FLOAT, .data.f = NAN};
-
-            var tmp = h_atof(buff, mathlib);
-            num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
-            SAFE_FREE(buff);
         }
 
-        if (isnan(num))
-            return (var){.type = BC_FLOAT, .data.f = NAN};
-
-        if (num < MIN_SAFE_INT64_D || num > MAX_SAFE_INT64_D) {
-            printc("eval", BC_PROMPT_COLOR, WHITE);
-            printf(": ");
-            printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
-
-            return (var){.type = BC_FLOAT, .data.f = NAN};
-        }
-
-        if (!T_CMP(num, (int64_t)num)) {
-            printc("eval", BC_PROMPT_COLOR, WHITE);
-            printf(": ");
-            printc("unary not(~) requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
-
-        return (var){.type = BC_FLOAT, .data.f = NAN};
-        }
-
-        int64_t value = (int64_t)num;
-        value = ~value;
-        return (var){.type = BC_INT, .data.f = (int64_t)trunc(value)};
+        return (var){.type = BC_INT, .data.i = ~num1};
     }
 
     if (strcmp(buf, TRUE_VAR) == 0)
@@ -434,7 +471,7 @@ var h_atof(const char *str, bool mathlib) {
             return (var){.type = BC_FLOAT, .data.f = NAN};
         }
 
-        return (var){.type = BC_CHR, .data.f = (unsigned char)*buf};
+        return (var){.type = BC_CHR, .data.i = (unsigned char)*buf};
     }
 
     if (mathlib) {            
@@ -455,28 +492,26 @@ var h_atof(const char *str, bool mathlib) {
     bool is_bin = isBin(buf);
 
     if (*buf == '0' && buf[1] && buf[1] != '.'&& !is_bin && !is_octal && !is_hex)
-        return (var){.type = BC_FLOAT, .data.f = numericDebug(buf)};
+        return numericDebug(buf);
 
     if (mathlib) {
-        float64 tmp = mathlibPart(buf, mathlib);
+        var tmp = mathlibPart(buf, mathlib);
 
-        if (tmp != MAX_SAFE_INT64_D) {
-            eval_ty type = T_CMP(tmp, (int64_t)tmp) ? BC_INT : BC_FLOAT;
-            return (var){.type = type, .data.f = tmp};
-        }
+        if (tmp.type != BC_NONE)
+            return tmp;
     }
 
     if (is_hex)
-        return (var){.type = BC_INT, .data.f = (float64)hex_to_long(buf)};
+        return (var){.type = BC_INT, .data.i = hex_to_long(buf)};
     else if (is_octal)
-        return (var){.type = BC_INT, .data.f = (float64)strtol(buf+strlen(OCT_PREF), NULL, 8)};
+        return (var){.type = BC_INT, .data.i = strtol(buf+strlen(OCT_PREF), NULL, 8)};
     else if (is_bin)
-        return (var){.type = BC_INT, .data.f = (float64)parseBinToInt(buf)};
+        return (var){.type = BC_INT, .data.i = parseBinToInt(buf)};
 
     if (*buf == '"' && buf[len-1] == '"') {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("cannot operate with string type values\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("cannot operate with '"STR_VAR"' type values\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         return (var){.type = BC_FLOAT, .data.f = NAN};
     }
@@ -532,7 +567,7 @@ var h_atof(const char *str, bool mathlib) {
         int64_t val = strtoll(buf, &end, 10);
 
         if (*end == '\0') {
-            return (var){.type = BC_INT, .data.f = (float64)val};
+            return (var){.type = BC_INT, .data.i = val};
         }
     }
 
@@ -540,7 +575,7 @@ var h_atof(const char *str, bool mathlib) {
     float64 result = strtod(buf, &end);
 
     if (*end != '\0')
-        return (var){.type = BC_INT, .data.f = 0.0};
+        return (var){.type = BC_INT, .data.i = 0};
 
     return (var){.type = BC_FLOAT, .data.f = result};
 }
@@ -735,7 +770,7 @@ char *bc_parse_str(char *operation) {
 
 float64 bc_parse(char *operation) {
 
-    bool enablePrecision = strncmp(operation, "float", 5) == 0;
+    bool enablePrecision = strncmp(operation, FLOAT_VAR, strlen(FLOAT_VAR)) == 0;
 
     char *p = strchr(operation, '(');
     if (!p)
@@ -747,7 +782,7 @@ float64 bc_parse(char *operation) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("%s() requires exactly 1 argument\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE,
-                enablePrecision ? "float" : "int");
+                enablePrecision ? FLOAT_VAR : INT_VAR);
 
         return NAN;
     }
@@ -755,8 +790,6 @@ float64 bc_parse(char *operation) {
     char *buff = eval(operation, true);
     if (!buff)
         return NAN;
-
-    float64 num;
 
     size_t len = strlen(buff);
     bool isChr = isBetweenQuotes(buff, 0) && len == 3;
@@ -767,17 +800,34 @@ float64 bc_parse(char *operation) {
     } 
 
     var tmp = h_atof(buff, true);
-    num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
-        return NAN;
+    float64 num = 0;
+    int64_t num1 = 0;
 
-    if (!enablePrecision && tmp.type == BC_FLOAT)
-        num = trunc(num);
+    switch (tmp.type) {
+        case BC_BOOL:
+            num1 = (int64_t)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num1 = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
 
-    return num;
+    if (tmp.type == BC_FLOAT) {
+        if (isnan(num))
+            return NAN;
+
+        return num;
+    }
+
+    return (float64)num1;
 }
 
 char *bc_typeof(char *operation) {
@@ -893,14 +943,29 @@ float64 s_abs(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 value = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(value))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return fabs(value);
+    return fabs(num);
 }
 
 float64 s_miles(char *operation) {
@@ -912,14 +977,29 @@ float64 s_miles(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 km = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(km))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return KM_TO_MI(km);
+    return KM_TO_MI(num);
 }
 
 float64 s_km(char *operation) {
@@ -931,14 +1011,29 @@ float64 s_km(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 miles = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(miles))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return MI_TO_KM(miles);
+    return MI_TO_KM(num);
 }
 
 float64 s_pounds(char *operation) {
@@ -950,14 +1045,29 @@ float64 s_pounds(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 kg = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(kg))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return KG_TO_LB(kg);
+    return KG_TO_LB(num);
 }
 
 float64 s_kg(char *operation) {
@@ -969,14 +1079,29 @@ float64 s_kg(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 lbs = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(lbs))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return LB_TO_KG(lbs);
+    return LB_TO_KG(num);
 }
 
 float64 s_feet(char *operation) {
@@ -988,14 +1113,29 @@ float64 s_feet(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 meters = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(meters))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return M_TO_FT(meters);
+    return M_TO_FT(num);
 }
 
 float64 s_meter(char *operation) {
@@ -1007,14 +1147,29 @@ float64 s_meter(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 feet = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(feet))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return FT_TO_M(feet);
+    return FT_TO_M(num);
 }
 
 float64 s_fah(char *operation) {
@@ -1026,14 +1181,29 @@ float64 s_fah(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 cel = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(cel))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return C_TO_F(cel);
+    return C_TO_F(num);
 }
 
 float64 s_cel(char *operation) {
@@ -1045,14 +1215,29 @@ float64 s_cel(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 fah = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(fah))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return F_TO_C(fah);
+    return F_TO_C(num);
 }
 
 char *s_oct(char *operation) {
@@ -1064,11 +1249,26 @@ char *s_oct(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NULL;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NULL;
 
     if (!T_CMP(num, (int64_t)num)) {
@@ -1175,11 +1375,26 @@ char *s_chr(char *operation) {
         return NULL;
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NULL;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NULL;
 
     if (!T_CMP(num, (int64_t)num)) {
@@ -1249,11 +1464,26 @@ char *s_hex(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 val = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(val))
+    float64 val = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            val = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            val = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            val = tmp.data.f;
+            break;
+        default:
+            return NULL;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(val))
         return NULL;
 
     if (!T_CMP(val, (int64_t)val)) {
@@ -1291,11 +1521,26 @@ char *s_bin(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 val = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(val))
+    float64 val = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            val = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            val = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            val = tmp.data.f;
+            break;
+        default:
+            return NULL;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(val))
         return NULL;
 
     if (!T_CMP(val, (int64_t)val)) {
@@ -1353,11 +1598,26 @@ float64 s_trunc(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     return trunc(num);
@@ -1372,14 +1632,29 @@ float64 s_rad(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 deg = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(deg))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return DEG_TO_RAD(deg);
+    return DEG_TO_RAD(num);
 }
 
 float64 s_gon(char *operation) {
@@ -1391,14 +1666,29 @@ float64 s_gon(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 deg = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(deg))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;  
 
-    return RAD_TO_GON(deg);
+    return RAD_TO_GON(num);
 }
 
 float64 s_deg(char *operation) {
@@ -1410,14 +1700,29 @@ float64 s_deg(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 rad = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(rad))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return RAD_TO_DEG(rad);
+    return RAD_TO_DEG(num);
 }
 
 float64 s_sqrt(char *operation) {
@@ -1429,11 +1734,26 @@ float64 s_sqrt(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     if (num < 0) {
@@ -1456,16 +1776,27 @@ float64 s_scale(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 value = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(value))
-        return NAN;
+    float64 value = 0;
 
-    if (isnan(value) || isinf(value)) {
-        return 0;
+    switch (tmp.type) {
+        case BC_BOOL:
+            value = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            value = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            value = tmp.data.f;
+            break;
+        default:
+            return NAN;
     }
+
+    if (tmp.type == BC_FLOAT && (isnan(value) || isinf(value)))
+        return NAN;
 
     char buf[0x20];
     num_snprintf(buf, sizeof(buf), value);
@@ -1494,11 +1825,26 @@ float64 s_sin(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     float64 result = sin(num);
@@ -1518,11 +1864,26 @@ float64 s_asin(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     if (num < -1.0 || num > 1.0) {
@@ -1532,7 +1893,7 @@ float64 s_asin(char *operation) {
 
         return NAN;
     }
-    
+
     return asin(num);
 }
 
@@ -1545,11 +1906,26 @@ float64 s_cot(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     float64 t = tan(num);
@@ -1574,11 +1950,26 @@ float64 s_acot(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     return PI / 2.0 - atan(num);
@@ -1593,11 +1984,26 @@ float64 s_cos(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     float64 result = cos(num);
@@ -1617,11 +2023,26 @@ float64 s_acos(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     if (num < -1.0 || num > 1.0) {
@@ -1644,11 +2065,26 @@ float64 s_tan(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 angle = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(angle))
+    float64 angle = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            angle = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            angle = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            angle = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(angle))
         return NAN;
 
     float64 modPi = fmod(fabs(angle), PI);
@@ -1677,14 +2113,29 @@ float64 s_atan(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 angle = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(angle))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
-    return atan(angle);
+    return atan(num);
 }
 
 float64 s_ln(char *operation) {
@@ -1696,11 +2147,26 @@ float64 s_ln(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     return log(num);
@@ -1715,11 +2181,26 @@ float64 s_log10(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     return log10(num);
@@ -1734,11 +2215,26 @@ float64 s_log2(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     return log2(num);
@@ -1780,21 +2276,51 @@ float64 s_root(char *operation) {
     char *tmp1 = eval(indexStr, true);
 
     var debug1 = h_atof(tmp1, true);
-    float64 index = (debug1.type == BC_BOOL) ? (float64)debug1.data.b : debug1.data.f;
-
     SAFE_FREE(tmp1);
 
-    if (isnan(index))
+    float64 index = 0;
+
+    switch (debug1.type) {
+        case BC_BOOL:
+            index = (float64)debug1.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            index = debug1.data.i;
+            break;
+        case BC_FLOAT:
+            index = debug1.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (debug1.type == BC_FLOAT && isnan(index))
         return NAN;
 
     char *tmp3 = eval(rootingStr, true);
 
     var debug2 = h_atof(tmp3, true);
-    float64 rooting = (debug2.type == BC_BOOL) ? (float64)debug2.data.b : debug2.data.f;
-
     SAFE_FREE(tmp3);
 
-    if (isnan(rooting))
+    float64 rooting = 0;
+
+    switch (debug2.type) {
+        case BC_BOOL:
+            rooting = (float64)debug2.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            rooting = debug2.data.i;
+            break;
+        case BC_FLOAT:
+            rooting = debug2.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (debug2.type == BC_FLOAT && isnan(rooting))
         return NAN;
 
     bool invert = false;
@@ -1830,11 +2356,10 @@ float64 s_root(char *operation) {
 
     float64 result;
 
-    if (rooting < 0) {
+    if (rooting < 0)
         result = -pow(-rooting, 1.0 / index);
-    } else {
+    else
         result = pow(rooting, 1.0 / index);
-    }
 
     if (invert)
         result = 1.0 / result;
@@ -1878,21 +2403,51 @@ float64 s_bmi(char *operation) {
     char *tmp1 = eval(weightStr, true);
 
     var debug1 = h_atof(tmp1, true);
-    float64 weight = (debug1.type == BC_BOOL) ? (float64)debug1.data.b : debug1.data.f;
-
     SAFE_FREE(tmp1);
 
-    if (isnan(weight))
+    float64 weight = 0;
+
+    switch (debug1.type) {
+        case BC_BOOL:
+            weight = (float64)debug1.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            weight = debug1.data.i;
+            break;
+        case BC_FLOAT:
+            weight = debug1.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (debug1.type == BC_FLOAT && isnan(weight))
         return NAN;
 
     char *tmp2 = eval(heightStr, true);
 
     var debug2 = h_atof(tmp2, true);
-    float64 height = (debug2.type == BC_BOOL) ? (float64)debug2.data.b : debug2.data.f;
-
     SAFE_FREE(tmp2);
 
-    if (isnan(height))
+    float64 height = 0;
+
+    switch (debug2.type) {
+        case BC_BOOL:
+            height = (float64)debug2.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            height = debug2.data.i;
+            break;
+        case BC_FLOAT:
+            height = debug2.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (debug2.type == BC_FLOAT && isnan(height))
         return NAN;
 
     return BMI(weight, height);
@@ -1934,21 +2489,51 @@ float64 s_log(char *operation) {
     char *tmp1 = eval(baseStr, true);
 
     var debug1 = h_atof(tmp1, true);
-    float64 base = (debug1.type == BC_BOOL) ? (float64)debug1.data.b : debug1.data.f;
-
     SAFE_FREE(tmp1);
 
-    if (isnan(base))
+    float64 base = 0;
+
+    switch (debug1.type) {
+        case BC_BOOL:
+            base = (float64)debug1.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            base = debug1.data.i;
+            break;
+        case BC_FLOAT:
+            base = debug1.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (debug1.type == BC_FLOAT && isnan(base))
         return NAN;
 
     char *tmp2 = eval(numStr, true);
 
     var debug2 = h_atof(tmp2, true);
-    float64 num = (debug2.type == BC_BOOL) ? (float64)debug2.data.b : debug2.data.f;
-
     SAFE_FREE(tmp2);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (debug2.type) {
+        case BC_BOOL:
+            num = (float64)debug2.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = debug2.data.i;
+            break;
+        case BC_FLOAT:
+            num = debug2.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (debug2.type == BC_FLOAT && isnan(num))
         return NAN;
 
     if (base <= 1 || num <= 0) {
@@ -2006,14 +2591,29 @@ float64 s_randFloat(char *operation) {
         char *buff = eval(str_max, true);
 
         var tmp = h_atof(buff, true);
-        maxLf = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
+
+        maxLf = 0;
+
+        switch (tmp.type) {
+            case BC_BOOL:
+                maxLf = (float64)tmp.data.b;
+                break;
+            case BC_CHR:
+            case BC_INT:
+                maxLf = tmp.data.i;
+                break;
+            case BC_FLOAT:
+                maxLf = tmp.data.f;
+                break;
+            default:
+                return NAN;
+        }
 
         SAFE_FREE(buff);
     }
 
-    if (isnan(maxLf)) {
+    if (!T_CMP(maxLf, (int64_t)maxLf) && isnan(maxLf))
         return NAN;
-    }
 
     if (strcasecmp(str_min, "rand_max") == 0)
         minLf = (float64)RAND_MAX;
@@ -2021,14 +2621,29 @@ float64 s_randFloat(char *operation) {
         char *buff = eval(str_min, true);
 
         var tmp = h_atof(buff, true);
-        minLf = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
+
+        minLf = 0;
+
+        switch (tmp.type) {
+            case BC_BOOL:
+                minLf = (float64)tmp.data.b;
+                break;
+            case BC_CHR:
+            case BC_INT:
+                minLf = tmp.data.i;
+                break;
+            case BC_FLOAT:
+                minLf = tmp.data.f;
+                break;
+            default:
+                return NAN;
+        }
 
         SAFE_FREE(buff);
     }
 
-    if (isnan(minLf)) {
+    if (!T_CMP(minLf, (int64_t)minLf) && isnan(minLf))
         return NAN;
-    }
 
     return random_range_float(minLf, maxLf);
 }
@@ -2077,12 +2692,28 @@ float64 s_randInt(char *operation) {
         char *buff = eval(str_max, true);
 
         var tmp = h_atof(buff, true);
-        maxInt = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
+
+        maxInt = 0;
+
+        switch (tmp.type) {
+            case BC_BOOL:
+                maxInt = (float64)tmp.data.b;
+                break;
+            case BC_CHR:
+            case BC_INT:
+                maxInt = tmp.data.i;
+                break;
+            case BC_FLOAT:
+                maxInt = tmp.data.f;
+                break;
+            default:
+                return NAN;
+        }
 
         SAFE_FREE(buff);
     }
 
-    if (isnan(maxInt))
+    if (!T_CMP(maxInt, (int64_t)maxInt) && isnan(maxInt))
         return NAN;
 
     if (strcasecmp(str_min, "rand_max") == 0)
@@ -2091,14 +2722,29 @@ float64 s_randInt(char *operation) {
         char *buff = eval(str_min, true);
 
         var tmp = h_atof(buff, true);
-        minInt = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
+
+        minInt = 0;
+
+        switch (tmp.type) {
+            case BC_BOOL:
+                minInt = (float64)tmp.data.b;
+                break;
+            case BC_CHR:
+            case BC_INT:
+                minInt = tmp.data.i;
+                break;
+            case BC_FLOAT:
+                minInt = tmp.data.f;
+                break;
+            default:
+                return NAN;
+        }
 
         SAFE_FREE(buff);
     }
 
-    if (isnan(minInt)) {
+    if (!T_CMP(minInt, (int64_t)minInt) && isnan(minInt))
         return NAN;
-    }
 
     if (!T_CMP(minInt, (int64_t)minInt) || !T_CMP(maxInt, (int64_t)maxInt)) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
@@ -2120,11 +2766,26 @@ float64 s_floor(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     return floor(num);
@@ -2139,11 +2800,26 @@ float64 s_ceil(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     return ceil(num);
@@ -2158,11 +2834,26 @@ float64 s_round(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     return round(num);
@@ -2202,11 +2893,26 @@ float64 s_isprime(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     if (num <= 1) {
@@ -2247,7 +2953,7 @@ uint64_t fact(int64_t num, int32_t steps) {
     return result;
 }
 
-float64 s_fact(char *operation) {
+int64_t s_fact(char *operation) {
     char *test = strdup(operation);
 
     if (!test) {
@@ -2255,13 +2961,13 @@ float64 s_fact(char *operation) {
         printf(": ");
         printc("strdup failed\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return NAN;
+        return I64_NAN;
     }
 
     size_t len = strlen(test);
     if (len == 0) {
         SAFE_FREE(test);
-        return NAN;
+        return I64_NAN;
     }
 
     size_t stepsCount = 0;
@@ -2281,7 +2987,7 @@ float64 s_fact(char *operation) {
         printc("to factor you need '!' as a suffix\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         SAFE_FREE(test);
-        return NAN;
+        return I64_NAN;
     } else if (stepsCount > 0)
         test[len-stepsCount] = '\0';
 
@@ -2293,48 +2999,63 @@ float64 s_fact(char *operation) {
         printc("missing a value to factor\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
         SAFE_FREE(test);
-        return NAN;
+        return I64_NAN;
     }
 
     char *buff = eval(test, true);
 
-    if (!buff)
-        return NAN;
+    if (!buff) {
+        SAFE_FREE(test);
+        return I64_NAN;
+    }
 
     if (isBetweenQuotes(buff, '1')) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
-        printc("cannot factor '"STR_VAR" types'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+        printc("numeric overflow (too large)\n\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return NAN;
+        SAFE_FREE(buff);
+        SAFE_FREE(test);
+        return I64_NAN;
     }
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
 
     SAFE_FREE(buff);
     SAFE_FREE(test);
 
-    if (isnan(num))
-        return NAN;
-
-    if (num < 0) {
-        printc("eval", BC_PROMPT_COLOR, WHITE);
-        printf(": ");
-        printc("cannot factor negative values\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
-
-        return NAN;
-    }
 
     if (tmp.type == BC_FLOAT) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("cannot factor '"FLOAT_VAR"' types\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
 
-        return NAN;
+        printf("\n\ntmp.data.f: '%lf\n\n'", tmp.data.f);
+
+        return I64_NAN;
     }
 
-    return (float64)fact((int64_t)num, stepsCount);
+    int64_t num = (tmp.type == BC_BOOL) ? (int64_t)tmp.data.b : tmp.data.i;
+
+    if (num < 0) {
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("cannot factor negative values\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+        return I64_NAN;
+    }
+
+    uint64_t result =  fact(num, stepsCount);
+
+    if (result >= INT64_MAX || result == I64_NAN) {
+        printc("eval", BC_PROMPT_COLOR, WHITE);
+        printf(": ");
+        printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
+
+        return I64_NAN;
+    }
+
+    return result;
 }
 
 float64 s_sign(char *operation) {
@@ -2346,11 +3067,26 @@ float64 s_sign(char *operation) {
     char *buff = eval(operation, true);
 
     var tmp = h_atof(buff, true);
-    float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
     SAFE_FREE(buff);
 
-    if (isnan(num))
+    float64 num = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            num = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            num = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            num = tmp.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (tmp.type == BC_FLOAT && isnan(num))
         return NAN;
 
     if (num > 0.0)
@@ -2383,9 +3119,8 @@ float64 s_sum(char *operation) {
     }
 
     char *comma1 = find_top_level_comma(operation);
-    if (!comma1) {
+    if (!comma1)
         return NAN;
-    }
 
     char *comma2 = find_top_level_comma(comma1 + 1);
 
@@ -2423,32 +3158,77 @@ float64 s_sum(char *operation) {
     char *tmp1 = eval(initStr, true);
 
     var debug1 = h_atof(tmp1, true);
-    float64 init = (debug1.type == BC_BOOL) ? (float64)debug1.data.b : debug1.data.f;
-
     SAFE_FREE(tmp1);
 
-    if (isnan(init))
+    float64 init = 0;
+
+    switch (debug1.type) {
+        case BC_BOOL:
+            init = (float64)debug1.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            init = debug1.data.i;
+            break;
+        case BC_FLOAT:
+            init = debug1.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (debug1.type == BC_FLOAT && isnan(init))
         return NAN;
 
     char *tmp2 = eval(endStr, true);
 
     var debug2 = h_atof(tmp2, true);
-    float64 end = (debug2.type == BC_BOOL) ? (float64)debug2.data.b : debug2.data.f;
-
     SAFE_FREE(tmp2);
 
-    if (isnan(end)) 
+    float64 end = 0;
+
+    switch (debug2.type) {
+        case BC_BOOL:
+            end = (float64)debug2.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            end = debug2.data.i;
+            break;
+        case BC_FLOAT:
+            end = debug2.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (debug2.type == BC_FLOAT && isnan(end)) 
         return NAN;
 
     char defaultDiff[] = "1";
     char *tmp3 = eval(diffStr ? diffStr : defaultDiff, true);
 
     var debug3 = h_atof(tmp3, true);
-    float64 diff = (debug3.type == BC_BOOL) ? (float64)debug3.data.b : debug3.data.f;
-
     SAFE_FREE(tmp3);
 
-    if (isnan(diff))
+    float64 diff = 0;
+
+    switch (debug3.type) {
+        case BC_BOOL:
+            diff = (float64)debug3.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            diff = debug3.data.i;
+            break;
+        case BC_FLOAT:
+            diff = debug3.data.f;
+            break;
+        default:
+            return NAN;
+    }
+
+    if (debug3.type == BC_FLOAT && isnan(diff))
         return NAN;
 
     if (diff <= 0.0) {

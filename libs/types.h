@@ -35,6 +35,7 @@ typedef struct eval_var {
     eval_ty type;
     union value {
         float64 f;
+        int64_t i;
         char *s;
         bool b;
     } data;

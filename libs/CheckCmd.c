@@ -408,8 +408,34 @@ var calc(var left, const char *operation, var right, bool mathLib) {
         }
     }
 
-    float64 num1 = (left.type == BC_BOOL) ? (float64)left.data.b : left.data.f;
-    float64 num2 = (right.type == BC_BOOL) ? (float64)right.data.b : right.data.f;
+    float64 num1;
+    float64 num2;
+
+    switch (left.type) {
+        case BC_CHR:
+        case BC_BOOL:
+        case BC_INT:
+            num1 = (double)left.data.i;
+            break;
+        case BC_FLOAT:
+            num1 = left.data.f;
+            break;
+        default:
+            return out;
+    }
+
+    switch (right.type) {
+        case BC_CHR:
+        case BC_BOOL:
+        case BC_INT:
+            num2 = (double)right.data.i;
+            break;
+        case BC_FLOAT:
+            num2 = right.data.f;
+            break;
+        default:
+            return out;
+    }
 
     float64 result = 0;
 
@@ -629,7 +655,7 @@ var calc(var left, const char *operation, var right, bool mathLib) {
     if (T_CMP(result, (int64_t)result)) {
 
         out.type = BC_INT;
-        out.data.f = result;
+        out.data.i = (int64_t)result;
 
     } else {
 
@@ -1488,6 +1514,15 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             SAFE_FREE(buff);
 
             float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
+            if (tmp.type == BC_INT) {
+                int64_t val = tmp.data.i;
+                bool value = (val != 0.0);
+
+                if (count & 1)
+                    value = !value;
+
+                return (var){ .type = BC_BOOL, .data.b = value };
+            }
 
             if (isnan(num))
                 return (var){ .type = BC_NONE };
@@ -1580,57 +1615,26 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
 
             var tmp = h_atof(operation, mathlib);
 
-            float64 num;
-            switch (tmp.type) {
-                case BC_BOOL:
-                    num = (float64)tmp.data.b;
-                    break;
-
-                case BC_CHR:
-                case BC_INT:
-                case BC_FLOAT:
-                    num = tmp.data.f;
-                    break;
-
-                default:
-                    return (var){ .type = BC_NONE };
-            }
-
-            if (isnan(num))
+            if (tmp.type == BC_FLOAT && isnan(tmp.data.f))
                 return (var){ .type = BC_NONE };
 
-            if (tmp.type != BC_BOOL)
-                return (var){ .type = tmp.type, .data.f = num };
-            else
-                return (var){ .type = tmp.type, .data.b = (bool)num };
+            return tmp;
         }
 
-        
         if (operation[strlen(operation)-1] == '!') {
-            float64 result = s_fact(operation);
+            int64_t result = s_fact(operation);
 
-            if (isnan(result))
+            if (result == I64_NAN)
                 return (var){ .type = BC_NONE };
 
-            return (var){ .type = BC_INT, .data.f = result };
+            return (var){ .type = BC_INT, .data.i = result };
         }
 
         char name[0x100] = {0};
 
         ssize_t parenthesis_index = strchar(operation, '(');
-        if (parenthesis_index == -1) {
-
-            var tmp = h_atof(operation, mathlib);
-            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
-
-            if (isnan(num))
-                return (var){ .type = BC_NONE };
-
-            if (tmp.type != BC_BOOL)
-                return (var){ .type = tmp.type, .data.f = num };
-            else
-                return (var){ .type = tmp.type, .data.b = (bool)num };
-        }
+        if (parenthesis_index == -1)
+            return h_atof(operation, mathlib);
 
         memcpy(name, operation, parenthesis_index);
         name[parenthesis_index] = '\0';
@@ -1641,17 +1645,12 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
             return (var){ .type = BC_NONE };
 
         if (*operation == '~' || *operation == '-') {
-
             var tmp = h_atof(operation, mathlib);
-            float64 num = (tmp.type == BC_BOOL) ? (float64)tmp.data.b : tmp.data.f;
 
-            if (isnan(num))
+            if (tmp.type == BC_FLOAT && isnan(tmp.data.f))
                 return (var){ .type = BC_NONE };
 
-            if (tmp.type != BC_BOOL)
-                return (var){ .type = tmp.type, .data.f = num };
-            else
-                return (var){ .type = tmp.type, .data.b = (bool)num };
+            return tmp;
         }
 
         int32_t depth = 0;
@@ -1700,7 +1699,10 @@ var parse_operation(char *operation, const FuncEntry *functions, size_t funcCoun
                     if (functions[i].returnType == BC_BOOL)
                         return (var){ .type = BC_BOOL, .data.b = (bool)num };
 
-                    return (var){ .type = functions[i].returnType, .data.f = num };
+                    if (functions[i].returnType == BC_FLOAT)
+                        return (var){ .type = functions[i].returnType, .data.f = num };
+                    else
+                        return (var){ .type = functions[i].returnType, .data.i = (int64_t)num };
                 } else {
                     char *result = functions[i].fn.s(operation);
 

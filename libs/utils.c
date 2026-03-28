@@ -2369,7 +2369,20 @@ double parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok) {
             return NAN;
         }
 
-        mult = (Ans.type == BC_BOOL) ? (double)Ans.data.b : Ans.data.f;
+        switch (Ans.type) {
+            case BC_BOOL:
+                mult = (double)Ans.data.b;
+                break;
+            case BC_CHR:
+            case BC_INT:
+                mult = (double)Ans.data.i;
+                break;
+            case BC_FLOAT:
+                mult = Ans.data.f;
+                break;
+            default:
+                return NAN;
+        }
     } else {
         SAFE_FREE(cpy);
         return 0.0;
@@ -2675,7 +2688,7 @@ char *var2str(var buff) {
             char *tmp = malloc(max);
             if (!tmp) return NULL;
 
-            num_snprintf(tmp, max, buff.data.f);
+            num_snprintf(tmp, max, (buff.type == BC_FLOAT) ? buff.data.f : (double)buff.data.i);
             return tmp;
         }
 
