@@ -2,8 +2,8 @@
 #include "utils.h"
 #include "types.h"
 
-#define PROJ_LINES_APPROX 9800
-#define PROJ_SIZE_APPROX_BYTES 295000
+#define PROJ_LINES_APPROX 10600
+#define PROJ_SIZE_APPROX_BYTES 312000
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
