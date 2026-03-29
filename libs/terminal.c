@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "utils.h"
 
-#define VERSION "r2.4.94"
+#define VERSION "r2.5.00"
 
 #if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -1612,7 +1612,8 @@ void updatehistory(void) {
         "r2.4.65 - small changes\n\tAdded: typeof() to bc\n",
         "r2.4.75 - big changes\n\tFixed: int() and float() not working as expected, and also fixed the parser not parsing str type properly\n",
         "r2.4.81 - small changes\n\tFixed: len() now works with scape '\\0' properly and now the parser trims the spaces that were causing bugs\n",
-        "r2.4.94 - big changes\n\tFixed: bc type loss\n\tEdited: improved the number format and precision\n"
+        "r2.4.94 - big changes\n\tFixed: bc type loss\n\tEdited: improved the number format and precision\n",
+        "r2.5.00 - last changes\n\tFixed: factorial buffer overflow\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);

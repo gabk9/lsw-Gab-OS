@@ -2973,8 +2973,11 @@ uint64_t fact(int64_t num, int32_t steps) {
 
     uint64_t result = 1;
 
-    for (int64_t i = num; i >= 1; i -= steps)
+    for (int64_t i = num; i >= 1; i -= steps) {
+        if (result > UINT64_MAX / i)
+            return U32_NAN;
         result *= i;
+    }
 
     return result;
 }
@@ -3073,7 +3076,7 @@ int64_t s_fact(char *operation) {
 
     uint64_t result =  fact(num, stepsCount);
 
-    if (result >= INT64_MAX || result == I64_NAN) {
+    if (result >= INT64_MAX || result == U32_NAN) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("numeric overflow (too large)\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
