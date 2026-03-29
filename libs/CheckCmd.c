@@ -300,10 +300,10 @@ var calc(var left, const char *operation, var right, bool mathLib) {
                 return out;
             }
 
-            float64 multiplier = (float64)notStr.data.f; 
+            int64_t multiplier = notStr.data.i; 
             char *multiplied_str = Str.data.s;
 
-            if (multiplier <= 0.0) {
+            if (multiplier <= 0) {
                 printc("eval", BC_PROMPT_COLOR, WHITE);
                 printf(": ");
                 printc("to multiply strings the multiplier must be at least greater than 0\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
