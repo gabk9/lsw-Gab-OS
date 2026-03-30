@@ -2571,7 +2571,7 @@ char *eval(char *operation, bool mathlib) {
         {.returnType = BC_FLOAT,   .name = "abs",       .fn.f = s_abs},
         {.returnType = BC_FLOAT,   .name = FLOAT_VAR,   .fn.f = bc_float},
         {.returnType = BC_STR,     .name = STR_VAR,     .fn.s = bc_parse_str},
-        {.returnType = BC_STR,     .name = "chr",       .fn.s = s_chr},
+        {.returnType = BC_STR,     .name = CHR_VAR,     .fn.s = s_chr},
         {.returnType = BC_STR,     .name = "bin",       .fn.s = s_bin},
         {.returnType = BC_STR,     .name = "oct",       .fn.s = s_oct},
         {.returnType = BC_STR,     .name = "hex",       .fn.s = s_hex},

@@ -560,7 +560,7 @@ var h_atof(const char *str, bool mathlib) {
         }
     }
 
-    bool isFloat = strchr(buf, '.') || strchr(buf, 'e') || strchr(buf, 'E');
+    bool isFloat = strchr(buf, '.');
 
     if (!isFloat) {
         char *end;
