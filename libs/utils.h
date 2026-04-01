@@ -52,6 +52,7 @@
 #define BOOL_VAR "bool"
 #define FLOAT_VAR "float"
 #define FALSE_VAR "false"
+#define RAND_MAX_VAR "rand_max"
 
 #define HEX_PREF "0x"
 #define OCT_PREF "0o"

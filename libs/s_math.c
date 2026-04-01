@@ -301,7 +301,7 @@ var h_atof(const char *str, bool mathlib) {
         }
 
         return (var){.type = BC_FLOAT, .data.f = isUnaryNeg ? -INFINITY : INFINITY};
-    } 
+    }
 
     bool isAns = mathlib && strcmp(buf, ANS_VAR) == 0;
 
@@ -321,7 +321,8 @@ var h_atof(const char *str, bool mathlib) {
         }
 
         return Ans;
-    }
+
+    } 
 
     if (isUnaryNeg) {
         if (!*buf) {
@@ -437,6 +438,8 @@ var h_atof(const char *str, bool mathlib) {
         return (var){.type = BC_BOOL, .data.b = true};
     else if (strcmp(buf, FALSE_VAR) == 0)
         return (var){.type = BC_BOOL, .data.b = false};
+    else if (mathlib && strcmp(buf, RAND_MAX_VAR) == 0)
+        return (var){.type = BC_INT, .data.i = RAND_MAX};
 
     len = strlen(buf);
 
@@ -2611,61 +2614,59 @@ float64 s_randFloat(char *operation) {
     float64 maxLf = 0.0;
     float64 minLf = 0.0;
 
-    if (strcasecmp(str_max, "rand_max") == 0)
-        maxLf = (float64)RAND_MAX;
-    else {
-        char *buff = eval(str_max, true);
+    char *buff1 = eval(str_max, true);
 
-        var tmp = h_atof(buff, true);
+    if (!buff1)
+        return NAN;
 
-        maxLf = 0;
+    var tmp1 = h_atof(buff1, true);
 
-        switch (tmp.type) {
-            case BC_BOOL:
-                maxLf = (float64)tmp.data.b;
-                break;
-            case BC_CHR:
-            case BC_INT:
-                maxLf = tmp.data.i;
-                break;
-            case BC_FLOAT:
-                maxLf = tmp.data.f;
-                break;
-            default:
-                return NAN;
-        }
+    SAFE_FREE(buff1);
 
-        SAFE_FREE(buff);
+    maxLf = 0;
+
+    switch (tmp1.type) {
+        case BC_BOOL:
+            maxLf = (float64)tmp1.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            maxLf = tmp1.data.i;
+            break;
+        case BC_FLOAT:
+            maxLf = tmp1.data.f;
+            break;
+        default:
+            return NAN;
     }
 
     if (!T_CMP(maxLf, (int64_t)maxLf) && isnan(maxLf))
         return NAN;
 
-    if (strcasecmp(str_min, "rand_max") == 0)
-        minLf = (float64)RAND_MAX;
-    else {
-        char *buff = eval(str_min, true);
+    char *buff = eval(str_min, true);
 
-        var tmp = h_atof(buff, true);
+    if (!buff)
+        return NAN;
 
-        minLf = 0;
+    var tmp = h_atof(buff, true);
 
-        switch (tmp.type) {
-            case BC_BOOL:
-                minLf = (float64)tmp.data.b;
-                break;
-            case BC_CHR:
-            case BC_INT:
-                minLf = tmp.data.i;
-                break;
-            case BC_FLOAT:
-                minLf = tmp.data.f;
-                break;
-            default:
-                return NAN;
-        }
+    SAFE_FREE(buff);
 
-        SAFE_FREE(buff);
+    minLf = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            minLf = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            minLf = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            minLf = tmp.data.f;
+            break;
+        default:
+            return NAN;
     }
 
     if (!T_CMP(minLf, (int64_t)minLf) && isnan(minLf))
@@ -2712,61 +2713,59 @@ int64_t s_randInt(char *operation) {
     float64 maxInt = 0.0;
     float64 minInt = 0.0;
 
-    if (strcasecmp(str_max, "rand_max") == 0)
-        maxInt = (float64)RAND_MAX;
-    else {
-        char *buff = eval(str_max, true);
+    char *buff1 = eval(str_max, true);
 
-        var tmp = h_atof(buff, true);
+    if (!buff1)
+        return I64_NAN;
 
-        maxInt = 0;
+    var tmp1 = h_atof(buff1, true);
 
-        switch (tmp.type) {
-            case BC_BOOL:
-                maxInt = (float64)tmp.data.b;
-                break;
-            case BC_CHR:
-            case BC_INT:
-                maxInt = tmp.data.i;
-                break;
-            case BC_FLOAT:
-                maxInt = tmp.data.f;
-                break;
-            default:
-                return I64_NAN;
-        }
+    SAFE_FREE(buff1);
 
-        SAFE_FREE(buff);
+    maxInt = 0;
+
+    switch (tmp1.type) {
+        case BC_BOOL:
+            maxInt = (float64)tmp1.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            maxInt = tmp1.data.i;
+            break;
+        case BC_FLOAT:
+            maxInt = tmp1.data.f;
+            break;
+        default:
+            return I64_NAN;
     }
 
     if (!T_CMP(maxInt, (int64_t)maxInt) && isnan(maxInt))
         return I64_NAN;
 
-    if (strcasecmp(str_min, "rand_max") == 0)
-        minInt = (float64)RAND_MAX;
-    else {
-        char *buff = eval(str_min, true);
+    char *buff = eval(str_min, true);
 
-        var tmp = h_atof(buff, true);
+    if (!buff)
+        return I64_NAN;
 
-        minInt = 0;
+    var tmp = h_atof(buff, true);
 
-        switch (tmp.type) {
-            case BC_BOOL:
-                minInt = (float64)tmp.data.b;
-                break;
-            case BC_CHR:
-            case BC_INT:
-                minInt = tmp.data.i;
-                break;
-            case BC_FLOAT:
-                minInt = tmp.data.f;
-                break;
-            default:
-                return I64_NAN;
-        }
+    SAFE_FREE(buff);
 
-        SAFE_FREE(buff);
+    minInt = 0;
+
+    switch (tmp.type) {
+        case BC_BOOL:
+            minInt = (float64)tmp.data.b;
+            break;
+        case BC_CHR:
+        case BC_INT:
+            minInt = tmp.data.i;
+            break;
+        case BC_FLOAT:
+            minInt = tmp.data.f;
+            break;
+        default:
+            return I64_NAN;
     }
 
     if (!T_CMP(minInt, (int64_t)minInt) && isnan(minInt))
