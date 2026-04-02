@@ -229,7 +229,6 @@ fail:
     exit(EXIT_FAILURE);
 }
 
-
 var calc(var left, const char *operation, var right, bool mathLib) {
 
     var out;
