@@ -1085,7 +1085,12 @@ void int64_to_hex_min(int64_t v, char *out, size_t size) {
     }
 
     int32_t hex_digits = (bits + 3) / 4;
-    uint64_t mask = (1ULL << (hex_digits * 4)) - 1;
+    uint64_t mask;
+    if (hex_digits == 16)
+        mask = UINT64_MAX;
+    else
+        mask = (1ULL << (hex_digits * 4)) - 1;
+
     u &= mask;
 
     snprintf(out, size, "\""HEX_PREF"%0*"PRIX64"\"", hex_digits, u);

@@ -1302,27 +1302,29 @@ char *s_oct(char *operation) {
     var tmp = h_atof(buff, true);
     SAFE_FREE(buff);
 
-    float64 num = 0;
+    int64_t val1 = 0;
+    bool isint = false;
 
     switch (tmp.type) {
         case BC_BOOL:
-            num = (float64)tmp.data.b;
+            val1 = (int64_t)tmp.data.i;
+            isint = true;
             break;
         case BC_CHR:
         case BC_INT:
-            num = tmp.data.i;
+            val1 = tmp.data.i;
+            isint = true;
             break;
         case BC_FLOAT:
-            num = tmp.data.f;
+            if (isnan(tmp.data.f))
+                return NULL;
             break;
         default:
             return NULL;
     }
 
-    if (tmp.type == BC_FLOAT && isnan(num))
-        return NULL;
 
-    if (!T_CMP(num, (int64_t)num)) {
+    if (!isint) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("oct() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -1330,19 +1332,15 @@ char *s_oct(char *operation) {
         return NULL;
     }
 
-    char temp[0x80];
+    bool isNeg = val1 < 0;
 
-    bool isNeg = num < 0;
+    const size_t size = 0x80;
 
-    snprintf(temp, sizeof(temp), "%.0lf", isNeg ? -num : num);
-
-    int64_t value = strtol(temp, NULL, 0);
-
-    char *buffer = malloc(0x40);
+    char *buffer = malloc(size);
     if (!buffer)
         return NULL;
 
-    snprintf(buffer, 64, isNeg ? "\"-"OCT_PREF"%"PRIo64"\"" : "\""OCT_PREF"%"PRIo64"\"", value);
+    snprintf(buffer, size, isNeg ? "\"-"OCT_PREF"%"PRIo64"\"" : "\""OCT_PREF"%"PRIo64"\"", val1);
 
     return buffer;
 }
@@ -1517,27 +1515,28 @@ char *s_hex(char *operation) {
     var tmp = h_atof(buff, true);
     SAFE_FREE(buff);
 
-    float64 val = 0;
+    int64_t val1 = 0;
+    bool isint = false;
 
     switch (tmp.type) {
         case BC_BOOL:
-            val = (float64)tmp.data.b;
+            val1 = (int64_t)tmp.data.i;
+            isint = true;
             break;
         case BC_CHR:
         case BC_INT:
-            val = tmp.data.i;
+            val1 = tmp.data.i;
+            isint = true;
             break;
         case BC_FLOAT:
-            val = tmp.data.f;
+            if (isnan(tmp.data.f))
+                return NULL;
             break;
         default:
             return NULL;
     }
 
-    if (tmp.type == BC_FLOAT && isnan(val))
-        return NULL;
-
-    if (!T_CMP(val, (int64_t)val)) {
+    if (!isint) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("hex() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -1545,17 +1544,12 @@ char *s_hex(char *operation) {
         return NULL;
     }
 
-    char temp[0x80];
-    snprintf(temp, sizeof(temp), "%.0lf", val);
-    
-    int64_t value = strtoll(temp, NULL, 10);
-
-    char *buffer = malloc(64);
-    if (!buffer) {
+    const size_t size = 0x80;
+    char *buffer = malloc(size);
+    if (!buffer)
         return NULL;
-    }
 
-    int64_to_hex_min(value, buffer, 0x40);
+    int64_to_hex_min(val1, buffer, size);
 
     for (uint16_t i = strlen(HEX_PREF) + 1; buffer[i]; i++)
         buffer[i] = toupper((unsigned char)buffer[i]);
@@ -1574,27 +1568,28 @@ char *s_bin(char *operation) {
     var tmp = h_atof(buff, true);
     SAFE_FREE(buff);
 
-    float64 val = 0;
+    int64_t val1 = 0;
+    bool isint = false;
 
     switch (tmp.type) {
         case BC_BOOL:
-            val = (float64)tmp.data.b;
+            val1 = (int64_t)tmp.data.i;
+            isint = true;
             break;
         case BC_CHR:
         case BC_INT:
-            val = tmp.data.i;
+            val1 = tmp.data.i;
+            isint = true;
             break;
         case BC_FLOAT:
-            val = tmp.data.f;
+            if (isnan(tmp.data.f))
+                return NULL;
             break;
         default:
             return NULL;
     }
 
-    if (tmp.type == BC_FLOAT && isnan(val))
-        return NULL;
-
-    if (!T_CMP(val, (int64_t)val)) {
+    if (!isint) {
         printc("eval", BC_PROMPT_COLOR, WHITE);
         printf(": ");
         printc("bin() requires an argument of type '"INT_VAR"'\n", GET_BASE_COLOR(BC_PROMPT_COLOR), WHITE);
@@ -1602,7 +1597,7 @@ char *s_bin(char *operation) {
         return NULL;
     }
 
-    int64_t n = (int64_t)val;
+    int64_t n = val1;
 
     uint64_t u = (uint64_t)n;
 
