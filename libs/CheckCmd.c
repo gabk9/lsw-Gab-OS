@@ -112,7 +112,7 @@ void checkLswrcSyntax(const char *data_folder) {
     while (fgets(line, sizeof(line), f)) {
         lineC++;
 
-        line[strcspn(line, "\n")] = '\0';
+        line[strcspn(line, "\r\n")] = '\0';
 
         char lineOrig[MAX_CHAR];
         strcpy(lineOrig, line);
@@ -228,6 +228,7 @@ fail:
     SAFE_FCLOSE(f);
     exit(EXIT_FAILURE);
 }
+
 
 var calc(var left, const char *operation, var right, bool mathLib) {
 

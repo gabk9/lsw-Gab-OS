@@ -330,7 +330,7 @@ bool isKeyRepeated(const char *data_folder, const char *key_name) {
 
     char buffer[MAX_CHAR];
     while (fgets(buffer, sizeof(buffer), f)) {
-        buffer[strcspn(buffer, "\n")] = '\0';
+        buffer[strcspn(buffer, "\r\n")] = '\0';
         removeComments(buffer);
 
         trim(buffer); trimEnd(buffer);
@@ -498,7 +498,7 @@ char *getKeyVal(const char *key_name, const char *path) {
 
     char line[0x400];
     while (fgets(line, sizeof(line), f)) {
-        line[strcspn(line, "\n")] = '\0';
+        line[strcspn(line, "\r\n")] = '\0';
 
         removeComments(line);
         trim(line);
@@ -1882,7 +1882,7 @@ bool aliasExists(const char *filePath, const char *shortcutName) {
     char *line = calloc(MAX_CHAR, sizeof(char));
 
     while (fgets(line, MAX_CHAR, f)) {
-        line[strcspn(line, "\n")] = '\0';
+        line[strcspn(line, "\r\n")] = '\0';
 
         char *original = line;
         char *clean = strrm(line, "alias");
@@ -2063,7 +2063,7 @@ bool isalias(char *operation, char *args, const char **cmds, char **address, cha
     char *line = calloc(MAX_CHAR, sizeof(char));
 
     while (fgets(line, MAX_CHAR, f)) {
-        line[strcspn(line, "\n")] = '\0';
+        line[strcspn(line, "\r\n")] = '\0';
         trim(line);
 
         if (strncmp(line, "alias", 4) != 0)
@@ -2949,7 +2949,7 @@ char* get_cpu_model(void) {
     }
 
     RegCloseKey(hKey);
-    cpu[strcspn(cpu, "\n")] = '\0';
+    cpu[strcspn(cpu, "\r\n")] = '\0';
     return cpu;
 #elif __linux__
     static char cpu[0x80];
@@ -2959,7 +2959,7 @@ char* get_cpu_model(void) {
         while (fgets(cpu, sizeof(cpu), fp)) {
             if (strncmp(cpu, "model name", 10) == 0) {
                 fclose(fp);
-                cpu[strcspn(cpu, "\n")] = '\0';
+                cpu[strcspn(cpu, "\r\n")] = '\0';
                 char *colon = strchr(cpu, ':');
                 return colon ? colon + 2 : "Unknown";
             }
@@ -2971,7 +2971,7 @@ char* get_cpu_model(void) {
     if (fp) {
         fgets(cpu, sizeof(cpu), fp);
         fclose(fp);
-        cpu[strcspn(cpu, "\n")] = '\0';
+        cpu[strcspn(cpu, "\r\n")] = '\0';
         return cpu;
     }
 
@@ -2980,7 +2980,7 @@ char* get_cpu_model(void) {
         while (fgets(cpu, sizeof(cpu), fp)) {
             if (strncmp(cpu, "OF_COMPATIBLE_", 14) == 0) {
                 fclose(fp);
-                cpu[strcspn(cpu, "\n")] = '\0';
+                cpu[strcspn(cpu, "\r\n")] = '\0';
                 return cpu;
             }
         }
@@ -2992,7 +2992,7 @@ char* get_cpu_model(void) {
     static char cpu[0x80];
     uint16_t size = sizeof(cpu);
     if (sysctlbyname("machdep.cpu.brand_string", cpu, &size, NULL, 0) == 0) {
-        cpu[strcspn(cpu, "\n")] = '\0';
+        cpu[strcspn(cpu, "\r\n")] = '\0';
         return cpu;
     }
     return "Unknown";
