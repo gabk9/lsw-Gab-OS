@@ -1671,9 +1671,15 @@ void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint1
 
     snprintf(data_folder, data_size, "%s/data", program_root);
 
-    struct stat st = {0};
-    if (stat(data_folder, &st) == -1)
-        mkdir(data_folder, 0755);
+    #ifdef _WIN64
+        struct _stat st;
+        if (_stat(data_folder, &st) == -1)
+            _mkdir(data_folder);
+    #else
+        struct stat st = {0};
+        if (stat(data_folder, &st) == -1)
+            mkdir(data_folder, 0755);
+    #endif
 
     snprintf(history_path, hist_size, "%s/data/history.txt", program_root);
 }

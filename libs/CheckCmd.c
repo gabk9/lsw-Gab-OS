@@ -2,9 +2,9 @@
 
 #include "utils.h"
 #include "types.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include "s_math.h"
-#include <ctype.h>
 #include "terminal.h"
 
 var Ans = { .type = BC_NONE };

@@ -15,17 +15,18 @@
 #include "types.h"
 #include <string.h>
 #include <stdint.h>
-#include <inttypes.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #ifdef _WIN64
     #include <direct.h>
     #include <shlobj.h>
     #include <windows.h>
+    #include <sys/stat.h>
 
+    #define strdup _strdup
     #define strcasecmp _stricmp
     #define strncasecmp _strnicmp
-    #define strdup _strdup
     
     #define cls(void) system("cls")
 #else
