@@ -30,7 +30,7 @@ void revCmd(char *instruction) {
             appear = 0;
 
             fgets(string, sizeof(string), stdin);
-            string[strcspn(string, "\n")] = '\0';
+            string[strcspn(string, "\r\n")] = '\0';
 
             if (!*string) {
                 putchar('\n');
@@ -113,7 +113,7 @@ void revCmd(char *instruction) {
             while (fgets(line, MAX_CHAR, source)) {
                 trim(line);
                 trimEnd(line);
-                line[strcspn(line, "\n")] = '\0';
+                line[strcspn(line, "\r\n")] = '\0';
 
                 char *rev = revStr(line);
 
@@ -149,7 +149,7 @@ void revCmd(char *instruction) {
             while (fgets(line, MAX_CHAR, source)) {
                 trim(line);
                 trimEnd(line);
-                line[strcspn(line, "\n")] = '\0';
+                line[strcspn(line, "\r\n")] = '\0';
 
                 char *rev = revStr(line);
 
@@ -481,9 +481,9 @@ void clearHistoryCmd(const char *path) {
         puts("Error reading input");
         return;
     }
-    answer[strcspn(answer, "\n")] = '\0';
+    answer[strcspn(answer, "\r\n")] = '\0';
 
-    answer[strcspn(answer, "\n")] = '\0';
+    answer[strcspn(answer, "\r\n")] = '\0';
     safe_lower_inplace(answer);
     removeComments(answer);
 
@@ -569,7 +569,7 @@ void bcCmd(uint16_t argc, char **argv) {
 
         printc(">>> ", BC_PROMPT_COLOR, WHITE);
         fgets(operation, sizeof(operation), stdin);
-        operation[strcspn(operation, "\n")] = '\0';
+        operation[strcspn(operation, "\r\n")] = '\0';
 
         trim(operation);
         trimEnd(operation);
@@ -705,7 +705,7 @@ void grepCmd(char *instruction) {
 
     trimEnd(pattern);
     while (fgets(line, sizeof(line), f)) {
-        line[strcspn(line, "\n")] = '\0';
+        line[strcspn(line, "\r\n")] = '\0';
 
         const char *pos = ignoreCase ? strcasestr_ptr(line, pattern)
                                     : strstr(line, pattern);
@@ -802,7 +802,7 @@ void historyCmd(char *operation, const char *path) {
         if (!fgets(buff, sizeof(buff), f)) 
             break;
 
-        buff[strcspn(buff, "\n")] = '\0';
+        buff[strcspn(buff, "\r\n")] = '\0';
         if (!*buff) 
             continue;
     
@@ -876,7 +876,7 @@ void rmCmd(uint16_t argc, char **argv) {
             return;
         }
 
-        answer[strcspn(answer, "\n")] = '\0';
+        answer[strcspn(answer, "\r\n")] = '\0';
         safe_lower_inplace(answer);
 
         if (answer[0] != 'y') {

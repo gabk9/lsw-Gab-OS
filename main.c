@@ -102,7 +102,7 @@ int32_t main(int32_t argc, char **argv) {
 
         removeComments(input);
 
-        input[strcspn(input, "\n")] = '\0';
+        input[strcspn(input, "\\n")] = '\0';
         trim(input);
         trimEnd(input);
 

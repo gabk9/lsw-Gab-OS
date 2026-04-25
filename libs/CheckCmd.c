@@ -117,7 +117,7 @@ void checkLswrcSyntax(const char *data_folder) {
     while (fgets(line, sizeof(line), f)) {
         lineC++;
 
-        line[strcspn(line, "\n")] = '\0';
+        line[strcspn(line, "\r\n")] = '\0';
 
         char lineOrig[MAX_CHAR];
         strcpy(lineOrig, line);
