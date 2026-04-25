@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "s_math.h"
 #include "terminal.h"
+#include "CheckCmd.h"
 #include <inttypes.h>
 
 #ifdef __APPLE__

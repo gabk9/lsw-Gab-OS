@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "libs/utils.h"
 #include "libs/types.h"
+#include "libs/CheckCmd.h"
 #include "libs/terminal.h"
 
 #ifdef _WIN64

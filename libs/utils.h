@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <stdbool.h>
-#include "CheckCmd.h"
 
 #ifdef _WIN64
     #include <direct.h>
