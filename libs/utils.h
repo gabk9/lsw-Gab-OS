@@ -1,22 +1,16 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <math.h>
 #include <time.h>
-#include <ctype.h>
 #include <wchar.h>
-#include <errno.h>
 #include <stdio.h>
 #include <float.h>
 #include "types.h"
-#include "s_math.h"
 #include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <stdbool.h>
+#include <stdint.h>
 #include <inttypes.h>
+#include <stdbool.h>
 #include "CheckCmd.h"
-#include "terminal.h"
 
 #ifdef _WIN64
     #include <direct.h>
@@ -32,6 +26,11 @@
     #include <sys/stat.h>
     #include <sys/types.h>
     #include <sys/ioctl.h>
+
+    #ifdef __APPLE__
+        #include <sys/sysctl.h>
+    #endif
+
     #include <sys/utsname.h>
 
     #define MAX_PATH 0x104

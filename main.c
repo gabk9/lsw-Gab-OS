@@ -1,5 +1,7 @@
+#include <stdlib.h>
 #include "libs/utils.h"
 #include "libs/types.h"
+#include "libs/terminal.h"
 
 #ifdef _WIN64
     #define rmdir _rmdir
@@ -99,7 +101,7 @@ int32_t main(int32_t argc, char **argv) {
 
         removeComments(input);
 
-        input[strcspn(input, "\r\n")] = '\0';
+        input[strcspn(input, "\n")] = '\0';
         trim(input);
         trimEnd(input);
 

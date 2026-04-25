@@ -1,6 +1,16 @@
 #define _GNU_SOURCE
+
 #include "utils.h"
 #include "types.h"
+#include <stdlib.h>
+#include "s_math.h"
+#include "terminal.h"
+
+#ifdef __APPLE__
+    #include <hexagon_types.h>
+#else
+    #include <ctype.h>
+#endif
 
 var Ans = { .type = BC_NONE };
 
@@ -112,7 +122,7 @@ void checkLswrcSyntax(const char *data_folder) {
     while (fgets(line, sizeof(line), f)) {
         lineC++;
 
-        line[strcspn(line, "\r\n")] = '\0';
+        line[strcspn(line, "\n")] = '\0';
 
         char lineOrig[MAX_CHAR];
         strcpy(lineOrig, line);
@@ -808,7 +818,7 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
         printf("\t'-o', '--operating-system'   print the operating system\n'");
     } 
 
-   else if (strcmp(instruction, cmds[19]) == 0) //! grep
+    else if (strcmp(instruction, cmds[19]) == 0) //! grep
         printf(
             "'grep' search for patterns in files\n\n"
             "Usage:\n\tgrep [OPTION] [PATTERN] [FILE]\n\n"

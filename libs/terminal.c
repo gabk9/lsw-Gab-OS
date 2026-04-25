@@ -1,11 +1,20 @@
 #define _GNU_SOURCE
-#include "utils.h"
 
-#define VERSION "r2.5.06"
+#include <math.h>
+#include "utils.h"
+#include <stdlib.h>
+#include "s_math.h"
+#include <inttypes.h>
+
+#ifndef __APPLE__
+    #include <ctype.h>
+#endif
 
 #if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
+
+#define VERSION "r2.5.23"
 
 void revCmd(char *instruction) {
 
@@ -23,7 +32,7 @@ void revCmd(char *instruction) {
             appear = 0;
 
             fgets(string, sizeof(string), stdin);
-            string[strcspn(string, "\r\n")] = '\0';
+            string[strcspn(string, "\n")] = '\0';
 
             if (!*string) {
                 putchar('\n');
@@ -94,7 +103,6 @@ void revCmd(char *instruction) {
                 return;
             }
 
-
             char line[MAX_CHAR];
 
             FILE *dest = fopen(destFile, "w");
@@ -107,7 +115,7 @@ void revCmd(char *instruction) {
             while (fgets(line, MAX_CHAR, source)) {
                 trim(line);
                 trimEnd(line);
-                line[strcspn(line, "\r\n")] = '\0';
+                line[strcspn(line, "\n")] = '\0';
 
                 char *rev = revStr(line);
 
@@ -143,7 +151,7 @@ void revCmd(char *instruction) {
             while (fgets(line, MAX_CHAR, source)) {
                 trim(line);
                 trimEnd(line);
-                line[strcspn(line, "\r\n")] = '\0';
+                line[strcspn(line, "\n")] = '\0';
 
                 char *rev = revStr(line);
 
@@ -475,9 +483,9 @@ void clearHistoryCmd(const char *path) {
         puts("Error reading input");
         return;
     }
-    answer[strcspn(answer, "\r\n")] = '\0';
+    answer[strcspn(answer, "\n")] = '\0';
 
-    answer[strcspn(answer, "\r\n")] = '\0';
+    answer[strcspn(answer, "\n")] = '\0';
     safe_lower_inplace(answer);
     removeComments(answer);
 
@@ -563,7 +571,7 @@ void bcCmd(uint16_t argc, char **argv) {
 
         printc(">>> ", BC_PROMPT_COLOR, WHITE);
         fgets(operation, sizeof(operation), stdin);
-        operation[strcspn(operation, "\r\n")] = '\0';
+        operation[strcspn(operation, "\n")] = '\0';
 
         trim(operation);
         trimEnd(operation);
@@ -699,7 +707,7 @@ void grepCmd(char *instruction) {
 
     trimEnd(pattern);
     while (fgets(line, sizeof(line), f)) {
-        line[strcspn(line, "\r\n")] = '\0';
+        line[strcspn(line, "\n")] = '\0';
 
         const char *pos = ignoreCase ? strcasestr_ptr(line, pattern)
                                     : strstr(line, pattern);
@@ -796,7 +804,7 @@ void historyCmd(char *operation, const char *path) {
         if (!fgets(buff, sizeof(buff), f)) 
             break;
 
-        buff[strcspn(buff, "\r\n")] = '\0';
+        buff[strcspn(buff, "\n")] = '\0';
         if (!*buff) 
             continue;
     
@@ -827,7 +835,7 @@ void rmCmd(uint16_t argc, char **argv) {
                     flags |= RM_FORCE;
                 else if (strcasecmp(arg, "--interactive") == 0)
                     flags &= ~RM_FORCE;
-                    else if (strcasecmp(arg, "--recycle-bin") == 0)
+                else if (strcasecmp(arg, "--recycle-bin") == 0)
                     flags |= RM_BIN;
                 else if (strcasecmp(arg, "--erase") == 0)
                     flags &= ~RM_BIN;
@@ -870,7 +878,7 @@ void rmCmd(uint16_t argc, char **argv) {
             return;
         }
 
-        answer[strcspn(answer, "\r\n")] = '\0';
+        answer[strcspn(answer, "\n")] = '\0';
         safe_lower_inplace(answer);
 
         if (answer[0] != 'y') {
@@ -1614,7 +1622,8 @@ void updatehistory(void) {
         "r2.4.81 - small changes\n\tFixed: len() now works with scape '\\0' properly and now the parser trims the spaces that were causing bugs\n",
         "r2.4.94 - big changes\n\tFixed: bc type loss\n\tEdited: improved the number format and precision\n",
         "r2.5.00 - last changes\n\tFixed: factorial buffer overflow\n",
-        "r2.5.06 - small changes\n\tEdited: improved rand_max variable\n"
+        "r2.5.06 - small changes\n\tEdited: improved rand_max variable\n",
+        "r2.5.23 - big changes\n\tEdited: made everything work on MacOS\n"
     };
 
     uint16_t logCount = sizeof(logs) / sizeof(*logs);
@@ -1878,6 +1887,7 @@ void neofetchCmd(char *lswrc_path) {
 
             if ((c & 0xC0) != 0x80) {
                 if ((unsigned char)ascii_art[i][j] == 0xE2 &&
+                    ascii_art[i][j+1] != '\0' &&
                     (unsigned char)ascii_art[i][j+1] == 0x95) {
                     setColor(art_bg_color);
                 } else
@@ -1915,22 +1925,20 @@ void neofetchCmd(char *lswrc_path) {
     putchar('\n');
 
     printc("USER: ", label_color, WHITE);
-    static char *userName;
-    userName = get_user();
+    char *userName = get_user();
 
     puts(userName);
 
 
     printc("HOST: ", label_color, WHITE);
-    static char *hostName;
-    hostName = get_hostname();
+    char *hostName = get_hostname();
 
     puts(hostName);
 
 
     printc("DATE: ", label_color, WHITE);
     static char *today;
-    today = get_time(TIME_FMT);
+    if (!today) today = get_time(TIME_FMT);
 
     puts(today);
 
@@ -1953,15 +1961,13 @@ void neofetchCmd(char *lswrc_path) {
 
 
     printc("LINES OF CODE: ", label_color, WHITE);
-    static char *linesNum; 
-    linesNum =  linesNumber();
+    char *linesNum = linesNumber(); 
 
     puts(linesNum);
 
 
     printc("SIZE: ", label_color, WHITE);
-    static char *size;
-    size = charNumber();
+    char *size = charNumber();
 
     puts(size);
 
@@ -1982,17 +1988,15 @@ void neofetchCmd(char *lswrc_path) {
     printc("SPECS\n", title_color, WHITE);
 
     printc("CPU: ", label_color, WHITE);
-    static char *cpuName;
-    cpuName = get_cpu_model();
+    char *cpuName = get_cpu_model();
 
     puts(cpuName);
 
 
     printc("Memory: ", label_color, WHITE);
-    static uint64_t memTotal;
-    memTotal = get_total_ram_mb();
+     uint64_t memTotal = get_total_ram_mb();
 
-    printf("%"PRIu64"Mib\n", memTotal);
+    printf("%" PRIu64"Mib\n", memTotal);
 
     printc("═══════════════════════════════════════════════════\n", title_color, WHITE);
 }

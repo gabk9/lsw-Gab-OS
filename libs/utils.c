@@ -1,9 +1,21 @@
 #define _GNU_SOURCE
+
 #include "utils.h"
 #include "types.h"
+#include <stdlib.h>
+#include "s_math.h"
+#include "terminal.h"
+#include <inttypes.h>
 
-#define PROJ_LINES_APPROX 10600
-#define PROJ_SIZE_APPROX_BYTES 313500
+#ifdef __APPLE__
+    #include <mach-o/dyld.h>
+#else
+    #include <stdarg.h>
+    #include <ctype.h>
+#endif
+
+#define PROJ_LINES_APPROX 10700
+#define PROJ_SIZE_APPROX_BYTES 315000
 
 #define PATH_MAIN_C "./main.c"
 #define PATH_UTILS_C "./libs/utils.c"
@@ -330,7 +342,7 @@ bool isKeyRepeated(const char *data_folder, const char *key_name) {
 
     char buffer[MAX_CHAR];
     while (fgets(buffer, sizeof(buffer), f)) {
-        buffer[strcspn(buffer, "\r\n")] = '\0';
+        buffer[strcspn(buffer, "\n")] = '\0';
         removeComments(buffer);
 
         trim(buffer); trimEnd(buffer);
@@ -498,7 +510,7 @@ char *getKeyVal(const char *key_name, const char *path) {
 
     char line[0x400];
     while (fgets(line, sizeof(line), f)) {
-        line[strcspn(line, "\r\n")] = '\0';
+        line[strcspn(line, "\n")] = '\0';
 
         removeComments(line);
         trim(line);
@@ -1085,12 +1097,7 @@ void int64_to_hex_min(int64_t v, char *out, size_t size) {
     }
 
     int32_t hex_digits = (bits + 3) / 4;
-    uint64_t mask;
-    if (hex_digits == 16)
-        mask = UINT64_MAX;
-    else
-        mask = (1ULL << (hex_digits * 4)) - 1;
-
+    uint64_t mask = (1ULL << (hex_digits * 4)) - 1;
     u &= mask;
 
     snprintf(out, size, "\""HEX_PREF"%0*"PRIX64"\"", hex_digits, u);
@@ -1637,14 +1644,31 @@ void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint1
     snprintf(history_path, hist_size, "%s\\data\\history.txt", program_root);
 
 #else
-    int16_t len = readlink("/proc/self/exe", program_root, root_size - 1);
-    if (len != -1) {
-        program_root[len] = '\0';
-        char *last_slash = strrchr(program_root, '/');
-        if (last_slash) *last_slash = '\0';
-    } else {
-        strcpy(program_root, ".");
-    }
+    #ifdef __APPLE__
+        uint32_t size = root_size;
+        if (_NSGetExecutablePath(program_root, &size) == 0) {
+            char *resolved = realpath(program_root, NULL);
+            if (resolved) {
+                strncpy(program_root, resolved, root_size - 1);
+                free(resolved);
+                char *last_slash = strrchr(program_root, '/');
+                if (last_slash) *last_slash = '\0';
+            } else {
+                strcpy(program_root, ".");
+            }
+        } else {
+            strcpy(program_root, ".");
+        }
+    #else
+        int16_t len = readlink("/proc/self/exe", program_root, root_size - 1);
+        if (len != -1) {
+            program_root[len] = '\0';
+            char *last_slash = strrchr(program_root, '/');
+            if (last_slash) *last_slash = '\0';
+        } else {
+            strcpy(program_root, ".");
+        }
+    #endif
 
     snprintf(data_folder, data_size, "%s/data", program_root);
 
@@ -1882,7 +1906,7 @@ bool aliasExists(const char *filePath, const char *shortcutName) {
     char *line = calloc(MAX_CHAR, sizeof(char));
 
     while (fgets(line, MAX_CHAR, f)) {
-        line[strcspn(line, "\r\n")] = '\0';
+        line[strcspn(line, "\n")] = '\0';
 
         char *original = line;
         char *clean = strrm(line, "alias");
@@ -2063,7 +2087,7 @@ bool isalias(char *operation, char *args, const char **cmds, char **address, cha
     char *line = calloc(MAX_CHAR, sizeof(char));
 
     while (fgets(line, MAX_CHAR, f)) {
-        line[strcspn(line, "\r\n")] = '\0';
+        line[strcspn(line, "\n")] = '\0';
         trim(line);
 
         if (strncmp(line, "alias", 4) != 0)
@@ -2126,7 +2150,7 @@ bool isalias(char *operation, char *args, const char **cmds, char **address, cha
             char **argv_bash = extract_args(args, &argc_bash, "bash");
 
             bashCmd(argc_bash, argv_bash, cmds, true);
-            
+
             if (args) {
                 for (uint16_t i = 1; i < argc_bash; i++)
                     SAFE_FREE(argv_bash[i]);
@@ -2949,7 +2973,7 @@ char* get_cpu_model(void) {
     }
 
     RegCloseKey(hKey);
-    cpu[strcspn(cpu, "\r\n")] = '\0';
+    cpu[strcspn(cpu, "\n")] = '\0';
     return cpu;
 #elif __linux__
     static char cpu[0x80];
@@ -2959,7 +2983,7 @@ char* get_cpu_model(void) {
         while (fgets(cpu, sizeof(cpu), fp)) {
             if (strncmp(cpu, "model name", 10) == 0) {
                 fclose(fp);
-                cpu[strcspn(cpu, "\r\n")] = '\0';
+                cpu[strcspn(cpu, "\n")] = '\0';
                 char *colon = strchr(cpu, ':');
                 return colon ? colon + 2 : "Unknown";
             }
@@ -2971,7 +2995,7 @@ char* get_cpu_model(void) {
     if (fp) {
         fgets(cpu, sizeof(cpu), fp);
         fclose(fp);
-        cpu[strcspn(cpu, "\r\n")] = '\0';
+        cpu[strcspn(cpu, "\n")] = '\0';
         return cpu;
     }
 
@@ -2980,7 +3004,7 @@ char* get_cpu_model(void) {
         while (fgets(cpu, sizeof(cpu), fp)) {
             if (strncmp(cpu, "OF_COMPATIBLE_", 14) == 0) {
                 fclose(fp);
-                cpu[strcspn(cpu, "\r\n")] = '\0';
+                cpu[strcspn(cpu, "\n")] = '\0';
                 return cpu;
             }
         }
@@ -2990,9 +3014,9 @@ char* get_cpu_model(void) {
     return "Unknown";
 #elif __APPLE__
     static char cpu[0x80];
-    uint16_t size = sizeof(cpu);
+    size_t size = sizeof(cpu);
     if (sysctlbyname("machdep.cpu.brand_string", cpu, &size, NULL, 0) == 0) {
-        cpu[strcspn(cpu, "\r\n")] = '\0';
+        cpu[strcspn(cpu, "\n")] = '\0';
         return cpu;
     }
     return "Unknown";
@@ -3014,7 +3038,7 @@ uint64_t get_total_ram_mb(void) {
     return mem_kb / 1024;
 #elif __APPLE__
     int64_t mem;
-    uint32_t len = sizeof(mem);
+    size_t len = sizeof(mem);
     if (sysctlbyname("hw.memsize", &mem, &len, NULL, 0) == 0)
         return (long)(mem / (1024 * 1024));
     return -1;

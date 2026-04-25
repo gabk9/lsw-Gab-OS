@@ -2,6 +2,7 @@
 #define TERMINAL_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 void listDrives(void);
 void updatehistory(void);

@@ -4,6 +4,10 @@
 #include "types.h"
 #include <stdint.h>
 
+#ifndef _WIN64
+    #include <stddef.h>
+#endif
+
 void checkLswrcSyntax(const char *data_folder);
 char *stringToVariable(const char *str, int32_t *changed);
 var calc(var left, const char *operation, var right, bool mathLib);
