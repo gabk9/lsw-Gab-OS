@@ -1642,44 +1642,40 @@ void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint1
         CreateDirectoryA(data_folder, NULL);
 
     snprintf(history_path, hist_size, "%s\\data\\history.txt", program_root);
-
 #elif __APPLE__
     uint32_t size = root_size;
     if (_NSGetExecutablePath(program_root, &size) == 0) {
         char *resolved = realpath(program_root, NULL);
         if (resolved) {
             strncpy(program_root, resolved, root_size - 1);
-            free(resolved);
+            SAFE_FREE(resolved);
             char *last_slash = strrchr(program_root, '/');
             if (last_slash) *last_slash = '\0';
-        } else {
+        } else
             strcpy(program_root, ".");
-        }
-    } else {
+    } else
         strcpy(program_root, ".");
-    }
 #else
     int16_t len = readlink("/proc/self/exe", program_root, root_size - 1);
     if (len != -1) {
         program_root[len] = '\0';
         char *last_slash = strrchr(program_root, '/');
         if (last_slash) *last_slash = '\0';
-    } else {
+    } else
         strcpy(program_root, ".");
-    }
 #endif
 
     snprintf(data_folder, data_size, "%s/data", program_root);
 
-    #ifdef _WIN64
-        struct _stat st;
-        if (_stat(data_folder, &st) == -1)
-            _mkdir(data_folder);
-    #else
-        struct stat st = {0};
-        if (stat(data_folder, &st) == -1)
-            mkdir(data_folder, 0755);
-    #endif
+#ifdef _WIN64
+    struct _stat st;
+    if (_stat(data_folder, &st) == -1)
+        _mkdir(data_folder);
+#else
+    struct stat st = {0};
+    if (stat(data_folder, &st) == -1)
+        mkdir(data_folder, 0755);
+#endif
 
     snprintf(history_path, hist_size, "%s/data/history.txt", program_root);
 }
