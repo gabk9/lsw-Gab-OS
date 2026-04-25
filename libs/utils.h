@@ -1,8 +1,15 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+    #define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#ifndef _CRT_NONSTDC_NO_WARNINGS
+    #define _CRT_NONSTDC_NO_WARNINGS
+#endif
+
 #include <time.h>
-#include <wchar.h>
 #include <stdio.h>
 #include <float.h>
 #include "types.h"
@@ -15,6 +22,10 @@
     #include <direct.h>
     #include <shlobj.h>
     #include <windows.h>
+
+    #define strcasecmp _stricmp
+    #define strncasecmp _strnicmp
+    #define strdup _strdup
     
     #define cls(void) system("cls")
 #else
