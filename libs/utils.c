@@ -2,6 +2,8 @@
 
 #include "utils.h"
 #include "types.h"
+#include <ctype.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include "s_math.h"
 #include "terminal.h"
@@ -10,9 +12,6 @@
 
 #ifdef __APPLE__
     #include <mach-o/dyld.h>
-#else
-    #include <stdarg.h>
-    #include <ctype.h>
 #endif
 
 #define PROJ_LINES_APPROX 10700
@@ -1644,32 +1643,31 @@ void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint1
 
     snprintf(history_path, hist_size, "%s\\data\\history.txt", program_root);
 
-#else
-    #ifdef __APPLE__
-        uint32_t size = root_size;
-        if (_NSGetExecutablePath(program_root, &size) == 0) {
-            char *resolved = realpath(program_root, NULL);
-            if (resolved) {
-                strncpy(program_root, resolved, root_size - 1);
-                free(resolved);
-                char *last_slash = strrchr(program_root, '/');
-                if (last_slash) *last_slash = '\0';
-            } else {
-                strcpy(program_root, ".");
-            }
-        } else {
-            strcpy(program_root, ".");
-        }
-    #else
-        int16_t len = readlink("/proc/self/exe", program_root, root_size - 1);
-        if (len != -1) {
-            program_root[len] = '\0';
+#elif __APPLE__
+    uint32_t size = root_size;
+    if (_NSGetExecutablePath(program_root, &size) == 0) {
+        char *resolved = realpath(program_root, NULL);
+        if (resolved) {
+            strncpy(program_root, resolved, root_size - 1);
+            free(resolved);
             char *last_slash = strrchr(program_root, '/');
             if (last_slash) *last_slash = '\0';
         } else {
             strcpy(program_root, ".");
         }
-    #endif
+    } else {
+        strcpy(program_root, ".");
+    }
+#else
+    int16_t len = readlink("/proc/self/exe", program_root, root_size - 1);
+    if (len != -1) {
+        program_root[len] = '\0';
+        char *last_slash = strrchr(program_root, '/');
+        if (last_slash) *last_slash = '\0';
+    } else {
+        strcpy(program_root, ".");
+    }
+#endif
 
     snprintf(data_folder, data_size, "%s/data", program_root);
 
@@ -1678,7 +1676,6 @@ void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint1
         mkdir(data_folder, 0755);
 
     snprintf(history_path, hist_size, "%s/data/history.txt", program_root);
-#endif
 }
 
 void setColor(color4 color) {

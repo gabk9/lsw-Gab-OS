@@ -4,13 +4,8 @@
 #include "types.h"
 #include <stdlib.h>
 #include "s_math.h"
+#include <ctype.h>
 #include "terminal.h"
-
-#ifdef __APPLE__
-    #include <hexagon_types.h>
-#else
-    #include <ctype.h>
-#endif
 
 var Ans = { .type = BC_NONE };
 

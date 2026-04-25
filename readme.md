@@ -36,7 +36,7 @@ user-select: none;
 **LSW** is a lightweight terminal environment written in C, inspired by Linux systems.  
 It provides a custom shell with its own set of commands, behaviors and internal logic, designed for learning, experimentation and low-level programming practice.
 
-Although originally focused on Windows, **LSW runs perfectly on Windows, Linux and Android**.  
+Although originally focused on Windows, **LSW runs perfectly on Android, Linux, MacOS and Windows**.  
 It is expected to also work on macOS, but this platform has not yet been officially tested.
 
 ---
@@ -57,7 +57,7 @@ The project focuses on simplicity, clarity and educational value.
 ## Features
 
 - Custom shell implementation in C  
-- Cross-platform support (Windows and Linux)
+- Cross-platform support (Android, Linux, MacOS and Windows)
 - Linux-inspired environment and behavior
 - Own command system with custom logic
 - Command history system
@@ -76,12 +76,12 @@ The project focuses on simplicity, clarity and educational value.
 
 ## Supported Platforms
 
-| Platform | Architecture | Status |
-|---------|--------|--------|
-| Windows | arm64 (aarch64) / amd64 (x86_64) | ✅ Fully supported |
-| Linux   | arm64 (aarch64) / amd64 (x86_64) | ✅ Fully supported |
-| Android | arm64 (aarch64) | ✅ Fully supported |
-| macOS   | arm64 (aarch64) / amd64 (x86_64) | ⚠️ Untested |
+| Platform  | Architecture | Status |
+|----------|--------------|--------|
+|  Windows | arm64 / x86_64 | ✅ Fully supported |
+|   Linux  | arm64 / x86_64 | ✅ Fully supported |
+|  Android | arm64 | ✅ Fully supported |
+|   MacOS  | x86_64 | ✅ Fully supported |
 
 ---
 
@@ -102,6 +102,12 @@ To build LSW, you need the following tools installed:
 - **Make** or **Ninja** (used by CMake as build backend)
 
 ### Install Instructions
+
+**MacOS (using brew installer)**
+
+```bash
+brew install cmake git
+```
 
 **Linux (Ubuntu / Debian)**
 
@@ -127,7 +133,7 @@ winget install --id MSYS2.MSYS2 -e
 
 **Note:** the `data/` folder must remain in the same directory as the executable.
 
-### Linux
+### Android, Linux and MacOS
 
 ```bash
 git clone https://github.com/gabk9/lsw-Gab-OS.git

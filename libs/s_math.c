@@ -1,19 +1,18 @@
 #define _GNU_SOURCE
 
 #include "utils.h"
+#include <ctype.h>
 #include <stdarg.h>
 #include "s_math.h"
 #include <stdlib.h>
 
-#if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
-    #error "Operational system not recognized, terminating program!!"
-#endif
-
-#if !defined(__APPLE__) && !defined(_WIN64)
-    #include <ctype.h>
+#ifdef __linux__
     #include <strings.h>
 #endif
 
+#if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
+    #error "Operational system not recognized, terminating program!!"
+#endif
 
 static uint8_t isnull(int32_t count, ...) {
 

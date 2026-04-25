@@ -2,14 +2,11 @@
 
 #include <math.h>
 #include "utils.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include "s_math.h"
 #include "CheckCmd.h"
 #include <inttypes.h>
-
-#ifndef __APPLE__
-    #include <ctype.h>
-#endif
 
 #if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"

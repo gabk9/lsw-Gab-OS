@@ -14,11 +14,6 @@ include_directories(libs)
 add_executable(lsw ${SOURCES})
 
 if(WIN32)
-    set_target_properties(lsw PROPERTIES SUFFIX ".exe")
-    
-    if(MINGW)
-    endif()
-    
     if(MSVC)
         target_compile_definitions(lsw PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()
