@@ -12,7 +12,7 @@
     #error "Operational system not recognized, terminating program!!"
 #endif
 
-#define VERSION "r2.5.25"
+#define VERSION "r2.5.28"
 
 void revCmd(char *instruction) {
 
@@ -1250,12 +1250,21 @@ void listDrives(void) {
     }
 
 #else
-    char *user = get_user();
-    char path[0x100];
-    snprintf(path, sizeof(path), "/media/%s", user);
 
-    DIR *dir = opendir(path);
+#ifndef __APPLE__
+    char *user = get_user();
+#endif
+	char path[0x100];
+
+#ifndef __APPLE__
+	snprintf(path, sizeof(path), "/media/%s", user);
+#else
+	snprintf(path, sizeof(path), "/Volumes");
+#endif
+
+	DIR *dir = opendir(path);
     if (!dir) {
+	#ifndef __APPLE__ 
 		snprintf(path, sizeof(path), "/run/media/%s", user);
 		dir = opendir(path);
 
@@ -1263,6 +1272,9 @@ void listDrives(void) {
 			puts("drives: could not open /media nor /run/media folder");
 			return;
 		}
+	#else
+		puts("drives: could not open /Volumes folder");
+	#endif
     }
 
     printf("Mounted drives in %s:\n", path);
