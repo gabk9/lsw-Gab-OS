@@ -5,15 +5,25 @@
 #include "libs/terminal.h"
 
 #ifdef _WIN64
+    #include <io.h>
+
+    #define isatty _isatty
     #define rmdir _rmdir
     #define chdir _chdir
     #define getcwd _getcwd
+
     HANDLE hConsole;
 #elif !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
 int32_t main(int32_t argc, char **argv) {
+
+    if (!isatty(STDIN_FILENO)) {
+        puts("LSW: interactive terminal mode is not supported");
+        return 1;
+    }
+
 #ifdef _WIN64
     SetUnhandledExceptionFilter(handler);
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);

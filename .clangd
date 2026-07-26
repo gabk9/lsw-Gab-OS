@@ -1,7 +1,11 @@
 CompileFlags:
   Add: [
+    "--target=x86_64-w64-mingw32",
     "-std=c99",
     "-Wall",
     "-Wextra",
     "-Wpedantic",
+    "-Wno-builtin-requires-header",
+    "-IC:/msys64/mingw64/include",
+    "-IC:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include"
   ]
