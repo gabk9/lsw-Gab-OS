@@ -898,66 +898,65 @@ void rmCmd(uint16_t argc, char **argv) {
     }
 }
 
-void touchCmd(char *instruction) {
+// void touchCmd(char *instruction) {
 
-    if (!*instruction) {
-        puts("touch: missing operand\nUse \"man touch\" to check the manual");
-        return;
-    }
+//     if (!*instruction) {
+//         puts("touch: missing operand\nUse \"man touch\" to check the manual");
+//         return;
+//     }
     
-    trim(instruction);
+//     trim(instruction);
 
-    int16_t string = strrchar(instruction, '<');
+//     int16_t string = strrchar(instruction, '<');
 
-    char *copy = strdup(instruction);
-    char *save;
+//     char *copy = strdup(instruction);
+//     char *save;
 
 
-    if (string == -1) {
+//     if (string == -1) {
 
-        if (!isValidFolderOrFileName(instruction)) {
-            printf("touch: invalid file name\n");
-            return;
-        }
+//         if (!isValidFolderOrFileName(instruction)) {
+//             printf("touch: invalid file name\n");
+//             return;
+//         }
 
-        FILE *f = fopen(instruction, "w");
-        SAFE_FCLOSE(f);
-    } else {
-        char *filename = strtok_r(instruction, "<", &save);
-        char *inFile = strtok_r(NULL, ">", &save);
+//         FILE *f = fopen(instruction, "w");
+//         SAFE_FCLOSE(f);
+//     } else {
+//         char *filename = strtok_r(instruction, "<", &save);
+//         char *inFile = strtok_r(NULL, ">", &save);
 
-        trim(inFile);
-        trimEnd(inFile);
+//         trim(inFile);
+//         trimEnd(inFile);
 
-        trim(filename);
-        trimEnd(filename);
+//         trim(filename);
+//         trimEnd(filename);
 
-        if (!isValidFolderOrFileName(filename)) {
-            printf("touch: invalid file name\n");
-            SAFE_FREE(copy);
-            return;
-        }
+//         if (!isValidFolderOrFileName(filename)) {
+//             printf("touch: invalid file name\n");
+//             SAFE_FREE(copy);
+//             return;
+//         }
 
-        int32_t changed = 0;
-        char *new = stringToVariable(inFile, &changed);
+//         char *new = stringToVariable(inFile);
 
-        if (!(changed && strcasecmp(inFile, "$path") == 0)) {
-            new = echoHandler(new);
+//         if (!(changed && strcasecmp(inFile, "$path") == 0)) {
+//             new = echoHandler(new);
 
-            if (!new)
-                return;
+//             if (!new)
+//                 return;
 
-        }
+//         }
 
-        FILE *f = fopen(filename, "w");
+//         FILE *f = fopen(filename, "w");
 
-        fprintf(f, "%s", new);
+//         fprintf(f, "%s", new);
 
-        SAFE_FCLOSE(f);
-    }
+//         SAFE_FCLOSE(f);
+//     }
 
-    SAFE_FREE(copy);
-}
+//     SAFE_FREE(copy);
+// }
 
 void catCmd(char *instruction, uint32_t max_lines, const char *cmdName) {
 
@@ -1719,112 +1718,6 @@ char *unameCmd(uint16_t argc, char **argv) {
 #else
     return unameCmdLinux(flags);
 #endif
-}
-
-void echoCmd(char *instruction) {
-
-    if (!*instruction) {
-        putchar('\n');
-        return;
-    }
-
-    int8_t file = strrchar(instruction, '>');
-
-    char *copy = strdup(instruction);
-    char *save;
-
-    if (!copy) {
-        perror("strdup");
-        return;
-    }
-
-    if (file == -1) {
-        int32_t changed = 0;
-        char *new = stringToVariable(copy, &changed);
-
-        if (!(changed && strcasecmp(copy, "$path") == 0)) {
-            new = echoHandler(new);
-            if (!new)
-                return;
-        }
-
-        puts(new);
-        
-        SAFE_FREE(new);
-
-    } else if (file != -1) {
-
-        char *inFile = strtok_r(copy, ">", &save);
-        char *filename = strtok_r(NULL, ">", &save);
-
-        if (!inFile || !filename) {
-            puts("echo: invalid syntax");
-            SAFE_FREE(copy);
-            return;
-        }
-
-        trim(inFile); trimEnd(inFile);
-        trim(filename); trimEnd(filename);
-
-        bool QuoteAfterAbracket = (file < strrchar(instruction, '\"') ||
-                                file < strrchar(instruction, '\''));
-
-        int8_t append = isAppend(instruction);
-        char *mode = NULL;
-
-        switch (append) {
-            case -1:
-                QuoteAfterAbracket = true;
-                break;
-
-            case -2:
-                puts("echo: invalid redirection syntax");
-                return;
-
-            case 1:
-                mode = "w";
-                break;
-
-            case 2:
-                mode = "a";
-                break;
-
-            case 0:
-                return;
-        }
-
-        if (QuoteAfterAbracket) {
-            echoHandler(instruction);
-            puts(instruction);
-            return;
-        }
-
-        int32_t changed = 0;
-        char *new = stringToVariable(inFile, &changed);
-
-        if (!(changed && strcasecmp(inFile, "$path") == 0)) {
-            new = echoHandler(new);
-        }
-
-        if (!isValidFolderOrFileName(filename)) {
-            printf("echo: invalid file name\n");
-            return;
-        }
-
-        FILE *f = fopen(filename, mode);
-        if (!f) {
-            perror("fopen");
-            SAFE_FREE(copy);
-            return;
-        }
-
-        fprintf(f, "%s\n", new);
-        SAFE_FCLOSE(f);
-
-        SAFE_FREE(copy);
-        return;
-
-    }
 }
 
 void lsCmd(char **argv, uint16_t argc, const char *address) {

@@ -1,105 +1,22 @@
 #define _GNU_SOURCE
 
-#include "utils.h"
-#include "types.h"
 #include <ctype.h>
 #include <stdlib.h>
-#include "s_math.h"
-#include "terminal.h"
+// #include "terminal.h"
+#include "../../includes/common/utils.h"
+#include "../../includes/common/types.h"
+#include "../../includes/common/s_math.h"
+
+#ifdef _WIN64
+    #include <process.h>
+    #define execv _execv
+#endif
 
 var Ans = { .type = BC_NONE };
 
 #if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
-
-char *stringToVariable(const char *str, int32_t *changed) {
-    *changed = 0;
-
-    if (strcasecmp(str, "$path") == 0) {
-        *changed = 1;
-        return get_env_var("PATH");
-    }
-    else if (strcasecmp(str, "$home") == 0) {
-        *changed = 1;
-        return get_env_var("HOME");
-    }
-    else if (strcasecmp(str, "$username") == 0 || strcasecmp(str, "$user") == 0) {
-        *changed = 1;
-        const char *user = get_user();
-        return strdup(user);
-    }
-    else if (strcasecmp(str, "$temp") == 0) {
-        *changed = 1;
-        const char *tmp = getenv("TMP");
-        if (!tmp) tmp = getenv("TEMP");
-        if (!tmp) tmp = "/tmp";
-        return strdup(tmp);
-    }
-
-#ifndef _WIN64
-    else if (strcasecmp(str, "$shell") == 0) {
-        *changed = 1;
-        return get_env_var("SHELL");
-    }
-    else if (strcasecmp(str, "$lang") == 0) {
-        *changed = 1;
-        return get_env_var("LANG");
-    }
-    else if (strcasecmp(str, "$pwd") == 0) {
-        *changed = 1;
-        return get_env_var("PWD");
-    }
-    else if (strcasecmp(str, "$editor") == 0) {
-        *changed = 1;
-        return get_env_var("EDITOR");
-    }
-
-#else
-    else if (strcasecmp(str, "$comspec") == 0) {
-        *changed = 1;
-        return get_env_var("COMSPEC");
-    }
-    else if (strcasecmp(str, "$systemroot") == 0) {
-        *changed = 1;
-        return get_env_var("SystemRoot");
-    }
-    else if (strcasecmp(str, "$appdata") == 0) {
-        *changed = 1;
-        return get_env_var("APPDATA");
-    }
-    else if (strcasecmp(str, "$localappdata") == 0) {
-        *changed = 1;
-        return get_env_var("LOCALAPPDATA");
-    }
-    else if (strcasecmp(str, "$programdata") == 0) {
-        *changed = 1;
-        return get_env_var("PROGRAMDATA");
-    }
-    else if (strcasecmp(str, "$public") == 0) {
-        *changed = 1;
-        return get_env_var("PUBLIC");
-    }
-    else if (strcasecmp(str, "$os") == 0) {
-        *changed = 1;
-        return get_env_var("OS");
-    }
-    else if (strcasecmp(str, "$number_of_processors") == 0) {
-        *changed = 1;
-        return get_env_var("NUMBER_OF_PROCESSORS");
-    }
-    else if (strcasecmp(str, "$processor_architecture") == 0) {
-        *changed = 1;
-        return get_env_var("PROCESSOR_ARCHITECTURE");
-    }
-#endif
-    else if (str[0] == '$' && str[1] != '\0' && str[1] != ' ') {
-        *changed = 1;
-        return strdup("\n");
-    }
-
-    return strdup(str);
-}
 
 void checkLswrcSyntax(const char *data_folder) {
     char *path = buildLswRcPath(data_folder);
@@ -1187,59 +1104,54 @@ void manCmd(char *instruction, const char **cmds, uint8_t isInsideBash) {
     }
 
     else
-        printf("man: the manual for the '%s' command was not found!!\n", instruction);
+        printf("man: the manual for the '%s' command was not found\n", instruction);
 
 }
 
-void processCommand(char *input, const char **cmds, char **address, char *history_path,
-                    char *data_folder, bool isInsideBash, bool isFromAlias) {
-    char *temp = strdup(input);
-    if (!temp) {
-        perror("bash: strdup failed");
-        return;
-    }
+void processCommand(char **argv, uint32_t argc, const char **cmds, char **address, 
+    char *history_path, char *data_folder, bool isInsideBash, bool isFromAlias) {
 
-   char *first_andand = find_andand_outside_quotes(temp);
+//    char *first_andand = find_andand_outside_quotes(temp);
 
-    if (first_andand) {
-        char *start = temp;
+//     if (first_andand) {
+//         char *start = temp;
 
-        while (true) {
-            char *pos = find_andand_outside_quotes(start);
+//         while (true) {
+//             char *pos = find_andand_outside_quotes(start);
 
-            char *segment;
-            if (pos) {
-                *pos = '\0';
-                segment = start;
-                start = pos + 2;
-            } else {
-                segment = start;
-            }
+//             char *segment;
+//             if (pos) {
+//                 *pos = '\0';
+//                 segment = start;
+//                 start = pos + 2;
+//             } else {
+//                 segment = start;
+//             }
 
-            trim(segment);
-            trimEnd(segment);
-            trimBetween(segment);
+//             trim(segment);
+//             trimEnd(segment);
+//             trimBetween(segment);
 
-            if (*segment) {
-                processCommand(segment, cmds, address, history_path,
-                                data_folder, isInsideBash, false);
-            }
+//             if (*segment) {
+//                 processCommand(segment, cmds, address, history_path,
+//                                 data_folder, isInsideBash, false);
+//             }
 
-            if (!pos)
-                break;
-        }
+//             if (!pos)
+//                 break;
+//         }
 
-        SAFE_FREE(temp);
-        return;
-    }
+//         SAFE_FREE(temp);
+//         return;
+//     }
 
 
     #ifdef _WIN64
-        if (isalpha(temp[0]) && temp[1] == ':' && temp[2] == '\0') {
-            if (!SetCurrentDirectory(temp)) {
-                char path[4] = { temp[0], ':', '\\', '\0' };
+        if (isalpha(argv[0][0]) && argv[0][1] == ':' && argv[0][2] == '\0') {
+            if (!SetCurrentDirectory(argv[0])) {
+                char path[] = { argv[0][0], ':', '\\', '\0' };
                 if (!SetCurrentDirectory(path))
-                    printf("bash: Drive %c: not accessible or does not exist\n", temp[0]);
+                    printf("bash: Drive %c: not accessible or does not exist\n", argv[0][0]);
             }
             SAFE_FREE(*address);
             *address = getcwd(NULL, 0);
@@ -1247,214 +1159,236 @@ void processCommand(char *input, const char **cmds, char **address, char *histor
         }
     #endif
 
-    char *args;
-    char *instruction = extract_instruction(temp, &args);
-
-    if (!instruction) {
-        SAFE_FREE(temp);
-        return;
+    for (uint32_t i = 0; i < argc; i++) {
+        trim(argv[i]);
+        trimEnd(argv[i]);
     }
 
-    trim(instruction);
-    trimEnd(instruction);
-    trimBetween(instruction);
+    // if (!isFromAlias && isalias(argv, argc, cmds, address, 
+    // history_path, data_folder, isInsideBash)) {
+    //     SAFE_FREE(temp);
+    //     return;
+    // }
 
-    if (!isFromAlias && isalias(instruction, args ? args : "", cmds, address, 
-    history_path, data_folder, isInsideBash)) {
-        SAFE_FREE(temp);
-        return;
+    size_t extra = 2 + strlen(argv[0]);
+
+    char *call = alloc(extra);
+
+    if (!call) {
+        fprintf(stderr, "bash: memory allocation failure\n");
+        exit(EXIT_FAILURE);
     }
 
-    if (strcmp(instruction, cmds[0]) == 0) //! clear
-        cls();
+    snprintf(call, extra + 1, "./%s", argv[0]);
 
-    else if (strcmp(instruction, cmds[1]) == 0) //! exit
-        exit(0);
+    char **call_args = alloc(argc * sizeof(char *));
 
-    else if (strcmp(instruction, cmds[2]) == 0) //! echo
-        echoCmd(args ? args : "");
+    *call_args = alloc(extra + 1);
+    memcpy(*call_args, call, extra + 1);
 
-    else if (strcmp(instruction, cmds[3]) == 0) { //! neofetch
-        char *path = buildLswRcPath(data_folder);
-        neofetchCmd(path);
-        SAFE_FREE(path);
+    for (uint32_t i = 1; i < argc; i++) {
+        size_t arg_len = strlen(argv[i]);
+        call_args[i] = alloc(arg_len);
+
+        memcpy(call_args[i], argv[i], arg_len);
     }
 
-    else if (strcmp(instruction, cmds[4]) == 0) //! updatehistory
-        updatehistory();
+    execv(call_args[0], call_args);
 
-    else if (strcmp(instruction, cmds[5]) == 0) //! cmds
-        cmdsCommand(cmds, isInsideBash);
+    for (uint32_t i = 0; i < argc; i++)
+        SAFE_FREE(call_args[i]);
+    SAFE_FREE(call_args);
 
-    else if (strcmp(instruction, cmds[6]) == 0) { //! cd
-    #ifdef _WIN64           
-        if (args) charReplace(args, '/', '\\');
-    #else 
-        if (args) charReplace(args, '\\', '/');
-    #endif          
+    SAFE_FREE(call);
 
-        if (args) {
-            char *new_address = cdCmd(args, *address);
-            SAFE_FREE(*address);
-            *address = new_address;
-        } else {
-            char *new_address = get_default_address();
-            SAFE_FREE(*address);
-            *address = new_address;
-        }
-    }
+    // if (strcmp(instruction, cmds[0]) == 0) //! clear
+    //     cls();
+
+    // else if (strcmp(instruction, cmds[1]) == 0) //! exit
+    //     exit(0);
+
+    // else if (strcmp(instruction, cmds[2]) == 0) //! echo
+    //     echoCmd(args ? args : "");
+
+    // else if (strcmp(instruction, cmds[3]) == 0) { //! neofetch
+    //     char *path = buildLswRcPath(data_folder);
+    //     neofetchCmd(path);
+    //     SAFE_FREE(path);
+    // }
+
+    // else if (strcmp(instruction, cmds[4]) == 0) //! updatehistory
+    //     updatehistory();
+
+    // else if (strcmp(instruction, cmds[5]) == 0) //! cmds
+    //     cmdsCommand(cmds, isInsideBash);
+
+    // else if (strcmp(instruction, cmds[6]) == 0) { //! cd
+    // #ifdef _WIN64           
+    //     if (args) charReplace(args, '/', '\\');
+    // #else 
+    //     if (args) charReplace(args, '\\', '/');
+    // #endif          
+
+    //     if (args) {
+    //         char *new_address = cdCmd(args, *address);
+    //         SAFE_FREE(*address);
+    //         *address = new_address;
+    //     } else {
+    //         char *new_address = get_default_address();
+    //         SAFE_FREE(*address);
+    //         *address = new_address;
+    //     }
+    // }
 
 
-    else if (strcmp(instruction, cmds[7]) == 0) { //! ls
-        uint16_t argc_ls;
-        char **argv_ls = extract_args(args, &argc_ls, "ls");
+    // else if (strcmp(instruction, cmds[7]) == 0) { //! ls
+    //     uint16_t argc_ls;
+    //     char **argv_ls = extract_args(args, &argc_ls, "ls");
 
-        lsCmd(argv_ls, argc_ls, *address);
+    //     lsCmd(argv_ls, argc_ls, *address);
 
-        for (uint16_t i = 1; i < argc_ls; i++)
-            SAFE_FREE(argv_ls[i]);
-        SAFE_FREE(argv_ls);
-    }
+    //     for (uint16_t i = 1; i < argc_ls; i++)
+    //         SAFE_FREE(argv_ls[i]);
+    //     SAFE_FREE(argv_ls);
+    // }
 
-    else if (strcmp(instruction, cmds[8]) == 0) //! man
-        manCmdMulti(args ? args : "", cmds, isInsideBash);
+    // else if (strcmp(instruction, cmds[8]) == 0) //! man
+    //     manCmdMulti(args ? args : "", cmds, isInsideBash);
 
-    else if (strcmp(instruction, cmds[9]) == 0) //! whoami
-        puts(get_user());
+    // else if (strcmp(instruction, cmds[9]) == 0) //! whoami
+    //     puts(get_user());
 
-    else if (strcmp(instruction, cmds[10]) == 0) //! date
-        puts(get_time(TIME_FMT));
+    // else if (strcmp(instruction, cmds[10]) == 0) //! date
+    //     puts(get_time(TIME_FMT));
 
-    else if (strcmp(instruction, cmds[11]) == 0) //! pwd
-        puts(*address);
+    // else if (strcmp(instruction, cmds[11]) == 0) //! pwd
+    //     puts(*address);
 
-    else if (strcmp(instruction, cmds[12]) == 0) //! mkdir
-        mkdirCmd(args ? args : "");
+    // else if (strcmp(instruction, cmds[12]) == 0) //! mkdir
+    //     mkdirCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[13]) == 0) { //! rmdir
-        uint16_t argc_rmdir;
-        char **argv_rmdir = extract_args(args, &argc_rmdir, "rmdir");
+    // else if (strcmp(instruction, cmds[13]) == 0) { //! rmdir
+    //     uint16_t argc_rmdir;
+    //     char **argv_rmdir = extract_args(args, &argc_rmdir, "rmdir");
 
-        rmdirCmd(args ? argc_rmdir : 1, argv_rmdir);
+    //     rmdirCmd(args ? argc_rmdir : 1, argv_rmdir);
 
-        if (args) {
-            for (uint16_t i = 0; i < argc_rmdir; i++)
-                SAFE_FREE(argv_rmdir[i]);
-            SAFE_FREE(argv_rmdir);
-        }
-    }
+    //     if (args) {
+    //         for (uint16_t i = 0; i < argc_rmdir; i++)
+    //             SAFE_FREE(argv_rmdir[i]);
+    //         SAFE_FREE(argv_rmdir);
+    //     }
+    // }
 
-    else if (strcmp(instruction, cmds[14]) == 0) //! cat
-        catCmd(args ? args : "", EOF, "cat");
+    // else if (strcmp(instruction, cmds[14]) == 0) //! cat
+    //     catCmd(args ? args : "", EOF, "cat");
 
-    else if (strcmp(instruction, cmds[15]) == 0) //! touch
-        touchCmd(args ? args : "");
+    // else if (strcmp(instruction, cmds[15]) == 0) //! touch
+    //     touchCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[16]) == 0) { //! rm
-        uint16_t argc_rm;
-        char **argv_rm = extract_args(args, &argc_rm, "rm");
+    // else if (strcmp(instruction, cmds[16]) == 0) { //! rm
+    //     uint16_t argc_rm;
+    //     char **argv_rm = extract_args(args, &argc_rm, "rm");
 
-        rmCmd(args ? argc_rm : 1, argv_rm);
+    //     rmCmd(args ? argc_rm : 1, argv_rm);
 
-        if (args) {
-            for (uint16_t i = 1; i < argc_rm; i++)
-                SAFE_FREE(argv_rm[i]);
-            SAFE_FREE(argv_rm);
-        }
-    }
+    //     if (args) {
+    //         for (uint16_t i = 1; i < argc_rm; i++)
+    //             SAFE_FREE(argv_rm[i]);
+    //         SAFE_FREE(argv_rm);
+    //     }
+    // }
 
-    else if (strcmp(instruction, cmds[17]) == 0) //! history
-        historyCmd(args ? args : "", history_path);
+    // else if (strcmp(instruction, cmds[17]) == 0) //! history
+    //     historyCmd(args ? args : "", history_path);
 
-    else if (strcmp(instruction, cmds[18]) == 0) { //! uname
-        uint16_t argc_uname;
-        char **argv_uname = extract_args(args, &argc_uname, "uname");
+    // else if (strcmp(instruction, cmds[18]) == 0) { //! uname
+    //     uint16_t argc_uname;
+    //     char **argv_uname = extract_args(args, &argc_uname, "uname");
         
-        char *info = unameCmd(argc_uname, argv_uname);
+    //     char *info = unameCmd(argc_uname, argv_uname);
 
-        if (info)
-            puts(info);
+    //     if (info)
+    //         puts(info);
 
-        if (args) {
-            for (uint16_t i = 1; i < argc_uname; i++)
-                SAFE_FREE(argv_uname[i]);
-            SAFE_FREE(argv_uname);
-        }   
-    }
+    //     if (args) {
+    //         for (uint16_t i = 1; i < argc_uname; i++)
+    //             SAFE_FREE(argv_uname[i]);
+    //         SAFE_FREE(argv_uname);
+    //     }   
+    // }
 
-    else if (strcmp(instruction, cmds[19]) == 0) //! grep
-        grepCmd(args ? args : "");
+    // else if (strcmp(instruction, cmds[19]) == 0) //! grep
+    //     grepCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[20]) == 0) { //! bc
-        uint16_t argc_bc;
-        char **argv_bc = extract_args(args, &argc_bc, "bc");
+    // else if (strcmp(instruction, cmds[20]) == 0) { //! bc
+    //     uint16_t argc_bc;
+    //     char **argv_bc = extract_args(args, &argc_bc, "bc");
 
-        bcCmd(argc_bc, argv_bc);
-        if (args) {
-            for (uint16_t i = 1; i < argc_bc; i++)
-                SAFE_FREE(argv_bc[i]);
-            SAFE_FREE(argv_bc);
-        }   
-    }
+    //     bcCmd(argc_bc, argv_bc);
+    //     if (args) {
+    //         for (uint16_t i = 1; i < argc_bc; i++)
+    //             SAFE_FREE(argv_bc[i]);
+    //         SAFE_FREE(argv_bc);
+    //     }   
+    // }
 
-    else if (strcmp(instruction, cmds[21]) == 0) //! drives
-        listDrives();
+    // else if (strcmp(instruction, cmds[21]) == 0) //! drives
+    //     listDrives();
 
-    else if (strcmp(instruction, cmds[22]) == 0) //! clearhistory
-        clearHistoryCmd(history_path);
+    // else if (strcmp(instruction, cmds[22]) == 0) //! clearhistory
+    //     clearHistoryCmd(history_path);
 
-    else if (strcmp(instruction, cmds[23]) == 0) //! rand
-        printf("%u\n", better_rand32());
+    // else if (strcmp(instruction, cmds[23]) == 0) //! rand
+    //     printf("%u\n", better_rand32());
 
-    else if (strcmp(instruction, cmds[24]) == 0) //! alias
-        createShortcut(args ? args : "", data_folder);
+    // else if (strcmp(instruction, cmds[24]) == 0) //! alias
+    //     createShortcut(args ? args : "", data_folder);
 
-    else if (strcmp(instruction, cmds[25]) == 0) //! rename
-        renameCmd(args ? args : "");
+    // else if (strcmp(instruction, cmds[25]) == 0) //! rename
+    //     renameCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[26]) == 0 && isInsideBash) { //! bash
-        uint16_t argc_bash;
-        char **argv_bash = extract_args(args, &argc_bash, "bash");
+    // else if (strcmp(instruction, cmds[26]) == 0 && isInsideBash) { //! bash
+    //     uint16_t argc_bash;
+    //     char **argv_bash = extract_args(args, &argc_bash, "bash");
 
-        bashCmd(argc_bash, argv_bash, cmds, true);
+    //     bashCmd(argc_bash, argv_bash, cmds, true);
 
-        if (args) {
-            for (uint16_t i = 1; i < argc_bash; i++)
-                SAFE_FREE(argv_bash[i]);
-            SAFE_FREE(argv_bash);
-        }
-    }
+    //     if (args) {
+    //         for (uint16_t i = 1; i < argc_bash; i++)
+    //             SAFE_FREE(argv_bash[i]);
+    //         SAFE_FREE(argv_bash);
+    //     }
+    // }
 
-    else if (strcmp(instruction, cmds[27]) == 0) //! head
-        catCmd(args ? args : "", 10, cmds[27]);
+    // else if (strcmp(instruction, cmds[27]) == 0) //! head
+    //     catCmd(args ? args : "", 10, cmds[27]);
 
-    else if (strcmp(instruction, cmds[28]) == 0) //! tail
-        tailCmd(args ? args : "", 10);
+    // else if (strcmp(instruction, cmds[28]) == 0) //! tail
+    //     tailCmd(args ? args : "", 10);
 
-    else if (strcmp(instruction, cmds[29]) == 0) { //! lc
-        uint32_t lineCount = lcCmd(args ? args : "");
-        if (lineCount != U32_NAN)
-            printf("%d\n", lineCount);
-    }
+    // else if (strcmp(instruction, cmds[29]) == 0) { //! lc
+    //     uint32_t lineCount = lcCmd(args ? args : "");
+    //     if (lineCount != U32_NAN)
+    //         printf("%d\n", lineCount);
+    // }
 
-    else if (strcmp(instruction, cmds[30]) == 0) //! sleep
-        sleepCmd(args ? args : "");
+    // else if (strcmp(instruction, cmds[30]) == 0) //! sleep
+    //     sleepCmd(args ? args : "");
 
-    else if (strcmp(instruction, cmds[31]) == 0) { //! randstr
-        char *str = randstrCmd(args ? args : "");
-        if (str)
-            puts(str);
+    // else if (strcmp(instruction, cmds[31]) == 0) { //! randstr
+    //     char *str = randstrCmd(args ? args : "");
+    //     if (str)
+    //         puts(str);
 
-        SAFE_FREE(str);
-    }
+    //     SAFE_FREE(str);
+    // }
 
-    else if (strcmp(instruction, cmds[32]) == 0) //! rev
-        revCmd(args ? args : "");
+    // else if (strcmp(instruction, cmds[32]) == 0) //! rev
+    //     revCmd(args ? args : "");
 
-    else
-        printf("bash: the command '%s' was not found!!\n", instruction);
-
-    SAFE_FREE(temp);
+    // else
+        printf("bash: the command '%s' was not found!!\n", argv[0]);
 }
 
 var parse_operation(char *operation, const FuncEntry *functions, size_t funcCount, const char *uniOps, const char **multiOps, bool mathlib) {

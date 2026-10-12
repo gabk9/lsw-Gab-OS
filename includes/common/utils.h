@@ -122,6 +122,8 @@
     } \
 } while (false)
 
+#define alloc(bytes) safe_malloc(bytes, __LINE__, __FILE__)
+
 #ifdef _WIN32
     char *unameCmdWin(uint8_t flags);
     LONG WINAPI handler(EXCEPTION_POINTERS *e);
@@ -176,6 +178,7 @@ uint16_t getSavedHistSize(char *path);
 uint16_t getSavedHistSize(char *path);
 bool isIn(char needle, char *haystack);
 char *buildLswRcPath(const char *path);
+char *stringToVariable(const char *str);
 bool isValidBcFuncName(const char *str);
 void shiftLeft_at(char *str, size_t pos);
 int32_t bc_strcmp(char *str1, char *str2);
@@ -202,14 +205,15 @@ char *bc_strcat(const char *dest, const char *src);
 char **parseData(const char *str, uint16_t *count);
 bool isBcVariable(const char *str, bool *shouldError);
 void charReplace(char *str, int8_t targ, int8_t repl);
-int16_t injectEscape(char *str, const char *error_str);
 void getItemTypeStr(char *buff, size_t size, var item);
 uint8_t myStrcasestr(const char *str, const char *sub);
+uint16_t injectEscape(char *str, const char *error_str);
 char *handle_normal_cd(const char *path, char *address);
 char *getKeyVal(const char *key_name, const char *path);
 void num_snprintf(char *buff, size_t size, float64 num);
 float64 parse_base_fraction(const char *s, int8_t base);
 void int64_to_hex_min(int64_t v, char *out, size_t size);
+void *safe_malloc(size_t bytes, uint32_t LINE, char *FILE);
 bool isBetweenQuotes(const char *action, int16_t quoteMode);
 char **readHistory(const char *address, uint32_t *lineCount);
 char **copyMat(char **dest, const char **src, uint16_t size);
@@ -228,6 +232,6 @@ void split_instruction_args(char *line, char **out_cmd, char **out_args);
 void printTarg(const char *str, const char *targ, color4 markColor, int8_t ignoreCase);
 int16_t find_main_operator_full(const char *s, const char **multiOps, const char *uniOps, char *foundOp);
 void GetProjDir(char *program_root, uint16_t root_size, char *data_folder, uint16_t data_size, char *history_path, uint16_t hist_size);
-bool isalias(char *operation, char *args, const char **cmds, char **address, char *history_path, char *data_folder, uint16_t isInsideBash);
+bool isalias(char **argv, uint32_t argc, const char **cmds, char **address, char *history_path, char *data_folder, uint16_t isInsideBash);
 
 #endif

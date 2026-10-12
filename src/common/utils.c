@@ -1,14 +1,14 @@
 #define _GNU_SOURCE
 
-#include "utils.h"
-#include "types.h"
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include "s_math.h"
-#include "terminal.h"
-#include "CheckCmd.h"
 #include <inttypes.h>
+#include "../../includes/common/utils.h"
+#include "../../includes/common/types.h"
+#include "../../includes/common/s_math.h"
+#include "../../includes/common/CheckCmd.h"
+// #include "../../includes/common/terminal.h"
 
 #ifdef __APPLE__
     #include <mach-o/dyld.h>
@@ -43,6 +43,26 @@ LONG handler(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+void *safe_malloc(size_t bytes, uint32_t LINE, char *FILE) {
+    void *ptr = malloc(bytes);
+
+    if (!ptr) {
+    #ifndef _WIN64
+        char *f = strrchr(FILE, '/');
+    #else
+        char *f = strrchr(FILE, '\\');
+    #endif
+
+        f = !f ? FILE : f + 1;
+
+        fprintf(stderr, "%s:%"PRIu32": malloc() failed\n", f, LINE);
+
+        exit(EXIT_FAILURE);
+    }
+
+    return ptr;
+}
 
 void num_snprintf(char *buff, size_t size, double num) {
     if (T_CMP(num, (int64_t)num)) {
@@ -175,7 +195,7 @@ int8_t getInvalidEscape(const char *str, const char *error_str) {
     return 1;
 }
 
-int16_t injectEscape(char *str, const char *error_str) {
+uint16_t injectEscape(char *str, const char *error_str) {
     bool inQuotes = false;
 
     for (size_t i = 0; str[i]; i++) {
@@ -387,12 +407,6 @@ char *extractCommandOrKey(char *src, char **arg) {
     return cmd;
 }
 
-char *get_env_var(const char *name) {
-    const char *val = getenv(name);
-    if (!val) val = "Unknown";
-    return strdup(val);
-}
-
 void saveHist(char *operation, char *history_path, char *data_folder) {
     char *path = buildLswRcPath(data_folder);
     uint32_t lines = getSavedHistSize(history_path);
@@ -568,12 +582,15 @@ char **extract_args(char *args, uint16_t *argc, char *firstArg) {
 
     *argc = 0;
 
-    argv[*argc] = strdup(firstArg);
-    if (!argv[*argc]) {
-        SAFE_FREE(argv);
-        return NULL;
+    if (firstArg) {
+        argv[*argc] = strdup(firstArg);
+
+        if (!argv[*argc]) {
+            SAFE_FREE(argv);
+            return NULL;
+        }
+        (*argc)++;
     }
-    (*argc)++;
 
     if (args) {
         uint16_t count = 0;
@@ -1017,7 +1034,7 @@ char *find_andand_outside_quotes(char *s) {
 }
 
 char **parseData(const char *str, uint16_t *count) {
-    char **list = malloc(MAX_ARGS * sizeof(char*));
+    char **list = malloc(MAX_ARGS * sizeof(char *));
     if (!list) return NULL;
 
     *count = 0;
@@ -1735,7 +1752,7 @@ void trimEnd(char *str) {
     uint16_t len = strlen(str);
 
     for (int16_t i = len - 1; i >= 0; i--)
-        if (str[i] != ' ')  {
+        if (isspace(str[i]))  {
             str[i + 1] = '\0';
             break;
         }
@@ -1743,14 +1760,14 @@ void trimEnd(char *str) {
 
 void trim(char *str) {
     if (!str) return;
-    
+
     uint16_t spaces = 0;
-    while (str[spaces] == ' ') {
+    while (isspace(str[spaces])) {
         spaces++;
     }
-    
+
     if (spaces == 0) return;
-    
+
     uint16_t i = 0;
     while (str[spaces + i] != '\0') {
         str[i] = str[spaces+i];
@@ -2077,7 +2094,7 @@ void removeComments(char *str) {
     }
 }
 
-bool isalias(char *operation, char *args, const char **cmds, char **address, char *history_path, char *data_folder, uint16_t isInsideBash) {
+bool isalias(char **argv, uint32_t argc, const char **cmds, char **address, char *history_path, char *data_folder, uint16_t isInsideBash) {
     char *aliasPath = buildLswRcPath(data_folder);
     FILE *f = fopen(aliasPath, "r");
     SAFE_FREE(aliasPath);
@@ -2128,62 +2145,61 @@ bool isalias(char *operation, char *args, const char **cmds, char **address, cha
             trimEnd(action);
         }
 
-        if (isInsideBash && strncmp(action, "bash", 4) == 0 && strcmp(shortcutName, operation) == 0) { //* Just a simple fix
-            char *option;
+        if (isInsideBash && strncmp(action, "bash", 4) == 0 && strcmp(shortcutName, argv[0]) == 0) { //* Just a simple fix
+        //     char *option;
 
-            uint16_t len = strlen(action);
+        //     uint16_t len = strlen(action);
 
-            if (len == 4)
-                option = args;
-                
-            else {
-                if (action[4] != ' ' && action[4] != '\0')
-                    return false;
-                else {
-                    option = strrchr(action, ' ');
-                }
+        //     if (len == 4)
+        //         option = args;
+    
+        //     else {
+        //         if (action[4] != ' ' && action[4] != '\0')
+        //             return false;
+        //         else {
+        //             option = strrchr(action, ' ');
+        //         }
 
-            }
-            trim(option);
+        //     }
+        //     trim(option);
 
-            uint16_t argc_bash;
-            char **argv_bash = extract_args(args, &argc_bash, "bash");
+        //     uint16_t argc_bash;
+        //     char **argv_bash = extract_args(args, &argc_bash, "bash");
 
-            bashCmd(argc_bash, argv_bash, cmds, true);
+        //     bashCmd(argc_bash, argv_bash, cmds, true);
 
-            if (args) {
-                for (uint16_t i = 1; i < argc_bash; i++)
-                    SAFE_FREE(argv_bash[i]);
-                SAFE_FREE(argv_bash);
-            }
+        //     if (args) {
+        //         for (uint16_t i = 1; i < argc_bash; i++)
+        //             SAFE_FREE(argv_bash[i]);
+        //         SAFE_FREE(argv_bash);
+        //     }
 
-            return true;
+        //     return true;
+        // }
+
+        // if (strcmp(operation, shortcutName) == 0) {
+        //     char *fullAction;
+
+        //     if (args && *args) {
+        //         size_t len = strlen(action) + strlen(args) + 3;
+        //         fullAction = malloc(len);
+        //         snprintf(fullAction, len, "%s %s", action, args);
+        //     } else {
+        //         fullAction = strdup(action);
+        //     }
+
+        //     char *save;
+        //     strtok_r(action, " ", &save); 
+
+        //     if (!*args)
+        //         args = strtok_r(NULL, " ", &save);
+
+        //     processCommand(fullAction, cmds, address, history_path, data_folder, isInsideBash, true);
+        //     SAFE_FREE(fullAction);
+        //     SAFE_FREE(line);
+        //     SAFE_FCLOSE(f);
+        //     return true;
         }
-
-        if (strcmp(operation, shortcutName) == 0) {
-            char *fullAction;
-
-            if (args && *args) {
-                size_t len = strlen(action) + strlen(args) + 3;
-                fullAction = malloc(len);
-                snprintf(fullAction, len, "%s %s", action, args);
-            } else {
-                fullAction = strdup(action);
-            }
-
-            char *save;
-            strtok_r(action, " ", &save); 
-
-            if (!*args)
-                args = strtok_r(NULL, " ", &save);
-
-            processCommand(fullAction, cmds, address, history_path, data_folder, isInsideBash, true);
-            SAFE_FREE(fullAction);
-            SAFE_FREE(line);
-            SAFE_FCLOSE(f);
-            return true;
-        }
-
     }
 
     SAFE_FREE(line);

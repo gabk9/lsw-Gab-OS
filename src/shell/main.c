@@ -1,19 +1,29 @@
 #include <stdlib.h>
-#include "libs/utils.h"
-#include "libs/types.h"
-#include "libs/CheckCmd.h"
-#include "libs/terminal.h"
+#include "../../includes/common/utils.h"
+#include "../../includes/common/types.h"
+#include "../../includes/common/CheckCmd.h"
+#include "../../includes/common/terminal.h"
 
 #ifdef _WIN64
+    #include <io.h>
+
+    #define isatty _isatty
     #define rmdir _rmdir
     #define chdir _chdir
     #define getcwd _getcwd
+
     HANDLE hConsole;
 #elif !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif
 
 int32_t main(int32_t argc, char **argv) {
+
+    if (!isatty(STDIN_FILENO)) {
+        puts("LSW: interactive terminal mode is not supported");
+        return 1;
+    }
+
 #ifdef _WIN64
     SetUnhandledExceptionFilter(handler);
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -53,7 +63,7 @@ int32_t main(int32_t argc, char **argv) {
                 break;
 
             if (parenthesis_check(argv[i]) == PAREN_UNCLOSED_QUOTE) {
-                printf("LSW: unclosed quote\n");
+                printf("bash: unclosed quote\n");
                 continue;
             }
 
@@ -61,7 +71,7 @@ int32_t main(int32_t argc, char **argv) {
                 bashCmd(2, (char *[]){"bash", argv[i]}, cmds, false);
             else {
                 saveHist(argv[i], history_path, data_folder);
-                processCommand(argv[i], cmds, &address, history_path, data_folder, false, false);
+                processCommand(argv + 1, argc - 1, cmds, &address, history_path, data_folder, false, false);
             }
         }
 
@@ -116,7 +126,14 @@ int32_t main(int32_t argc, char **argv) {
 
         saveHist(input, history_path, data_folder);
 
-        processCommand(input, cmds, &address, history_path, data_folder, true, false);
+        uint16_t sh_argc;
+        char **sh_argv = extract_args(input, &sh_argc, NULL);
+
+        processCommand(sh_argv, sh_argc, cmds, &address, history_path, data_folder, true, false);
+
+        for (uint16_t i = 1; i < sh_argc; i++)
+            SAFE_FREE(sh_argv[i]);
+        SAFE_FREE(sh_argv);
     }
 
     SAFE_FREE(data_folder);

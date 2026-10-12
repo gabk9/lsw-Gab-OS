@@ -7,6 +7,7 @@ set(SOURCES
     libs/s_math.c
     libs/CheckCmd.c
     libs/terminal.c
+    shell/echo.c
 )
 
 include_directories(libs)
