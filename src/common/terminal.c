@@ -7,6 +7,8 @@
 #include "s_math.h"
 #include "CheckCmd.h"
 #include <inttypes.h>
+#include "sys_utils.h"
+#include "parse_utils.h"
 
 #if !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
@@ -84,20 +86,20 @@ void revCmd(char *instruction) {
                             strchar(destFile, '\\') != -1 || strchar(sourceFile, '\\') != -1);
 
             if (isPath) {
-                printf("rev: currently it does not support paths\n");
+                fprintf(stderr, "rev: currently it does not support paths\n");
                 return;
             }
 
             if (!isValidFolderOrFileName(sourceFile) ||
                 !isValidFolderOrFileName(destFile)) {
-                printf("rev: invalid file name\n");
+                fprintf(stderr, "rev: invalid file name\n");
                 return;
             }
 
             FILE *source = fopen(sourceFile, "r");
 
             if (!source) {
-                printf("rev: could not open '%s'\n", sourceFile);
+                fprintf(stderr, "rev: could not open '%s'\n", sourceFile);
                 return;
             }
 
@@ -105,7 +107,7 @@ void revCmd(char *instruction) {
 
             FILE *dest = fopen(destFile, "w");
             if (!dest) {
-                printf("rev: could not create '%s'\n", destFile);
+                fprintf(stderr, "rev: could not create '%s'\n", destFile);
                 SAFE_FCLOSE(source);
                 return;
             }
@@ -128,19 +130,19 @@ void revCmd(char *instruction) {
             uint8_t isPath = (strchar(instruction, '/') != -1 || strchar(instruction, '/') != -1);
 
             if (isPath) {
-                printf("rev: currently it does not support paths\n");
+                fprintf(stderr, "rev: currently it does not support paths\n");
                 return;
             }
 
             if (!isValidFolderOrFileName(instruction)) {
-                printf("rev: invalid file name\n");
+                fprintf(stderr, "rev: invalid file name\n");
                 return;
             }
 
             FILE *source = fopen(instruction, "r");
 
             if (!source) {
-                printf("rev: could not open '%s'\n", instruction);
+                fprintf(stderr, "rev: could not open '%s'\n", instruction);
                 return;
             }
 
@@ -203,7 +205,7 @@ char *randstrCmd(char *instruction) {
         return NULL;
     }
 
-    char *str = malloc(len + 1);
+    char *str = alloc(len + 1);
     if (!str) {
         puts("randstr: memory allocation error!!");
         return NULL;
@@ -385,7 +387,7 @@ void bashCmd(uint16_t argc, char **argv, const char **cmds, bool insideBash) {
                 for (uint16_t i = 0; cmds[i]; i++)
                     cmdCount++;
 
-                copy = malloc(cmdCount * sizeof(char *));
+                copy = alloc(cmdCount * sizeof(char *));
 
                 for (uint16_t i = 0; i < cmdCount; i++)
                     copy[i] = strdup(cmds[i]);
@@ -755,7 +757,7 @@ void historyCmd(char *operation, const char *path) {
 
     if (!*operation) {
         uint32_t size = getFileLength(f);
-        char *fileBuffer = malloc(size + 1);
+        char *fileBuffer = alloc(size + 1);
         fread(fileBuffer, 1, size, f);
         fileBuffer[size] = '\0';
     
@@ -1218,7 +1220,7 @@ char *cdCmd(const char *instruction, char *address) {
         trim(path);
 
         size_t extra = strlen(Default) + strlen(path) + 1;
-        buffer = malloc(extra);
+        buffer = alloc(extra);
         *buffer = '\0';
         snprintf(buffer, extra, "%s%s", Default, path);
 
@@ -1305,7 +1307,7 @@ void cmdsCommand(const char **cmds, uint8_t isInsideBash) {
         cmdCount++;
 
     if (!initialized) {
-        copy = malloc(cmdCount * sizeof(char *));
+        copy = alloc(cmdCount * sizeof(char *));
         for (uint16_t i = 0; i < cmdCount; i++)
             copy[i] = strdup(cmds[i]);
 

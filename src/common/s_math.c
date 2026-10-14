@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include "s_math.h"
 #include <stdlib.h>
+#include "str_utils.h"
 
 #ifdef __linux__
     #include <strings.h>
@@ -769,7 +770,7 @@ char *bc_parse_str(char *operation) {
 
     len = strlen(buff);
     if (*buff != '"' && buff[len-1] != '"') {
-        char *buff2 = malloc(len+3);
+        char *buff2 = alloc(len+3);
         buff2[len+3] = '\0';
 
         snprintf(buff2, len+3, "\"%s\"", buff);
@@ -1348,7 +1349,7 @@ char *s_oct(char *operation) {
 
     int64_t value = strtol(temp, NULL, 0);
 
-    char *buffer = malloc(0x40);
+    char *buffer = alloc(0x40);
     if (!buffer)
         return NULL;
 
@@ -1476,7 +1477,7 @@ char *s_chr(char *operation) {
         return NULL;
     }
 
-    char *chr = malloc(5);
+    char *chr = alloc(5);
     if (!chr)
         return NULL;
 
@@ -1560,7 +1561,7 @@ char *s_hex(char *operation) {
     
     int64_t value = strtoll(temp, NULL, 10);
 
-    char *buffer = malloc(64);
+    char *buffer = alloc(64);
     if (!buffer) {
         return NULL;
     }
@@ -1630,7 +1631,7 @@ char *s_bin(char *operation) {
 
     int16_t len = 64 - start;
 
-    char *result = malloc(len + 5); 
+    char *result = alloc(len + 5); 
 
     if (!result)
         return NULL;

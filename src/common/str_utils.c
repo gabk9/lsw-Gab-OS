@@ -1,7 +1,15 @@
 #define _GNU_SOURCE
 
+#include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 #include <strings.h>
-#include "../../includes/common/str_utils.h"
+#include "str_utils.h"
+#include "parse_utils.h"
+
+char *get_user(void);
 
 #ifdef _WIN64
     #define strcasecmp _stricmp
@@ -23,6 +31,16 @@ char *stringToVariable(const char *str) {
         if (!tmp) tmp = getenv("TEMP");
         if (!tmp) tmp = "/tmp";
         return strdup(tmp);
+    }
+    else if (strcmp(str, "$?") == 0) {
+        int16_t length = snprintf(NULL, 0, "%" PRId16, last_exit_code);
+
+        char *tmp = alloc(length + 1);
+        if (!tmp) return NULL;
+
+        snprintf(tmp, length + 1, "%"PRId16, last_exit_code);
+
+        return tmp;
     }
 
 #ifndef _WIN64
@@ -79,4 +97,50 @@ char *get_env_var(const char *name) {
     const char *val = getenv(name);
     if (!val) val = "Unknown";
     return strdup(val);
+}
+
+uint16_t injectEscape(char *str, const char *error_str) {
+    bool inQuotes = false;
+    for (size_t i = 0; str[i]; i++) {
+        if (str[i] == '\\' && str[i + 1]) {
+            char next = str[i + 1];
+            char replace = 0;
+            switch(next) {
+                case 'n': replace = '\n'; break;
+                case 't': replace = '\t'; break;
+                case 'b': replace = '\b'; break;
+                case 'r': replace = '\r'; break;
+                case 'a': replace = '\a'; break;
+                case '\'': replace = '\''; break;
+                case '"': replace = '"'; break;
+                case '?': replace = '?'; break;
+                case '\\': replace = '\\'; break;
+                case 'f': replace = '\f'; break;
+                case 'v': replace = '\v'; break;
+                case '0': replace = '\0'; break;
+                default: {
+                    fprintf(stderr, "%s: invalid escape character: '\\%c'\n", error_str, next);
+                    return 0;
+                }
+            }
+
+            str[i] = replace;
+            shiftLeft_at(str, i + 1);
+
+            if (replace == '\0') break;
+            continue;
+        }
+
+        if ((str[i] == '"' || str[i] == '\'') && (i == 0 || str[i - 1] != '\\')) {
+            inQuotes = !inQuotes;
+        }
+    }
+    return 1;
+}
+
+void shiftLeft_at(char *str, size_t pos) {
+    size_t len = strlen(str);
+    if (pos >= len) return;
+
+    memmove(&str[pos], &str[pos + 1], len - pos);
 }

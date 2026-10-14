@@ -1,8 +1,9 @@
 #include <stdlib.h>
-#include "../../includes/common/utils.h"
 #include "../../includes/common/types.h"
+#include "../../includes/common/utils.h"
 #include "../../includes/common/CheckCmd.h"
 #include "../../includes/common/terminal.h"
+#include "../../includes/common/parse_utils.h"
 
 #ifdef _WIN64
     #include <io.h>
@@ -52,6 +53,8 @@ int32_t main(int32_t argc, char **argv) {
     char *data_folder = calloc(MAX_CHAR, sizeof(char));
     char *history_path = calloc(0x4B0, sizeof(char));
 
+    last_exit_code = 0;
+
     GetProjDir(program_root, MAX_CHAR, data_folder, MAX_CHAR, history_path, 0x4B0);
 
     if (argc > 1) {
@@ -63,7 +66,7 @@ int32_t main(int32_t argc, char **argv) {
                 break;
 
             if (parenthesis_check(argv[i]) == PAREN_UNCLOSED_QUOTE) {
-                printf("bash: unclosed quote\n");
+                fprintf(stderr, "bash: unclosed quote\n");
                 continue;
             }
 
@@ -117,7 +120,7 @@ int32_t main(int32_t argc, char **argv) {
         trimEnd(input);
 
         if (parenthesis_check(input) == PAREN_UNCLOSED_QUOTE) {
-            printf("bash: unclosed quote\n");
+            fprintf(stderr, "bash: unclosed quote\n");
             continue;
         }
 
@@ -126,13 +129,31 @@ int32_t main(int32_t argc, char **argv) {
 
         saveHist(input, history_path, data_folder);
 
-        uint16_t sh_argc;
+        uint16_t sh_argc = 0;
         char **sh_argv = extract_args(input, &sh_argc, NULL);
 
-        processCommand(sh_argv, sh_argc, cmds, &address, history_path, data_folder, true, false);
+        if (!sh_argv) {
+            fprintf(stderr, "bash: failed to extract arguments\n");
+            continue;
+        }
 
-        for (uint16_t i = 1; i < sh_argc; i++)
+        if (strcmp(sh_argv[0], "exit") == 0) {
+            for (uint16_t i = 0; i < sh_argc; i++)
+                SAFE_FREE(sh_argv[i]);
+
+            SAFE_FREE(sh_argv);
+
+            break;
+        }
+
+        last_exit_code = processCommand(
+            sh_argv, sh_argc, cmds, &address,
+            history_path, data_folder, true, false
+        );
+
+        for (uint16_t i = 0; i < sh_argc; i++)
             SAFE_FREE(sh_argv[i]);
+
         SAFE_FREE(sh_argv);
     }
 

@@ -8,6 +8,7 @@
 #include "../../includes/common/types.h"
 #include "../../includes/common/s_math.h"
 #include "../../includes/common/CheckCmd.h"
+#include "../../includes/common/str_utils.h"
 // #include "../../includes/common/terminal.h"
 
 #ifdef __APPLE__
@@ -56,7 +57,7 @@ void *safe_malloc(size_t bytes, uint32_t LINE, char *FILE) {
 
         f = !f ? FILE : f + 1;
 
-        fprintf(stderr, "%s:%"PRIu32": malloc() failed\n", f, LINE);
+        fprintf(stderr, "%s:%"PRIu32": alloc() failed\n", f, LINE);
 
         exit(EXIT_FAILURE);
     }
@@ -123,7 +124,7 @@ char *bc_strcat(const char *dest, const char *src) {
 
     size_t total = (len1 - 2) + (len2 - 2) + 3;
 
-    char *cat = malloc(total);
+    char *cat = alloc(total);
     if (!cat)
         return NULL;
 
@@ -193,61 +194,6 @@ int8_t getInvalidEscape(const char *str, const char *error_str) {
     }
 
     return 1;
-}
-
-uint16_t injectEscape(char *str, const char *error_str) {
-    bool inQuotes = false;
-
-    for (size_t i = 0; str[i]; i++) {
-        if ((str[i] == '"' || str[i] == '\'') && (i == 0 || str[i-1] != '\\')) {
-            inQuotes = !inQuotes;
-            continue;
-        }
-
-        if (!inQuotes)
-            continue;
-
-        if (str[i] == '\\' && str[i+1]) {
-            char next = str[i+1];
-            char replace = 0;
-
-            switch(next) {
-                case 'n':  replace = '\n'; break;
-                case 't':  replace = '\t'; break;
-                case 'b':  replace = '\b'; break;
-                case 'r':  replace = '\r'; break;
-                case 'a':  replace = '\a'; break;
-                case '\'': replace = '\''; break;
-                case '"':  replace = '"';  break;
-                case '?':  replace = '?';  break;
-                case '\\': replace = '\\'; break;
-                case 'f':  replace = '\f'; break;
-                case 'v':  replace = '\v'; break;
-                case '0':  replace = '\0'; break;
-                default: {
-                    color4 color1 = (strcasecmp(error_str, "eval") == 0) ? BC_PROMPT_COLOR : WHITE;
-                    color4 color2 = (color1 == BC_PROMPT_COLOR) ? GET_BASE_COLOR(color1) : WHITE;
-
-                    printc("%s", color1, WHITE, error_str);
-                    printf(": ");
-                    printc("invalid escape character: '\\%c'\n", color2, WHITE, next);
-
-                    return 0;
-                }
-            }
-
-            str[i] = replace;
-            shiftLeft_at(str, i+1);
-        }
-    }
-    return 1;
-}
-
-void shiftLeft_at(char *str, size_t pos) {
-    size_t len = strlen(str);
-    if (pos >= len) return;
-
-    memmove(&str[pos], &str[pos + 1], len - pos);
 }
 
 bool isValidBcFuncName(const char *str) {
@@ -430,7 +376,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
     if ((double)lines < MaxLines) {
         FILE *file = fopen(history_path, "a");
         if (!file) {
-            printf("Error: could not open 'history.txt'\n");
+            fprintf(stderr, "bash: could not open 'history.txt'\n");
             return;
         }
 
@@ -441,7 +387,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
 
     FILE *f = fopen(history_path, "r");
     if (!f) {
-        printf("Error: could not open 'history.txt'\n");
+        fprintf(stderr, "bash: could not open 'history.txt'\n");
         return;
     }
 
@@ -454,7 +400,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
         return;
     }
 
-    char *buffer = malloc(size + 1);
+    char *buffer = alloc(size + 1);
     if (!buffer) {
         SAFE_FCLOSE(f);
         return;
@@ -481,7 +427,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
     size_t contentLen = strlen(content);
     size_t opLen = strlen(operation);
 
-    char *newBuffer = malloc(contentLen + opLen + 2);
+    char *newBuffer = alloc(contentLen + opLen + 2);
     if (!newBuffer) {
         SAFE_FREE(buffer);
         return;
@@ -502,7 +448,7 @@ void saveHist(char *operation, char *history_path, char *data_folder) {
 
     FILE *file = fopen(history_path, "w");
     if (!file) {
-        printf("Error: could not open 'history.txt'\n");
+        fprintf(stderr, "bash: could not open 'history.txt'\n");
         SAFE_FREE(buffer);
         SAFE_FREE(newBuffer);
         return;
@@ -546,7 +492,7 @@ char *getKeyVal(const char *key_name, const char *path) {
 
         if (strcmp(key, key_name) == 0) {
             size_t len = strlen(val);
-            result = malloc(len);
+            result = alloc(len);
 
             if (!result)
                 return NULL;
@@ -574,50 +520,6 @@ uint16_t getSavedHistSize(char *path) {
 
     SAFE_FCLOSE(f);
     return lines;
-}
-
-char **extract_args(char *args, uint16_t *argc, char *firstArg) {
-    char **argv = malloc(sizeof(char*) * MAX_ARGS);
-    if (!argv) return NULL;
-
-    *argc = 0;
-
-    if (firstArg) {
-        argv[*argc] = strdup(firstArg);
-
-        if (!argv[*argc]) {
-            SAFE_FREE(argv);
-            return NULL;
-        }
-        (*argc)++;
-    }
-
-    if (args) {
-        uint16_t count = 0;
-        char **list = parseData(args, &count);
-        if (!list) {
-            SAFE_FREE(argv[0]);
-            SAFE_FREE(argv);
-            return NULL;
-        }
-
-        for (uint16_t i = 0; i < count && *argc < MAX_ARGS; i++) {
-            argv[*argc] = strdup(list[i]);
-            if (!argv[*argc]) {
-                for (uint16_t j = 0; j < *argc; j++)
-                    SAFE_FREE(argv[j]);
-                SAFE_FREE(argv);
-                break;
-            }
-            (*argc)++;
-        }
-
-        for (uint16_t i = 0; i < count; i++)
-            SAFE_FREE(list[i]);
-        SAFE_FREE(list);
-    }
-
-    return argv;
 }
 
 int8_t isAppend(const char *str) {
@@ -919,7 +821,6 @@ bool isValidFolderOrFileName(const char *name) {
     return true;
 }
 
-
 char *revStr(const char *str) {
     int32_t len = strlen(str);
     char *new = calloc(len + 1, 1);
@@ -988,7 +889,7 @@ char *defaultAddressReplace(const char *address) {
     }
 
     size_t extra = strlen(copy) + 2;
-    char *buffer = malloc(extra);
+    char *buffer = alloc(extra);
     *buffer = '\0';
     snprintf(buffer, extra, "~%s", copy);
 
@@ -1031,47 +932,6 @@ char *find_andand_outside_quotes(char *s) {
             return p;
     }
     return NULL;
-}
-
-char **parseData(const char *str, uint16_t *count) {
-    char **list = malloc(MAX_ARGS * sizeof(char *));
-    if (!list) return NULL;
-
-    *count = 0;
-    uint16_t i = 0;
-
-    while (str[i]) {
-        while (isspace((unsigned char)str[i])) i++;
-        if (!str[i]) break;
-
-        if (*count >= MAX_ARGS)
-            break;
-
-        if (str[i] == '"') {
-            i++;
-            const char *start = &str[i];
-            while (str[i] && str[i] != '"') i++;
-
-            size_t len = &str[i] - start;
-            list[*count] = malloc(len + 1);
-            memcpy(list[*count], start, len);
-            list[*count][len] = '\0';
-            (*count)++;
-
-            if (str[i] == '"') i++;
-        } else {
-            const char *start = &str[i];
-            while (str[i] && !isspace((unsigned char)str[i])) i++;
-
-            size_t len = &str[i] - start;
-            list[*count] = malloc(len + 1);
-            memcpy(list[*count], start, len);
-            list[*count][len] = '\0';
-            (*count)++;
-        }
-    }
-
-    return list;
 }
 
 void enableAnsiIfNeeded(void) {
@@ -1302,23 +1162,6 @@ char *charNumber(void) {
             totalSize, (double)totalSize / 0x400, (double)totalSize / 0x100000);
 
     return result;
-}
-
-char *get_user(void) {
-#ifdef _WIN64
-    char *user = getenv("USERNAME");
-#else
-    #ifndef __ANDROID__
-        char *user = getenv("USER");
-    #else
-        uid_t uid = getuid();
-        struct passwd *pw = getpwuid(uid);
-
-        char *user = pw->pw_name;
-    #endif
-#endif
-
-    return (user) ? user : "Unknown";
 }
 
 int16_t strchar(const char *str, int8_t chr) {
@@ -1749,31 +1592,24 @@ void trimBetween(char *str) {
 }
 
 void trimEnd(char *str) {
-    uint16_t len = strlen(str);
+    if (!str) return;
 
-    for (int16_t i = len - 1; i >= 0; i--)
-        if (isspace(str[i]))  {
-            str[i + 1] = '\0';
-            break;
-        }
+    size_t len = strlen(str);
+
+    while (len > 0 && isspace((unsigned char)str[len - 1]))
+        str[--len] = '\0';
 }
 
 void trim(char *str) {
     if (!str) return;
 
-    uint16_t spaces = 0;
-    while (isspace(str[spaces])) {
+    size_t spaces = 0;
+
+    while (str[spaces] && isspace((unsigned char)str[spaces]))
         spaces++;
-    }
 
-    if (spaces == 0) return;
-
-    uint16_t i = 0;
-    while (str[spaces + i] != '\0') {
-        str[i] = str[spaces+i];
-        i++;
-    }
-    str[i] = '\0';
+    if (spaces > 0)
+        memmove(str, str + spaces, strlen(str + spaces) + 1);
 }
 
 char *extractPath(char **str) {
@@ -1855,7 +1691,7 @@ uint16_t countIndex(const char *str, int8_t chr) {
 
 char *echoHandler(char *str) {
     size_t len = strlen(str);
-    char *out = malloc(len*2);
+    char *out = alloc(len*2);
     if (!out) return str;
 
     if (!injectEscape(str, "bash"))
@@ -2182,7 +2018,7 @@ bool isalias(char **argv, uint32_t argc, const char **cmds, char **address, char
 
         //     if (args && *args) {
         //         size_t len = strlen(action) + strlen(args) + 3;
-        //         fullAction = malloc(len);
+        //         fullAction = alloc(len);
         //         snprintf(fullAction, len, "%s %s", action, args);
         //     } else {
         //         fullAction = strdup(action);
@@ -2215,7 +2051,7 @@ void safe_lower_inplace(char *s) {
 
 char *tolowerstr(const char *str) {
     uint16_t len = strlen(str);
-    char *cpy = malloc(len + 1);
+    char *cpy = alloc(len + 1);
     if (!cpy) return NULL;
 
     for (uint16_t i = 0; i < len; i++)
@@ -2730,7 +2566,7 @@ char *var2str(var buff) {
         case BC_INT:
         case BC_FLOAT: {
             const size_t max = 0x40;
-            char *tmp = malloc(max);
+            char *tmp = alloc(max);
             if (!tmp) return NULL;
 
             num_snprintf(tmp, max, (buff.type == BC_FLOAT) ? buff.data.f : (double)buff.data.i);
@@ -2865,7 +2701,7 @@ char *handle_normal_cd(const char *path, char *address) {
 }
 
 char **copyMat(char **dest, const char **src, uint16_t size) {
-    dest = malloc(size * sizeof(char *));
+    dest = alloc(size * sizeof(char *));
     if (!dest) return NULL;
 
     for (uint16_t i = 0; i < size; i++) {

@@ -1,0 +1,330 @@
+#define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
+
+#include "utils.h"
+#include <errno.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "parse_utils.h"
+
+#ifdef _WIN64
+    #include <process.h>
+    #define execv _execv
+#elif defined(__linux__)
+    #include <sys/wait.h>
+#endif
+
+int8_t last_exit_code;
+
+static void free_args(char **args, uint16_t count) {
+    if (!args) return;
+
+    for (uint16_t i = 0; i < count; i++)
+        SAFE_FREE(args[i]);
+
+    SAFE_FREE(args);
+}
+
+char **parseData(const char *str, uint16_t *count) {
+    if (!str || !count) return NULL;
+
+    char **list = alloc((MAX_ARGS + 1) * sizeof(char *));
+    if (!list) return NULL;
+
+    *count = 0;
+    size_t i = 0;
+
+    while (str[i]) {
+        while (str[i] && isspace((unsigned char)str[i]))
+            i++;
+
+        if (!str[i]) break;
+
+        if (*count >= MAX_ARGS)
+            break;
+
+        size_t start;
+        size_t len;
+
+        if (str[i] == '"') {
+            start = ++i;
+
+            while (str[i] && str[i] != '"')
+                i++;
+
+            if (str[i] != '"') {
+                free_args(list, *count);
+                *count = 0;
+                return NULL;
+            }
+
+            len = i - start;
+            i++;
+        } else {
+            start = i;
+
+            while (str[i] && !isspace((unsigned char)str[i]))
+                i++;
+
+            len = i - start;
+        }
+
+        list[*count] = alloc(len + 1);
+
+        if (!list[*count]) {
+            free_args(list, *count);
+            *count = 0;
+            return NULL;
+        }
+
+        memcpy(list[*count], str + start, len);
+        list[*count][len] = '\0';
+
+        (*count)++;
+    }
+
+    list[*count] = NULL;
+    return list;
+}
+
+char **extract_args(char *args, uint16_t *argc, char *firstArg) {
+    if (!argc) return NULL;
+
+    *argc = 0;
+
+    char **argv = alloc((MAX_ARGS + 1) * sizeof(char *));
+    if (!argv) return NULL;
+
+    if (firstArg) {
+        argv[*argc] = strdup(firstArg);
+
+        if (!argv[*argc]) {
+            SAFE_FREE(argv);
+            return NULL;
+        }
+
+        (*argc)++;
+    }
+
+    if (args) {
+        uint16_t count = 0;
+        char **list = parseData(args, &count);
+
+        if (!list) {
+            free_args(argv, *argc);
+            *argc = 0;
+            return NULL;
+        }
+
+        for (uint16_t i = 0; i < count && *argc < MAX_ARGS; i++) {
+            argv[*argc] = strdup(list[i]);
+
+            if (!argv[*argc]) {
+                free_args(list, count);
+                free_args(argv, *argc);
+                *argc = 0;
+                return NULL;
+            }
+
+            (*argc)++;
+        }
+
+        free_args(list, count);
+    }
+
+    argv[*argc] = NULL;
+    return argv;
+}
+
+int processCommand(
+    char **argv,
+    uint32_t argc,
+    const char **cmds,
+    char **address,
+    char *history_path,
+    char *data_folder,
+    bool isInsideBash,
+    bool isFromAlias
+) {
+    (void)cmds;
+    (void)address;
+    (void)history_path;
+    (void)data_folder;
+    (void)isInsideBash;
+    (void)isFromAlias;
+
+    if (!argv || argc == 0 || !argv[0]) {
+        last_exit_code = 0;
+        return last_exit_code;
+    }
+
+    for (uint32_t i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "&&") != 0)
+            continue;
+
+        if (i == 0 ||
+            i + 1 >= argc ||
+            !argv[i + 1] ||
+            strcmp(argv[i + 1], "&&") == 0) {
+            fprintf(stderr,
+                    "bash: syntax error near unexpected token '&&'\n");
+
+            last_exit_code = 2;
+            return last_exit_code;
+        }
+
+        char *separator = argv[i];
+        argv[i] = NULL;
+
+        int status = processCommand(
+            argv, i,
+            cmds, address,
+            history_path, data_folder,
+            isInsideBash, isFromAlias
+        );
+
+        argv[i] = separator;
+
+        if (status != 0) {
+            last_exit_code = status;
+            return last_exit_code;
+        }
+
+        last_exit_code = processCommand(
+            &argv[i + 1], argc - i - 1,
+            cmds, address,
+            history_path, data_folder,
+            isInsideBash, isFromAlias
+        );
+
+        return last_exit_code;
+    }
+
+#ifdef _WIN64
+    fprintf(stderr, "bash: process execution not implemented for Windows\n");
+    last_exit_code = 1;
+    return last_exit_code;
+#else
+    const char *command_dir = "./src/commands/";
+    const char *extension = "";
+
+    size_t path_len = strlen(command_dir)
+                    + strlen(argv[0])
+                    + strlen(extension) + 1;
+
+    char *call = alloc(path_len);
+
+    if (!call) {
+        perror("bash: alloc");
+        last_exit_code = 1;
+        return last_exit_code;
+    }
+
+    snprintf(call, path_len, "%s%s%s",
+            command_dir, argv[0], extension);
+
+
+    char **call_args = alloc(((size_t)argc + 1) * sizeof(*call_args));
+
+    if (!call_args) {
+        perror("bash: alloc");
+        SAFE_FREE(call);
+        last_exit_code = 1;
+        return last_exit_code;
+    }
+
+    call_args[0] = strdup(call);
+
+    if (!call_args[0]) {
+        perror("bash: strdup");
+        SAFE_FREE(call_args);
+        SAFE_FREE(call);
+
+        last_exit_code = 1;
+        return last_exit_code;
+    }
+
+    for (uint32_t i = 1; i < argc; i++) {
+        if (argv[i][0] == '$') {
+            call_args[i] = stringToVariable(argv[i]);
+
+            if (!call_args[i]) {
+                fprintf(stderr, "bash: failed to expand variable: %s\n", argv[i]);
+
+                for (uint32_t j = 1; j < i; j++)
+                    SAFE_FREE(call_args[j]);
+
+                SAFE_FREE(call_args);
+                SAFE_FREE(call);
+
+                last_exit_code = 1;
+                return last_exit_code;
+            }
+
+            continue;
+        }
+
+        size_t extra = strlen(argv[i]) + 1;
+        call_args[i] = alloc(extra);
+
+        if (!call_args[i]) {
+            perror("bash: alloc");
+
+            for (uint32_t j = 1; j < i; j++)
+                SAFE_FREE(call_args[j]);
+
+            SAFE_FREE(call_args);
+            SAFE_FREE(call);
+
+            last_exit_code = 1;
+            return last_exit_code;
+        }
+
+        memcpy(call_args[i], argv[i], extra);
+    }
+
+    call_args[argc] = NULL;
+
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("bash: fork");
+        free_args(call_args, argc);
+        SAFE_FREE(call);
+        last_exit_code = 1;
+        return last_exit_code;
+    }
+
+    if (pid == 0) {
+        execv(call, call_args);
+
+        fprintf(stderr, "bash: command not found: '%s'\n", argv[0]);
+        _exit(127);
+    }
+
+    int32_t status;
+    int32_t result = 1;
+
+    while (waitpid(pid, &status, 0) < 0) {
+        if (errno == EINTR)
+            continue;
+
+        perror("bash: waitpid");
+        goto cleanup;
+    }
+
+    if (WIFEXITED(status))
+        result = WEXITSTATUS(status);
+    else if (WIFSIGNALED(status))
+        result = 128 + WTERMSIG(status);
+
+cleanup:
+    free_args(call_args, argc);
+    SAFE_FREE(call);
+
+    last_exit_code = result;
+    return last_exit_code;
+#endif
+}

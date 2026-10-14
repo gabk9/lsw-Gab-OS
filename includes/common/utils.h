@@ -13,8 +13,8 @@
 #include <stdio.h>
 #include <float.h>
 #include "types.h"
+#include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include <stdbool.h>
 #include <inttypes.h>
 
@@ -180,7 +180,6 @@ bool isIn(char needle, char *haystack);
 char *buildLswRcPath(const char *path);
 char *stringToVariable(const char *str);
 bool isValidBcFuncName(const char *str);
-void shiftLeft_at(char *str, size_t pos);
 int32_t bc_strcmp(char *str1, char *str2);
 char *find_andand_outside_quotes(char *s);
 void update_last_directory(char *address);
@@ -202,12 +201,10 @@ char* findCharOutsideQuotes(char *s, char target);
 char *extract_instruction(char *str, char **args);
 void createShortcut(char *instruction, char *path);
 char *bc_strcat(const char *dest, const char *src);
-char **parseData(const char *str, uint16_t *count);
 bool isBcVariable(const char *str, bool *shouldError);
 void charReplace(char *str, int8_t targ, int8_t repl);
 void getItemTypeStr(char *buff, size_t size, var item);
 uint8_t myStrcasestr(const char *str, const char *sub);
-uint16_t injectEscape(char *str, const char *error_str);
 char *handle_normal_cd(const char *path, char *address);
 char *getKeyVal(const char *key_name, const char *path);
 void num_snprintf(char *buff, size_t size, float64 num);
@@ -218,7 +215,6 @@ bool isBetweenQuotes(const char *action, int16_t quoteMode);
 char **readHistory(const char *address, uint32_t *lineCount);
 char **copyMat(char **dest, const char **src, uint16_t size);
 void printInFileNTimes(FILE *stream, char *str, int64_t count);
-char **extract_args(char *args, uint16_t *argc, char *firstArg);
 int8_t getInvalidEscape(const char *str, const char *error_str);
 float64 parse_bin_hex_oct_ans_e_pi(const char *str, int16_t *ok);
 bool isKeyRepeated(const char *data_folder, const char *key_name);
