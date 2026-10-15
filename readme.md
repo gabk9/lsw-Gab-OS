@@ -94,7 +94,7 @@ To build LSW, you need the following tools installed:
 - **C compiler**
   - GCC or Clang on Linux
   - MinGW (GCC), MSYS2, or MSVC on Windows
-- **CMake** (version 3.10 or newer)
+- **CMake** (version 3.16 or newer)
 - **Git**
 
 ### Optional (but recommended)
@@ -139,9 +139,9 @@ winget install --id MSYS2.MSYS2 -e
 git clone https://github.com/gabk9/lsw-Gab-OS.git
 cd lsw-Gab-OS
 git checkout pc-linux
-cmake .
-cmake --build .
-./lsw
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+./build/lsw
 ```
 
 ### Windows (Powershell)
@@ -150,7 +150,11 @@ cmake --build .
 git clone https://github.com/gabk9/lsw-Gab-OS.git
 cd lsw-Gab-OS
 git checkout pc-linux
-cmake .
-cmake --build .
-.\lsw.exe
+cmake -S . -B build
+cmake --build build --config Release --parallel
 ```
+
+With Visual Studio, run `.\build\Release\lsw.exe`; with MinGW or Ninja, run
+`.\build\lsw.exe`. The shell target includes the shared sources and
+`src/shell/builtins`; command implementations in `src/commands` are built
+separately.

@@ -137,15 +137,6 @@ int32_t main(int32_t argc, char **argv) {
             continue;
         }
 
-        if (strcmp(sh_argv[0], "exit") == 0 || (last_argument && strcmp(last_argument, "exit") == 0)) {
-            for (uint16_t i = 0; i < sh_argc; i++)
-                SAFE_FREE(sh_argv[i]);
-
-            SAFE_FREE(sh_argv);
-
-            break;
-        }
-
         last_exit_code = processCommand(
             sh_argv, sh_argc, cmds, &address,
             history_path, data_folder, true, false
@@ -157,6 +148,10 @@ int32_t main(int32_t argc, char **argv) {
             SAFE_FREE(sh_argv[i]);
 
         SAFE_FREE(sh_argv);
+
+        if (last_exit_code == EXIT_CODE)
+            break;
+
     }
 
     SAFE_FREE(last_argument);

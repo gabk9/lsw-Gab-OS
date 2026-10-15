@@ -52,7 +52,7 @@ static char *getSpecialVariable(const char *name) {
         char *value = alloc((size_t)length + 1);
 
         snprintf(value, (size_t)length + 1,
-                "%"PRId8, last_exit_code);
+                "%"PRId16, last_exit_code);
 
         return value;
     }

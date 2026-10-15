@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-extern int8_t last_exit_code;
+extern int16_t last_exit_code;
 extern char *last_argument;
 
 char **parseData(const char *str, uint16_t *count);

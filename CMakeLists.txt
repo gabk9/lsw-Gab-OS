@@ -1,29 +1,36 @@
-cmake_minimum_required(VERSION 3.10)
-project(shell C)
+cmake_minimum_required(VERSION 3.16)
 
-set(SOURCES
-    main.c 
-    libs/utils.c
-    libs/s_math.c
-    libs/CheckCmd.c
-    libs/terminal.c
-    shell/echo.c
+project(lsw LANGUAGES C)
+
+set(LSW_SOURCES
+    src/shell/main.c
+    src/common/CheckCmd.c
+    src/common/parse_utils.c
+    src/common/s_math.c
+    src/common/str_utils.c
+    src/common/sys_utils.c
+    src/common/terminal.c
+    src/common/utils.c
 )
 
-include_directories(libs)
+file(GLOB_RECURSE LSW_BUILTIN_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/shell/builtins/*.c"
+)
 
-add_executable(lsw ${SOURCES})
+add_executable(lsw
+    ${LSW_SOURCES}
+    ${LSW_BUILTIN_SOURCES}
+)
 
-if(WIN32)
-    if(MSVC)
-        target_compile_definitions(lsw PRIVATE _CRT_SECURE_NO_WARNINGS)
-    endif()
+target_include_directories(lsw PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/includes"
+    "${CMAKE_CURRENT_SOURCE_DIR}/includes/common"
+)
+
+if(MSVC)
+    target_compile_definitions(lsw PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_options(lsw PRIVATE /W4 /utf-8)
 else()
-    target_link_libraries(lsw m)
-endif()
-
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(lsw PRIVATE -Wall -Wextra -Wpedantic)
-elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(lsw PRIVATE /W4)
+    target_link_libraries(lsw PRIVATE m)
 endif()

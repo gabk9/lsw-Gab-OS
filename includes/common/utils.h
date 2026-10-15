@@ -48,6 +48,8 @@
     #define cls(void) system("clear")
 #endif
 
+#define EXIT_CODE 8192
+
 #define RC_FILE "lswrc.txt"
 
 #define E_VAR "E"

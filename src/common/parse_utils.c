@@ -18,7 +18,7 @@
 #endif
 
 char *last_argument = NULL;
-int8_t last_exit_code;
+int16_t last_exit_code;
 
 static void free_args(char **args, uint16_t count) {
     if (!args) return;
@@ -301,6 +301,11 @@ int16_t processCommand(
         last_argument = new_last_argument;
     }
 
+    if (strcmp(argv[0], "exit") == 0 || (last_argument && strcmp(last_argument, "exit") == 0)) {
+        free_args(call_args, argc);
+        return EXIT_CODE;
+    }
+
     pid_t pid = fork();
 
     if (pid < 0) {
@@ -322,7 +327,7 @@ int16_t processCommand(
         _exit(127);
     }
 
-    int status;
+    int32_t status;
     int32_t result = 1;
 
     while (waitpid(pid, &status, 0) < 0) {
