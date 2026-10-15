@@ -355,18 +355,24 @@ char *extractCommandOrKey(char *src, char **arg) {
 
 void saveHist(char *operation, char *history_path, char *data_folder) {
     char *path = buildLswRcPath(data_folder);
+    if (!path) {
+        fprintf(stderr, "bash: failed to build rc file path\n");
+        return;
+    }
+
     uint32_t lines = getSavedHistSize(history_path);
     char *buff = getKeyVal("HISTSIZE", path);
+
+    SAFE_FREE(path);
 
     if (!buff)
         return;
 
     double MaxLines = atof(buff);
+    SAFE_FREE(buff);
 
     if (isnan(MaxLines) || isinf(MaxLines))
         return;
-
-    SAFE_FREE(path);
 
     if (MaxLines < 0)
         return;
@@ -1737,17 +1743,30 @@ char *echoHandler(char *str) {
 }
 
 char *buildLswRcPath(const char *path) {
-    uint16_t extra = strlen(path) + 1 + strlen(RC_FILE);
-    char *buffer = calloc(extra, sizeof(char));
-    strcpy(buffer, path);
+    if (!path)
+        return NULL;
 
 #ifdef _WIN64
-    strcat(buffer, "\\");
+    const char separator[] = "\\";
 #else
-    strcat(buffer, "/");    
+    const char separator[] = "/";
 #endif
 
-    strcat(buffer, RC_FILE);
+    size_t path_len = strlen(path);
+    size_t separator_len = sizeof(separator) - 1;
+    size_t rc_len = strlen(RC_FILE);
+
+    char *buffer = calloc(
+        path_len + separator_len + rc_len + 1,
+        sizeof(char)
+    );
+
+    if (!buffer)
+        return NULL;
+
+    memcpy(buffer, path, path_len);
+    memcpy(buffer + path_len, separator, separator_len);
+    memcpy(buffer + path_len + separator_len, RC_FILE, rc_len + 1);
 
     return buffer;
 }

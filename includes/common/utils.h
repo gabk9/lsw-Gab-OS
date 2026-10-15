@@ -178,7 +178,6 @@ uint16_t getSavedHistSize(char *path);
 uint16_t getSavedHistSize(char *path);
 bool isIn(char needle, char *haystack);
 char *buildLswRcPath(const char *path);
-char *stringToVariable(const char *str);
 bool isValidBcFuncName(const char *str);
 int32_t bc_strcmp(char *str1, char *str2);
 char *find_andand_outside_quotes(char *s);

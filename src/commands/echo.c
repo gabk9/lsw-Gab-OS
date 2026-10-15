@@ -8,12 +8,12 @@
 #include <strings.h>
 #include "str_utils.h"
 
-int main(int argc, char **argv) {
+int32_t main(int32_t argc, char **argv) {
 
-    for (int i = 1; i < argc; i++) {
+    for (int32_t i = 1; i < argc; i++) {
         char *arg_copy = strdup(argv[i]);
         if (!arg_copy) {
-            fprintf(stderr, "Error: out of memory\n");
+            fprintf(stderr, "echo: out of memory\n");
             return 1;
         }
 

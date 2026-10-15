@@ -2,6 +2,7 @@
 
 #include "utils.h"
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -15,82 +16,196 @@ char *get_user(void);
     #define strcasecmp _stricmp
 #endif
 
-char *stringToVariable(const char *str) {
-    if (strcasecmp(str, "$path") == 0) {
+static char *getSpecialVariable(const char *name) {
+
+    if (strcasecmp(name, "path") == 0)
         return get_env_var("PATH");
-    }
-    else if (strcasecmp(str, "$home") == 0) {
+
+    if (strcasecmp(name, "home") == 0)
         return get_env_var("HOME");
-    }
-    else if (strcasecmp(str, "$username") == 0 || strcasecmp(str, "$user") == 0) {
+
+    if (strcasecmp(name, "username") == 0 ||
+        strcasecmp(name, "user") == 0) {
         const char *user = get_user();
-        return strdup(user);
+        return user ? strdup(user) : NULL;
     }
-    else if (strcasecmp(str, "$temp") == 0) {
-        const char *tmp = getenv("TMP");
-        if (!tmp) tmp = getenv("TEMP");
-        if (!tmp) tmp = "/tmp";
-        return strdup(tmp);
+
+    if (strcasecmp(name, "temp") == 0) {
+#ifdef _WIN64
+        const char *tmp = getenv("TEMP");
+        if (!tmp)
+            tmp = getenv("TMP");
+#else
+        const char *tmp = getenv("TMPDIR");
+        if (!tmp)
+            tmp = "/tmp";
+#endif
+        return tmp ? strdup(tmp) : NULL;
     }
-    else if (strcmp(str, "$?") == 0) {
-        int16_t length = snprintf(NULL, 0, "%" PRId16, last_exit_code);
 
-        char *tmp = alloc(length + 1);
-        if (!tmp) return NULL;
+    if (strcmp(name, "?") == 0) {
+        int32_t length = snprintf(NULL, 0, "%" PRId16, last_exit_code);
 
-        snprintf(tmp, length + 1, "%"PRId16, last_exit_code);
+        if (length < 0)
+            return NULL;
 
-        return tmp;
+        char *value = alloc((size_t)length + 1);
+
+        snprintf(value, (size_t)length + 1,
+                "%"PRId8, last_exit_code);
+
+        return value;
     }
+
+    if (strcmp(name, "_") == 0)
+        return last_argument ? strdup(last_argument) : strdup("");
 
 #ifndef _WIN64
-    else if (strcasecmp(str, "$shell") == 0) {
+    if (strcasecmp(name, "shell") == 0)
         return get_env_var("SHELL");
-    }
-    else if (strcasecmp(str, "$lang") == 0) {
+
+    if (strcasecmp(name, "lang") == 0)
         return get_env_var("LANG");
-    }
-    else if (strcasecmp(str, "$pwd") == 0) {
+
+    if (strcasecmp(name, "pwd") == 0)
         return get_env_var("PWD");
-    }
-    else if (strcasecmp(str, "$editor") == 0) {
+
+    if (strcasecmp(name, "editor") == 0)
         return get_env_var("EDITOR");
-    }
-
 #else
-    else if (strcasecmp(str, "$comspec") == 0) {
+    if (strcasecmp(name, "comspec") == 0)
         return get_env_var("COMSPEC");
-    }
-    else if (strcasecmp(str, "$systemroot") == 0) {
+
+    if (strcasecmp(name, "systemroot") == 0)
         return get_env_var("SystemRoot");
-    }
-    else if (strcasecmp(str, "$appdata") == 0) {
+
+    if (strcasecmp(name, "appdata") == 0)
         return get_env_var("APPDATA");
-    }
-    else if (strcasecmp(str, "$localappdata") == 0) {
+
+    if (strcasecmp(name, "localappdata") == 0)
         return get_env_var("LOCALAPPDATA");
-    }
-    else if (strcasecmp(str, "$programdata") == 0) {
+
+    if (strcasecmp(name, "programdata") == 0)
         return get_env_var("PROGRAMDATA");
-    }
-    else if (strcasecmp(str, "$public") == 0) {
+
+    if (strcasecmp(name, "public") == 0)
         return get_env_var("PUBLIC");
-    }
-    else if (strcasecmp(str, "$os") == 0) {
+
+    if (strcasecmp(name, "os") == 0)
         return get_env_var("OS");
-    }
-    else if (strcasecmp(str, "$number_of_processors") == 0) {
+
+    if (strcasecmp(name, "number_of_processors") == 0)
         return get_env_var("NUMBER_OF_PROCESSORS");
-    }
-    else if (strcasecmp(str, "$processor_architecture") == 0) {
+
+    if (strcasecmp(name, "processor_architecture") == 0)
         return get_env_var("PROCESSOR_ARCHITECTURE");
-    }
 #endif
-    else if (str[0] == '$' && str[1] != '\0' && str[1] != ' ') {
-        return strdup("\n");
+
+    return NULL;
+}
+
+char *stringToVariable(char *str){
+    if (!str)
+        return NULL;
+
+    size_t input_len = strlen(str);
+
+    char *result = alloc(input_len + 1);
+    size_t result_len = 0;
+
+    result[0] = '\0';
+
+    for (size_t i = 0; i < input_len;) {
+        if (str[i] != '$' || i + 1 >= input_len) {
+            size_t new_len = result_len + 1;
+            char *tmp = alloc(new_len + 1);
+
+            memcpy(tmp, result, result_len);
+            tmp[result_len] = str[i];
+            tmp[new_len] = '\0';
+
+            SAFE_FREE(result);
+            result = tmp;
+            result_len = new_len;
+
+            i++;
+            continue;
+        }
+
+        size_t name_start = i + 1;
+        size_t name_end = name_start;
+
+        if (str[name_start] == '?')
+            name_end++;
+        else {
+            while (name_end < input_len &&
+                (isalnum((unsigned char)str[name_end]) ||
+                    str[name_end] == '_')) {
+                name_end++;
+            }
+        }
+
+        if (name_end == name_start) {
+            size_t new_len = result_len + 1;
+            char *tmp = alloc(new_len + 1);
+
+            memcpy(tmp, result, result_len);
+            tmp[result_len] = '$';
+            tmp[new_len] = '\0';
+
+            SAFE_FREE(result);
+            result = tmp;
+            result_len = new_len;
+
+            i++;
+            continue;
+        }
+
+        size_t name_len = name_end - name_start;
+
+        char *name = alloc(name_len + 1);
+        memcpy(name, str + name_start, name_len);
+        name[name_len] = '\0';
+
+        char *value = getSpecialVariable(name);
+
+        SAFE_FREE(name);
+
+        if (!value) {
+            size_t token_len = name_end - i;
+            size_t new_len = result_len + token_len;
+            char *tmp = alloc(new_len + 1);
+
+            memcpy(tmp, result, result_len);
+            memcpy(tmp + result_len, str + i, token_len);
+            tmp[new_len] = '\0';
+
+            SAFE_FREE(result);
+            result = tmp;
+            result_len = new_len;
+
+            i = name_end;
+            continue;
+        }
+
+        size_t value_len = strlen(value);
+        size_t new_len = result_len + value_len;
+
+        char *tmp = alloc(new_len + 1);
+
+        memcpy(tmp, result, result_len);
+        memcpy(tmp + result_len, value, value_len);
+        tmp[new_len] = '\0';
+
+        SAFE_FREE(result);
+        SAFE_FREE(value);
+
+        result = tmp;
+        result_len = new_len;
+        i = name_end;
     }
 
-    return strdup(str);
+    return result;
 }
 
 char *get_env_var(const char *name) {

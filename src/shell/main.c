@@ -137,7 +137,7 @@ int32_t main(int32_t argc, char **argv) {
             continue;
         }
 
-        if (strcmp(sh_argv[0], "exit") == 0) {
+        if (strcmp(sh_argv[0], "exit") == 0 || (last_argument && strcmp(last_argument, "exit") == 0)) {
             for (uint16_t i = 0; i < sh_argc; i++)
                 SAFE_FREE(sh_argv[i]);
 
@@ -151,12 +151,15 @@ int32_t main(int32_t argc, char **argv) {
             history_path, data_folder, true, false
         );
 
+        fflush(stdout);
+
         for (uint16_t i = 0; i < sh_argc; i++)
             SAFE_FREE(sh_argv[i]);
 
         SAFE_FREE(sh_argv);
     }
 
+    SAFE_FREE(last_argument);
     SAFE_FREE(data_folder);
     SAFE_FREE(program_root);
     SAFE_FREE(history_path);

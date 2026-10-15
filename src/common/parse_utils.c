@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "str_utils.h"
 #include "parse_utils.h"
 
 #ifdef _WIN64
@@ -16,6 +17,7 @@
     #include <sys/wait.h>
 #endif
 
+char *last_argument = NULL;
 int8_t last_exit_code;
 
 static void free_args(char **args, uint16_t count) {
@@ -138,7 +140,7 @@ char **extract_args(char *args, uint16_t *argc, char *firstArg) {
     return argv;
 }
 
-int processCommand(
+int16_t processCommand(
     char **argv,
     uint32_t argc,
     const char **cmds,
@@ -178,7 +180,7 @@ int processCommand(
         char *separator = argv[i];
         argv[i] = NULL;
 
-        int status = processCommand(
+        int16_t status = processCommand(
             argv, i,
             cmds, address,
             history_path, data_folder,
@@ -203,108 +205,124 @@ int processCommand(
     }
 
 #ifdef _WIN64
-    fprintf(stderr, "bash: process execution not implemented for Windows\n");
+    fprintf(stderr,
+            "bash: process execution not implemented for Windows\n");
+
     last_exit_code = 1;
     return last_exit_code;
 #else
     const char *command_dir = "./src/commands/";
-    const char *extension = "";
 
-    size_t path_len = strlen(command_dir)
-                    + strlen(argv[0])
-                    + strlen(extension) + 1;
+    char **expanded_args = alloc(
+        ((size_t)argc + 1) * sizeof(*expanded_args)
+    );
 
-    char *call = alloc(path_len);
-
-    if (!call) {
+    if (!expanded_args) {
         perror("bash: alloc");
         last_exit_code = 1;
         return last_exit_code;
     }
 
-    snprintf(call, path_len, "%s%s%s",
-            command_dir, argv[0], extension);
+    memset(expanded_args, 0,
+           ((size_t)argc + 1) * sizeof(*expanded_args));
 
+    for (uint32_t i = 0; i < argc; i++) {
+        if (strchr(argv[i], '$')) {
+            expanded_args[i] = stringToVariable(argv[i]);
+        } else {
+            expanded_args[i] = strdup(argv[i]);
+        }
 
-    char **call_args = alloc(((size_t)argc + 1) * sizeof(*call_args));
+        if (!expanded_args[i]) {
+            fprintf(stderr,
+                    "bash: failed to expand argument %u\n", i);
+
+            free_args(expanded_args, i);
+            last_exit_code = 1;
+            return last_exit_code;
+        }
+    }
+
+    expanded_args[argc] = NULL;
+
+    size_t path_len =
+        strlen(command_dir) + strlen(expanded_args[0]) + 1;
+
+    char *executable_path = alloc(path_len);
+
+    if (!executable_path) {
+        perror("bash: alloc");
+        free_args(expanded_args, argc);
+        last_exit_code = 1;
+        return last_exit_code;
+    }
+
+    snprintf(executable_path, path_len, "%s%s",
+            command_dir, expanded_args[0]);
+
+    char **call_args = alloc(
+        ((size_t)argc + 1) * sizeof(*call_args)
+    );
 
     if (!call_args) {
         perror("bash: alloc");
-        SAFE_FREE(call);
+        SAFE_FREE(executable_path);
+        free_args(expanded_args, argc);
         last_exit_code = 1;
         return last_exit_code;
     }
 
-    call_args[0] = strdup(call);
+    memset(call_args, 0,
+           ((size_t)argc + 1) * sizeof(*call_args));
 
-    if (!call_args[0]) {
-        perror("bash: strdup");
-        SAFE_FREE(call_args);
-        SAFE_FREE(call);
-
-        last_exit_code = 1;
-        return last_exit_code;
-    }
+    call_args[0] = executable_path;
 
     for (uint32_t i = 1; i < argc; i++) {
-        if (argv[i][0] == '$') {
-            call_args[i] = stringToVariable(argv[i]);
+        call_args[i] = expanded_args[i];
+        expanded_args[i] = NULL;
+    }
 
-            if (!call_args[i]) {
-                fprintf(stderr, "bash: failed to expand variable: %s\n", argv[i]);
+    SAFE_FREE(expanded_args[0]);
+    SAFE_FREE(expanded_args);
 
-                for (uint32_t j = 1; j < i; j++)
-                    SAFE_FREE(call_args[j]);
+    call_args[argc] = NULL;
 
-                SAFE_FREE(call_args);
-                SAFE_FREE(call);
+    if (argc > 1) {
+        char *new_last_argument = strdup(call_args[argc - 1]);
 
-                last_exit_code = 1;
-                return last_exit_code;
-            }
-
-            continue;
-        }
-
-        size_t extra = strlen(argv[i]) + 1;
-        call_args[i] = alloc(extra);
-
-        if (!call_args[i]) {
-            perror("bash: alloc");
-
-            for (uint32_t j = 1; j < i; j++)
-                SAFE_FREE(call_args[j]);
-
-            SAFE_FREE(call_args);
-            SAFE_FREE(call);
-
+        if (!new_last_argument) {
+            perror("bash: strdup");
+            free_args(call_args, argc);
             last_exit_code = 1;
             return last_exit_code;
         }
 
-        memcpy(call_args[i], argv[i], extra);
+        SAFE_FREE(last_argument);
+        last_argument = new_last_argument;
     }
-
-    call_args[argc] = NULL;
 
     pid_t pid = fork();
 
     if (pid < 0) {
         perror("bash: fork");
         free_args(call_args, argc);
-        SAFE_FREE(call);
         last_exit_code = 1;
         return last_exit_code;
     }
 
     if (pid == 0) {
-        execv(call, call_args);
+        execv(call_args[0], call_args);
 
-        fprintf(stderr, "bash: command not found: '%s'\n", argv[0]);
+        fprintf(stderr,
+                "bash: command not found: '%s'\n",
+                strrchr(call_args[0], '/')
+                    ? strrchr(call_args[0], '/') + 1
+                    : call_args[0]);
+
         _exit(127);
     }
 
-    int32_t status;
+    int status;
     int32_t result = 1;
 
     while (waitpid(pid, &status, 0) < 0) {
@@ -322,9 +340,8 @@ int processCommand(
 
 cleanup:
     free_args(call_args, argc);
-    SAFE_FREE(call);
 
-    last_exit_code = result;
+    last_exit_code = (int8_t)result;
     return last_exit_code;
 #endif
 }
