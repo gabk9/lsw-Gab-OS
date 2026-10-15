@@ -1,9 +1,0 @@
-CompileFlags:
-  Add: [
-    "-std=c99",
-    "-Wall",
-    "-Wextra",
-    "-Wpedantic",
-    "-Wno-builtin-requires-header",
-    "-I../../includes/common"
-  ]
