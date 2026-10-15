@@ -1,14 +1,12 @@
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
 
-#include "utils.h"
-#include <errno.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "str_utils.h"
-#include "parse_utils.h"
+#include "../../includes/common/utils.h"
+#include "../../includes/common/parse_utils.h"
 
 #ifdef _WIN64
     #include <process.h>

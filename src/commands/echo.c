@@ -1,12 +1,10 @@
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
 
-#include "utils.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdint.h>
-#include <strings.h>
-#include "str_utils.h"
+#include "../../includes/common/utils.h"
+#include "../../includes/common/str_utils.h"
 
 int32_t main(int32_t argc, char **argv) {
 

@@ -29,7 +29,7 @@
 #define PATH_TERMINAL_H "./libs/terminal.h"
 
 #ifdef _WIN64
-    extern HANDLE hConsole;
+    HANDLE hConsole;
 #elif !defined(_WIN64) && !defined(__linux__) && !defined(__APPLE__) && !defined(__ANDROID__)
     #error "Operational system not recognized, terminating program!!"
 #endif

@@ -1,19 +1,20 @@
 #define _GNU_SOURCE
 
-#include "utils.h"
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <strings.h>
-#include "str_utils.h"
-#include "parse_utils.h"
+#include "../../includes/common/utils.h"
+#include "../../includes/common/str_utils.h"
+#include "../../includes/common/parse_utils.h"
 
 char *get_user(void);
 
 #ifdef _WIN64
     #define strcasecmp _stricmp
+#elif defined(__linux__)
+    #include <strings.h>
 #endif
 
 static char *getSpecialVariable(const char *name) {

@@ -27,7 +27,11 @@
     #define strdup _strdup
     #define strcasecmp _stricmp
     #define strncasecmp _strnicmp
-    
+
+    #define STDIN_FILENO 0
+
+    extern HANDLE hConsole;
+
     #define cls(void) system("cls")
 #else
     #include <pwd.h>

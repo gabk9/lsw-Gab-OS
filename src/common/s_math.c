@@ -1,11 +1,11 @@
 #define _GNU_SOURCE
 
-#include "utils.h"
 #include <ctype.h>
 #include <stdarg.h>
-#include "s_math.h"
 #include <stdlib.h>
-#include "str_utils.h"
+#include "../../includes/common/utils.h"
+#include "../../includes/common/s_math.h"
+#include "../../includes/common/str_utils.h"
 
 #ifdef __linux__
     #include <strings.h>
