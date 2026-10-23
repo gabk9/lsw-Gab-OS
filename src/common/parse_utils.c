@@ -1,12 +1,14 @@
 #define _POSIX_C_SOURCE 200809L
 #define _GNU_SOURCE
 
+#include "utils.h"
+#include <errno.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "../../includes/common/utils.h"
-#include "../../includes/common/parse_utils.h"
+#include "str_utils.h"
+#include "parse_utils.h"
 
 #ifdef _WIN64
     #include <process.h>
@@ -28,10 +30,12 @@ static void free_args(char **args, uint16_t count) {
 }
 
 char **parseData(const char *str, uint16_t *count) {
-    if (!str || !count) return NULL;
+    if (!str || !count)
+        return NULL;
 
     char **list = alloc((MAX_ARGS + 1) * sizeof(char *));
-    if (!list) return NULL;
+    if (!list)
+        return NULL;
 
     *count = 0;
     size_t i = 0;
@@ -40,53 +44,51 @@ char **parseData(const char *str, uint16_t *count) {
         while (str[i] && isspace((unsigned char)str[i]))
             i++;
 
-        if (!str[i]) break;
+        if (!str[i])
+            break;
 
         if (*count >= MAX_ARGS)
             break;
 
-        size_t start;
-        size_t len;
+        char *arg = alloc(strlen(str + i) + 1);
+        if (!arg)
+            goto error;
 
-        if (str[i] == '"') {
-            start = ++i;
+        size_t len = 0;
+        char quote = '\0';
 
-            while (str[i] && str[i] != '"')
+        while (str[i]) {
+            char c = str[i];
+
+            if (!quote && isspace((unsigned char)c))
+                break;
+
+            if ((c == '"' || c == '\'') && (!quote || quote == c)) {
+                quote = quote ? '\0' : c;
                 i++;
-
-            if (str[i] != '"') {
-                free_args(list, *count);
-                *count = 0;
-                return NULL;
+                continue;
             }
 
-            len = i - start;
-            i++;
-        } else {
-            start = i;
-
-            while (str[i] && !isspace((unsigned char)str[i]))
-                i++;
-
-            len = i - start;
+            arg[len++] = str[i++];
         }
 
-        list[*count] = alloc(len + 1);
-
-        if (!list[*count]) {
-            free_args(list, *count);
-            *count = 0;
-            return NULL;
+        if (quote) {
+            free(arg);
+            goto error;
         }
 
-        memcpy(list[*count], str + start, len);
-        list[*count][len] = '\0';
-
-        (*count)++;
+        arg[len] = '\0';
+        list[(*count)++] = arg;
     }
 
     list[*count] = NULL;
     return list;
+
+error:
+    free_args(list, *count);
+    *count = 0;
+    free(list);
+    return NULL;
 }
 
 char **extract_args(char *args, uint16_t *argc, char *firstArg) {
